@@ -11,6 +11,7 @@ public class MainMenu extends JPanel {
     public MainMenu(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
         setBackground(Color.BLACK);
+        GameWindow.cargar_font();
         setFocusable(true);
         requestFocusInWindow();
     }

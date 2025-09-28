@@ -11,22 +11,36 @@ public class NPC {
 	
 	public int size;
 	public double x,y;
+	
+	// Distinciones de npc
+	public String Tipo;
+	public int line = 1;
+	public boolean Trigger = false;
+	
 	public boolean interactive = false;
 	private GamePanel panel;
 	private Color color;
 
-	public NPC(double startX, double startY, int size, GamePanel panel) {
+	public NPC(double startX, double startY, int size, String Tipo, GamePanel panel) {
 		this.x = startX;
 		this.y = startY;
 		this.size = size;
 		this.panel = panel;
+		this.Tipo = Tipo;
 		this.color = Color.GREEN;
 	}
 	
+	public int npcLine() {
+		
+		// Triggers de NPCs
+		if(Tipo.equals("Mauro") && Trigger) {
+			line = 3;
+		}
+		
+		return line;
+	}
+	
 	public void drawNPC(Graphics2D g2d) {
-		// Dibujar Area
-		//g2d.setColor(Color.RED);
-		//g2d.fillRect((int)x - (int)panel.CameraX - size, (int)y - (int)panel.CameraY - size, size*3, size*3);
 		
 		g2d.setColor(color);
         g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
