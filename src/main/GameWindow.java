@@ -1,7 +1,10 @@
+package main;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.IOException;
 
 public class GameWindow extends JFrame implements KeyListener {
     private static final int ORIGINAL_WIDTH = 1920;
@@ -11,7 +14,9 @@ public class GameWindow extends JFrame implements KeyListener {
     private GameState currentState;
     private MainMenu mainMenu;
     private GamePanel gamePanel;
-    private GameThread gameThread;
+    private GameThread gameThread;    
+    
+    public static Font Pixelart; // Font
     
     public GameWindow() {
         setTitle("La odisea de moya");
@@ -33,6 +38,22 @@ public class GameWindow extends JFrame implements KeyListener {
         
         // Mostrar menú principal inicialmente
         showMainMenu();
+    }
+    
+    public static void cargar_font() {
+    	try {
+			File fuenteArchivo = new File("resources/font/Pixellari.ttf");
+
+			// Crear la fuente
+			Pixelart = Font.createFont(Font.TRUETYPE_FONT, fuenteArchivo);
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			ge.registerFont(Pixelart);
+
+			Pixelart = Pixelart.deriveFont(24f); // Tamaño default
+
+		} catch (IOException | FontFormatException e) {
+			e.printStackTrace();
+		}
     }
     
     private void setupFullScreen() {

@@ -1,6 +1,8 @@
+package main;
 public class Main {
     public static void main(String[] args) {
         GameWindow gameWindow = new GameWindow();
-        gameWindow.start();
+        gameWindow.cargar_font();
+        gameWindow.start();        
     }
 }

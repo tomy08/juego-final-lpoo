@@ -1,3 +1,4 @@
+package main;
 public class GameThread extends Thread {
     private static final int FPS = 60;
     private static final long FRAME_TIME = 1000 / FPS; // Tiempo por frame en milisegundos
@@ -21,8 +22,6 @@ public class GameThread extends Thread {
             
             // Actualizar juego
             gamePanel.update();
-            
-            // Redibujar pantalla
             gamePanel.repaint();
             
             // Control de FPS

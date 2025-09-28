@@ -1,13 +1,25 @@
+package main;
 import javax.swing.*;
+
+import entities.NPC;
+import entities.Player;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class GamePanel extends JPanel {
+	
     private GameWindow gameWindow;
     private Player player;
+    private ArrayList<NPC> NPCs = new ArrayList<>();
     private Set<Integer> pressedKeys;
+    
+    // Seguimiento de Camara
+    public double CameraX = 0;
+    public double CameraY = 0;
     
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
@@ -17,7 +29,9 @@ public class GamePanel extends JPanel {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador en el centro de la pantalla
-        player = new Player(400, 300);
+        player = new Player(400, 400, this);
+        NPCs.add(new NPC(200, 200, 30, this));
+        
     }
     
     @Override
@@ -29,6 +43,11 @@ public class GamePanel extends JPanel {
         // Dibujar jugador
         player.draw(g2d);
         
+        // Dibujar NPCs
+        for(NPC npc : NPCs) {
+        	 npc.drawNPC(g2d);
+        	 npc.drawInteractive(g2d);
+        }
         // Dibujar UI
         drawUI(g2d);
     }
@@ -74,10 +93,56 @@ public class GamePanel extends JPanel {
             deltaY *= 0.707;
         }
         
+        // Interactuar con NPCs
+    	
+        for (NPC npc : NPCs) {
+        	
+        	// Entrar al área para interactuar
+        	if (player.getBounds().intersects(npc.getArea())) {
+        		npc.interactive = true;
+        	} else {
+        		npc.interactive = false;
+        	}
+        	
+        	// Colisión con el NPC
+            if (player.getBounds().intersects(npc.getBounds())) {
+
+                Rectangle p = player.getBounds();
+                Rectangle n = npc.getBounds();
+
+                int overlapLeft   = p.x + p.width - n.x; // Cuánto se metió por la izquierda
+                int overlapRight  = n.x + n.width - p.x; // Por la derecha
+                int overlapTop    = p.y + p.height - n.y; // Por arriba
+                int overlapBottom = n.y + n.height - p.y; // Por abajo
+
+                // El eje con menor solapamiento es el eje donde chocó
+                int minOverlapX = Math.min(overlapLeft, overlapRight);
+                int minOverlapY = Math.min(overlapTop, overlapBottom);
+
+                if (minOverlapX < minOverlapY) {
+                    // Colisión horizontal
+                    if (overlapLeft < overlapRight) {
+                        player.setX(player.getX() - overlapLeft);
+                    } else {
+                        player.setX(player.getX() + overlapRight);
+                    }
+                } else {
+                    // Colisión vertical
+                    if (overlapTop < overlapBottom) {
+                        player.setY(player.getY() - overlapTop);
+                    } else {
+                        player.setY(player.getY() + overlapBottom);
+                    }
+                }
+
+                moving = false;
+            }
+        }
+
+        
         if (moving) {
             player.move(deltaX, deltaY, getWidth(), getHeight());
         }
-        
         player.update();
     }
     

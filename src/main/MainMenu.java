@@ -1,3 +1,4 @@
+package main;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -25,8 +26,7 @@ public class MainMenu extends JPanel {
         
         // Título del juego
         g2d.setColor(Color.WHITE);
-        Font titleFont = new Font("Arial", Font.BOLD, width / 20);
-        g2d.setFont(titleFont);
+        g2d.setFont(GameWindow.Pixelart.deriveFont(120f));
         FontMetrics titleMetrics = g2d.getFontMetrics();
         String title = "La odisea de Moya";
         int titleX = (width - titleMetrics.stringWidth(title)) / 2;
@@ -34,8 +34,7 @@ public class MainMenu extends JPanel {
         g2d.drawString(title, titleX, titleY);
         
         // Opciones del menú
-        Font menuFont = new Font("Arial", Font.PLAIN, width / 30);
-        g2d.setFont(menuFont);
+        g2d.setFont(GameWindow.Pixelart.deriveFont(60f));
         FontMetrics menuMetrics = g2d.getFontMetrics();
         
         int menuStartY = height / 2;
@@ -58,8 +57,7 @@ public class MainMenu extends JPanel {
         
         // Instrucciones
         g2d.setColor(Color.GRAY);
-        Font instructionFont = new Font("Arial", Font.PLAIN, width / 50);
-        g2d.setFont(instructionFont);
+        g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
         FontMetrics instructionMetrics = g2d.getFontMetrics();
         String instructions = "Usa las flechas ARRIBA/ABAJO para navegar, ENTER para seleccionar";
         int instructionX = (width - instructionMetrics.stringWidth(instructions)) / 2;
