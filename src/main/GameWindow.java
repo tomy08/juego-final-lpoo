@@ -1,4 +1,7 @@
 package main;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -38,6 +41,17 @@ public class GameWindow extends JFrame implements KeyListener {
         
         // Mostrar menú principal inicialmente
         showMainMenu();
+    }
+    
+    public static void reproducirSonido(String rutaArchivo) {
+        try {
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(new File(rutaArchivo));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInput);
+            clip.start();
+        } catch (Exception e) {
+            System.out.println("Error al reproducir sonido: " + e.getMessage());
+        }
     }
     
     public static void cargar_font() {

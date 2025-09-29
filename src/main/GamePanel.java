@@ -110,6 +110,7 @@ public class GamePanel extends JPanel {
     	    long now = System.currentTimeMillis();
     	    if (now - lastCharTime >= charDelay) {
     	        textoActual += textoCompleto.charAt(textoActual.length());
+    	        GameWindow.reproducirSonido("resources/sounds/tipeo.wav");
     	        lastCharTime = now;
     	    }
     	}
@@ -235,6 +236,7 @@ public class GamePanel extends JPanel {
     
     public void interactNPC(NPC npc) {
         interactuando = true;
+        GameWindow.reproducirSonido("resources/sounds/interact.wav");
 
         int line = npc.npcLine();
         nombreNPC = npc.Tipo;

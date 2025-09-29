@@ -2,6 +2,7 @@ package entities;
 import java.awt.*;
 
 import main.GamePanel;
+import main.GameWindow;
 
 public class Player {
     private double x, y;
@@ -9,6 +10,9 @@ public class Player {
     private int size;
     private Color color;
     private GamePanel panel;
+    
+    private long lastSound = 0;
+    private int delaySound = 300;
     
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
@@ -27,12 +31,14 @@ public class Player {
         // Limitar movimiento dentro de los límites de la pantalla
         if (newX >= 0 && newX <= screenWidth - size) {
             x = newX;
-            
-       
         }
         if (newY >= 0 && newY <= screenHeight - size) {
             y = newY;
-            
+        }
+        
+        if(System.currentTimeMillis() >= lastSound + delaySound) {        	
+        	GameWindow.reproducirSonido("resources/sounds/footStep.wav");
+        	lastSound = System.currentTimeMillis();
         }
         
         

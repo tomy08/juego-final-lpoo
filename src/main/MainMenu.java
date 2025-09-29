@@ -50,6 +50,7 @@ public class MainMenu extends JPanel {
             if (i == selectedOption) {
                 g2d.setColor(Color.YELLOW);
                 g2d.drawString("> " + option + " <", optionX - 50, optionY);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
             } else {
                 g2d.setColor(Color.WHITE);
                 g2d.drawString(option, optionX, optionY);
