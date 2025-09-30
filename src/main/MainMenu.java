@@ -6,7 +6,8 @@ import java.awt.event.KeyEvent;
 public class MainMenu extends JPanel {
     private GameWindow gameWindow;
     private int selectedOption = 0;
-    private String[] menuOptions = {"PLAY", "EXIT"};
+    private String[] menuOptions = {"PLAY","SETTINGS", "EXIT" };
+  
     
     public MainMenu(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
@@ -91,7 +92,12 @@ public class MainMenu extends JPanel {
             case 0: // PLAY
                 gameWindow.startGame();
                 break;
-            case 1: // EXIT
+            case 1: // SETTINGS
+                gameWindow.settingsGame();
+                
+                break;
+                
+            case 2: // EXIT
                 gameWindow.exitGame();
                 break;
         }

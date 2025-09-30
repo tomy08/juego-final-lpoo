@@ -18,6 +18,8 @@ public class GameWindow extends JFrame implements KeyListener {
     private MainMenu mainMenu;
     private GamePanel gamePanel;
     private GameThread gameThread;    
+    private GameSettings gameSettings;
+
     
     public static Font Pixelart; // Font
     
@@ -33,7 +35,8 @@ public class GameWindow extends JFrame implements KeyListener {
         currentState = GameState.MAIN_MENU;
         mainMenu = new MainMenu(this);
         gamePanel = new GamePanel(this);
-        
+        gameSettings = new GameSettings(this);
+
         // Configurar listeners
         addKeyListener(this);
         setFocusable(true);
@@ -128,6 +131,19 @@ public class GameWindow extends JFrame implements KeyListener {
         }
     }
     
+    public void settingsGame() {
+         
+        getContentPane().removeAll();         // Quita panel anterior
+        getContentPane().add(gameSettings);   // Muestra panel de configuración
+        revalidate();                         // Actualiza layout
+        repaint();                            // Redibuja
+        gameSettings.requestFocusInWindow();  // Para recibir teclas
+        currentState = GameState.SETTINGS;
+
+    }
+
+
+    
     public void exitGame() {
         if (gameThread != null) {
             gameThread.stopGame();
@@ -148,7 +164,9 @@ public class GameWindow extends JFrame implements KeyListener {
             mainMenu.handleKeyPress(e.getKeyCode());
         } else if (currentState == GameState.PLAYING) {
             gamePanel.handleKeyPress(e.getKeyCode());
-        }
+        } 
+
+        
     }
     
     @Override
