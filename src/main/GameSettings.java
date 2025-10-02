@@ -43,6 +43,27 @@ public class GameSettings extends JPanel {
                 gameWindow.showMainMenu();
             }
         });
+        
+     // Key binding para cambiar sección a la izquierda (Q)
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("pressed Q"), "seccionAnterior");
+        getActionMap().put("seccionAnterior", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                cambiarSeccion(-1);
+            }
+        });
+
+        // Key binding para cambiar sección a la derecha (E)
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("pressed E"), "seccionSiguiente");
+        getActionMap().put("seccionSiguiente", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                cambiarSeccion(1);
+            }
+        });
+
 
         // Key binding para mover selección hacia arriba
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -67,6 +88,8 @@ public class GameSettings extends JPanel {
                 repaint();
             }
         });
+        
+        
 
         // Crear botones
         btnTeclas = crearBoton("Teclas", e -> {
@@ -124,7 +147,7 @@ public class GameSettings extends JPanel {
                 };
             case "sonido":
                 return new String[] {
-                    "Volumen general: 80%",
+                    "Volumen general: 100%",
                     "Música: Activada",
                     "Efectos: Activados"
                 };
@@ -132,11 +155,34 @@ public class GameSettings extends JPanel {
                 return new String[]{};
         }
     }
+    
+    private void cambiarSeccion(int direccion) {
+        String[] secciones = {"teclas", "pantalla", "sonido"};
+        int index = 0;
+        for (int i = 0; i < secciones.length; i++) {
+            if (seccionActiva.equals(secciones[i])) {
+                index = i;
+                break;
+            }
+        }
+        index += direccion;
+        if (index < 0) index = secciones.length - 1;
+        if (index >= secciones.length) index = 0;
+
+        seccionActiva = secciones[index];
+        opcionSeleccionada = 0;
+        repaint();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        
+        // Actualizar color de los botones según la sección activa
+        btnTeclas.setForeground(seccionActiva.equals("teclas") ? Color.YELLOW : Color.WHITE);
+        btnPantalla.setForeground(seccionActiva.equals("pantalla") ? Color.YELLOW : Color.WHITE);
+        btnSonido.setForeground(seccionActiva.equals("sonido") ? Color.YELLOW : Color.WHITE);
 
         int width = getWidth();
         int height = getHeight();
