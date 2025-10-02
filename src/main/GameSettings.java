@@ -1,13 +1,12 @@
 package main;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -15,28 +14,28 @@ import javax.swing.KeyStroke;
 public class GameSettings extends JPanel {
     private GameWindow gameWindow;
 
-    // Acciones y teclas
-    private String[] actions = {
-        "Arriba", "Abajo", "Izquierda", "Derecha", "Interactuar", "Pausa", "Adelantar texto"
-    };
-    private int[] keyCodes = { 
-        KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_A, KeyEvent.VK_D, 
-        KeyEvent.VK_E, KeyEvent.VK_ESCAPE, KeyEvent.VK_ENTER 
-    };
+    private int contentOffsetY = 0;
+    private int scrollSpeed = 20;
 
-    private int contentOffsetY = 0; // desplazamiento vertical del contenido
-    private int scrollSpeed = 20;   // velocidad del scroll
+    // Sección activa: "teclas", "pantalla", "sonido"
+    private String seccionActiva = "teclas";
 
     public static Font Pixelart;
 
+    // Botones
+    private JButton btnTeclas, btnPantalla, btnSonido;
+
+    // Índice de opción seleccionada dentro de la sección activa
+    private int opcionSeleccionada = 0;
+
     public GameSettings(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
-        setBackground(Color.BLACK);      
-        setFocusable(true);              
-        requestFocusInWindow();          
-        setPreferredSize(new Dimension(1600, 1200)); // tamaño total que se puede recorrer
+        setBackground(Color.BLACK);
+        setFocusable(true);
+        requestFocusInWindow();
+        setLayout(null); // usamos posición absoluta para los botones
 
-        // Key Binding para ESC
+        // Key binding ESC
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
             .put(KeyStroke.getKeyStroke("ESCAPE"), "backToMenu");
         getActionMap().put("backToMenu", new AbstractAction() {
@@ -45,17 +44,93 @@ public class GameSettings extends JPanel {
             }
         });
 
-        // Scroll con rueda del mouse
-        addMouseWheelListener(e -> {
-            int notches = e.getWheelRotation();
-            contentOffsetY += notches * scrollSpeed;
+        // Key binding para mover selección hacia arriba
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("UP"), "seleccionArriba");
+        getActionMap().put("seleccionArriba", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                int maxIndex = getOptionsArray().length - 1;
+                opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
+                repaint();
+            }
+        });
 
-            // Limitar desplazamiento
-            if (contentOffsetY < 0) contentOffsetY = 0;
-            if (contentOffsetY > 400) contentOffsetY = 400; // ajustar según contenido
+        // Key binding para mover selección hacia abajo
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("DOWN"), "seleccionAbajo");
+        getActionMap().put("seleccionAbajo", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                int maxIndex = getOptionsArray().length - 1;
+                opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
+                repaint();
+            }
+        });
 
+        // Crear botones
+        btnTeclas = crearBoton("Teclas", e -> {
+            seccionActiva = "teclas";
+            opcionSeleccionada = 0;
             repaint();
         });
+
+        btnPantalla = crearBoton("Pantalla", e -> {
+            seccionActiva = "pantalla";
+            opcionSeleccionada = 0;
+            repaint();
+        });
+
+        btnSonido = crearBoton("Sonido", e -> {
+            seccionActiva = "sonido";
+            opcionSeleccionada = 0;
+            repaint();
+        });
+
+        add(btnTeclas);
+        add(btnPantalla);
+        add(btnSonido);
+    }
+
+    private JButton crearBoton(String texto, java.awt.event.ActionListener listener) {
+        JButton btn = new JButton(texto);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(GameWindow.Pixelart.deriveFont(36f));
+        btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        btn.addActionListener(listener);
+        return btn;
+    }
+
+    private String[] getOptionsArray() {
+        switch (seccionActiva) {
+            case "teclas":
+                return new String[] {
+                    "W - ARRIBA",
+                    "S - ABAJO",
+                    "A - IZQUIERDA",
+                    "D - DERECHA",
+                    "E - INTERACTUAR",
+                    "ESC - PAUSA",
+                    "ENTER - ADELANTAR TEXTO"
+                };
+            case "pantalla":
+                return new String[] {
+                    "Resolución: 1920x1080",
+                    "Pantalla completa: Activado",
+                    "Sincronización vertical: Desactivada"
+                };
+            case "sonido":
+                return new String[] {
+                    "Volumen general: 80%",
+                    "Música: Activada",
+                    "Efectos: Activados"
+                };
+            default:
+                return new String[]{};
+        }
     }
 
     @Override
@@ -63,52 +138,77 @@ public class GameSettings extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // Rectángulo fijo como marco
+        int width = getWidth();
+        int height = getHeight();
+
+        // Posiciones y medidas proporcionales
+        int rectWidth = (int)(width * 0.75);
+        int rectHeight = (int)(height * 0.6);
+        int rectX = (width - rectWidth) / 2;
+        int rectY = (height - rectHeight) / 2;
+
+        // Dibujar título
+        g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.06)));
+        String title = "CONFIGURACIÓN";
+        int titleWidth = g2.getFontMetrics().stringWidth(title);
         g2.setColor(Color.WHITE);
+        g2.drawString(title, (width - titleWidth) / 2, (int)(height * 0.08));
+
+        // Dibujar marco
         g2.setStroke(new java.awt.BasicStroke(5));
-        g2.drawRect(420, 200, 1200, 700);
+        g2.drawRect(rectX, rectY, rectWidth, rectHeight);
 
-        // Título principal fuera del rectángulo
-        g2.setFont(GameWindow.Pixelart.deriveFont(72f));
-        g2.drawString("CONFIGURACIÓN", 100, 100);
+        // Clip para scroll interno
+        g2.setClip(rectX, rectY, rectWidth, rectHeight);
 
-        // Clipping para limitar contenido dentro del rectángulo
-        g2.setClip(420, 200, 1200, 700);
+        int baseY = rectY + (int)(height * 0.05);
+        int baseX = rectX + (int)(rectWidth * 0.1);
+        int spacing = (int)(height * 0.07);
 
-        // Contenido dentro del rectángulo (desplazable)
-        int scrollY = contentOffsetY; // scroll vertical
-        int baseX = 500;       // posición horizontal inicial
-        int baseY = 250;       // posición vertical inicial
+        // Subtítulo
+        g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.045)));
+        g2.setColor(Color.WHITE);
+        g2.drawString("-" + seccionActiva.toUpperCase() + "-", baseX, baseY - contentOffsetY);
 
-        // Subtítulo dentro del rectángulo (se mueve con scroll)
-        g2.setFont(GameWindow.Pixelart.deriveFont(56f));
-        g2.drawString("-TECLAS-", baseX, baseY - scrollY);
+        // Contenido según la sección activa
+        g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.04)));
+        String[] options = getOptionsArray();
 
-        // Opciones
-        g2.setFont(GameWindow.Pixelart.deriveFont(48f));
-        String[] options = {
-            "W - ARRIBA",
-            "S - ABAJO",
-            "A - IZQUIERDA",
-            "D - DERECHA",
-            "E - INTERACTUAR",
-            "ESC - PAUSA",
-            "ENTER - ADELANTAR TEXTO"
-        };
-        int spacing = 100; // separación vertical
         for (int i = 0; i < options.length; i++) {
-            int y = baseY + 60 + i * spacing - scrollY; // 60 píxeles debajo del subtítulo
-            g2.setColor(Color.WHITE);
-            g2.drawString(options[i], baseX, y);
+            int y = baseY + 60 + i * spacing - contentOffsetY;
+
+            String texto = options[i];
+            if (i == opcionSeleccionada) {
+                texto = texto + " <";  // Agregamos los símbolos
+                g2.setColor(Color.YELLOW);
+            } else {
+                g2.setColor(Color.WHITE);
+            }
+
+            g2.drawString(texto, baseX, y);
         }
 
-        // Fin clipping
+
+        // Fin clip
         g2.setClip(null);
 
-        // Indicaciones fijas fuera del rectángulo
-        g2.setFont(GameWindow.Pixelart.deriveFont(36f));
-        g2.drawString("ESC - VOLVER AL MENU", 100, 950);
+        // Footer fijo abajo
+        g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.03)));
+        String footer = "ESC - VOLVER AL MENU";
+        int footerWidth = g2.getFontMetrics().stringWidth(footer);
+        g2.setColor(Color.WHITE);
+        g2.drawString(footer, (width - footerWidth) / 2, (int)(height * 0.95));
+
+        // Posicionar botones de forma responsive
+        int btnWidth = (int)(width * 0.18);
+        int btnHeight = (int)(height * 0.07);
+        int spacingX = (int)(width * 0.02);
+        int totalWidth = btnWidth * 3 + spacingX * 2;
+        int startX = (width - totalWidth) / 2;
+        int btnY = (int)(height * 0.15);
+
+        btnTeclas.setBounds(startX, btnY, btnWidth, btnHeight);
+        btnPantalla.setBounds(startX + btnWidth + spacingX, btnY, btnWidth, btnHeight);
+        btnSonido.setBounds(startX + (btnWidth + spacingX) * 2, btnY, btnWidth, btnHeight);
     }
-
-
 }
