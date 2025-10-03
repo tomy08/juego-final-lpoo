@@ -24,8 +24,7 @@ public class GameSettings extends JPanel {
 
     // Botones
     private JButton btnTeclas, btnPantalla, btnSonido;
-
-    // Índice de opción seleccionada dentro de la sección activa
+    
     private int opcionSeleccionada = 0;
 
     public GameSettings(GameWindow gameWindow) {
@@ -33,7 +32,7 @@ public class GameSettings extends JPanel {
         setBackground(Color.BLACK);
         setFocusable(true);
         requestFocusInWindow();
-        setLayout(null); // usamos posición absoluta para los botones
+        setLayout(null);
 
         // Key binding ESC
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
@@ -51,6 +50,7 @@ public class GameSettings extends JPanel {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 cambiarSeccion(-1);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
             }
         });
 
@@ -61,6 +61,7 @@ public class GameSettings extends JPanel {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 cambiarSeccion(1);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
             }
         });
 
@@ -74,6 +75,7 @@ public class GameSettings extends JPanel {
                 int maxIndex = getOptionsArray().length - 1;
                 opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
                 repaint();
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
             }
         });
 
@@ -86,6 +88,7 @@ public class GameSettings extends JPanel {
                 int maxIndex = getOptionsArray().length - 1;
                 opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
                 repaint();
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
             }
         });
         
@@ -214,7 +217,7 @@ public class GameSettings extends JPanel {
         // Subtítulo
         g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.045)));
         g2.setColor(Color.WHITE);
-        g2.drawString("-" + seccionActiva.toUpperCase() + "-", baseX, baseY - contentOffsetY);
+        g2.drawString("-  " + seccionActiva.toUpperCase() + "  -", baseX, baseY - contentOffsetY);
 
         // Contenido según la sección activa
         g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.04)));

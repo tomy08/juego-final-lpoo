@@ -1,6 +1,7 @@
 package entities;
 import java.awt.*;
 
+import main.GW;
 import main.GamePanel;
 import main.GameWindow;
 
@@ -17,8 +18,8 @@ public class Player {
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
         this.y = startY;
-        this.speed = 5.0;
-        this.size = 30;
+        this.speed = GW.SQ(7);
+        this.size = GW.SX(40);
         this.panel = panel;
         this.color = Color.CYAN;
     }

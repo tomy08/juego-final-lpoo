@@ -19,11 +19,14 @@ public class GameWindow extends JFrame implements KeyListener {
     private GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
+    public static GameWindow instance;
 
     
     public static Font Pixelart; // Font
     
     public GameWindow() {
+    	instance = this;
+    	
         setTitle("La odisea de moya");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true); 
@@ -141,7 +144,22 @@ public class GameWindow extends JFrame implements KeyListener {
         currentState = GameState.SETTINGS;
 
     }
+    
+    
+    // Relativizar valores
+    
+    public int scaleX(int originalX) {
+        return (int) (originalX * (getWidth() / (double) ORIGINAL_WIDTH));
+    }
 
+    public int scaleY(int originalY) {
+        return (int) (originalY * (getHeight() / (double) ORIGINAL_HEIGHT));
+    }
+    
+    public int scaleSquare(int original) {
+    	double scale = Math.min(getWidth() / (double) ORIGINAL_WIDTH, getHeight() / (double) ORIGINAL_HEIGHT);
+    	return (int)(original * scale);
+    }
 
     
     public void exitGame() {
@@ -180,4 +198,6 @@ public class GameWindow extends JFrame implements KeyListener {
     public void keyTyped(KeyEvent e) {
         // No se usa
     }
+    
+    
 }

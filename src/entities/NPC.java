@@ -15,6 +15,7 @@ public class NPC {
 	// Distinciones de npc
 	public String Tipo;
 	public int line = 1;
+	public int FinalLine = -1;
 	public boolean Trigger = false;
 	
 	public boolean interactive = false;
@@ -38,6 +39,15 @@ public class NPC {
 		}
 		
 		return line;
+	}
+	
+	public int npcFinalLine() {
+		
+		if(Tipo.equals("random") && Trigger) {
+			FinalLine = 1;
+		}
+		
+		return FinalLine;
 	}
 	
 	public void drawNPC(Graphics2D g2d) {
