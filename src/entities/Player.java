@@ -1,6 +1,7 @@
 package entities;
 import java.awt.*;
 
+import main.CollisionMap;
 import main.GW;
 import main.GamePanel;
 import main.GameWindow;
@@ -11,6 +12,7 @@ public class Player {
     private int size;
     private Color color;
     private GamePanel panel;
+    private CollisionMap collisionMap;
     
     private long lastSound = 0;
     private int delaySound = 300;
@@ -22,6 +24,14 @@ public class Player {
         this.size = GW.SX(40);
         this.panel = panel;
         this.color = Color.CYAN;
+        this.collisionMap = null; // Se establecerá después
+    }
+    
+    /**
+     * Establece el mapa de colisiones para este jugador
+     */
+    public void setCollisionMap(CollisionMap collisionMap) {
+        this.collisionMap = collisionMap;
     }
     
     public void move(double deltaX, double deltaY, int screenWidth, int screenHeight) {
@@ -29,12 +39,24 @@ public class Player {
         double newX = x + (deltaX * speed);
         double newY = y + (deltaY * speed);
         
-        // Limitar movimiento dentro de los límites de la pantalla
-        if (newX >= 0 && newX <= screenWidth - size) {
-            x = newX;
-        }
-        if (newY >= 0 && newY <= screenHeight - size) {
-            y = newY;
+        // Si hay mapa de colisiones, verificar colisión
+        if (collisionMap != null && collisionMap.isLoaded()) {
+            // Verificar colisión en X
+            if (collisionMap.canMoveTo(newX, y, size, size)) {
+                x = newX;
+            }
+            // Verificar colisión en Y
+            if (collisionMap.canMoveTo(x, newY, size, size)) {
+                y = newY;
+            }
+        } else {
+            // Sin mapa de colisiones, usar límites de pantalla
+            if (newX >= 0 && newX <= screenWidth - size) {
+                x = newX;
+            }
+            if (newY >= 0 && newY <= screenHeight - size) {
+                y = newY;
+            }
         }
         
         if(System.currentTimeMillis() >= lastSound + delaySound) {        	

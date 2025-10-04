@@ -18,6 +18,7 @@ public class GamePanel extends JPanel {
     private Player player;
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private Set<Integer> pressedKeys;
+    private CollisionMap collisionMap; // Sistema de colisiones
     
     // Interactuar con NPC
     public boolean interactuando = false;
@@ -54,6 +55,10 @@ public class GamePanel extends JPanel {
         NPCs.add(new NPC(GW.SX(200), GW.SY(200), GW.SX(40), "Mauro", this));
         NPCs.add(new NPC(GW.SX(500), GW.SY(200), GW.SX(40), "random", this));
         
+        // Cargar el mapa de colisiones
+        collisionMap = new CollisionMap("resources/collision_map.png");
+        player.setCollisionMap(collisionMap);
+        
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
         try (InputStream input = getClass().getResourceAsStream("dialogos.properties")) {
@@ -68,6 +73,15 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Dibujar mapa de colisiones de fondo
+        if (collisionMap != null && collisionMap.isLoaded()) {
+            // Dibujar la imagen del mapa ajustada a la cámara
+            g2d.drawImage(collisionMap.getImage(), 
+                         -(int)CameraX, 
+                         -(int)CameraY, 
+                         null);
+        }
         
         // Dibujar jugador
         player.draw(g2d);
