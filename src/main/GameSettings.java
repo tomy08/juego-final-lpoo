@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -11,7 +13,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
-public class GameSettings extends JPanel {
+public class GameSettings extends JPanel implements KeyListener {
     private GameWindow gameWindow;
 
     private int contentOffsetY = 0;
@@ -26,6 +28,31 @@ public class GameSettings extends JPanel {
     private JButton btnTeclas, btnPantalla, btnSonido;
     
     private int opcionSeleccionada = 0;
+    
+    // Estado de edición
+    private boolean esperandoTecla = false;
+    private String teclaEditando = "";
+    
+    // Configuraciones editables
+    // Teclas
+    private String teclaArriba = "W";
+    private String teclaAbajo = "S";
+    private String teclaIzquierda = "A";
+    private String teclaDerecha = "D";
+    private String teclaInteractuar = "E";
+    private String teclaPausa = "ESC";
+    private String teclaAdelantarTexto = "ENTER";
+    
+    // Pantalla
+    private String[] resoluciones = {"1280x720", "1920x1080", "2560x1440", "3840x2160"};
+    private int resolucionActual = 1;
+    private boolean pantallaCompleta = true;
+    private boolean vsync = false;
+    
+    // Sonido
+    private int volumenGeneral = 100;
+    private boolean musicaActivada = true;
+    private boolean efectosActivados = true;
 
     public GameSettings(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
@@ -33,13 +60,18 @@ public class GameSettings extends JPanel {
         setFocusable(true);
         requestFocusInWindow();
         setLayout(null);
+        
+        // Añadir KeyListener
+        addKeyListener(this);
 
         // Key binding ESC
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
             .put(KeyStroke.getKeyStroke("ESCAPE"), "backToMenu");
         getActionMap().put("backToMenu", new AbstractAction() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                gameWindow.showMainMenu();
+                if (!esperandoTecla) {
+                    gameWindow.showMainMenu();
+                }
             }
         });
         
@@ -49,8 +81,10 @@ public class GameSettings extends JPanel {
         getActionMap().put("seccionAnterior", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                cambiarSeccion(-1);
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                if (!esperandoTecla) {
+                    cambiarSeccion(-1);
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
             }
         });
 
@@ -60,8 +94,10 @@ public class GameSettings extends JPanel {
         getActionMap().put("seccionSiguiente", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                cambiarSeccion(1);
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                if (!esperandoTecla && !seccionActiva.equals("teclas")) {
+                    cambiarSeccion(1);
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
             }
         });
 
@@ -72,10 +108,12 @@ public class GameSettings extends JPanel {
         getActionMap().put("seleccionArriba", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                int maxIndex = getOptionsArray().length - 1;
-                opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
-                repaint();
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                if (!esperandoTecla) {
+                    int maxIndex = getOptionsArray().length - 1;
+                    opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
+                    repaint();
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
             }
         });
 
@@ -85,31 +123,76 @@ public class GameSettings extends JPanel {
         getActionMap().put("seleccionAbajo", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                int maxIndex = getOptionsArray().length - 1;
-                opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
-                repaint();
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                if (!esperandoTecla) {
+                    int maxIndex = getOptionsArray().length - 1;
+                    opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
+                    repaint();
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
             }
         });
         
+        // Key binding para LEFT
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("LEFT"), "modificarIzquierda");
+        getActionMap().put("modificarIzquierda", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (!esperandoTecla) {
+                    modificarOpcion(-1);
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
+            }
+        });
+        
+        // Key binding para RIGHT
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("RIGHT"), "modificarDerecha");
+        getActionMap().put("modificarDerecha", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (!esperandoTecla) {
+                    modificarOpcion(1);
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                }
+            }
+        });
+        
+        // Key binding para ENTER
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+            .put(KeyStroke.getKeyStroke("ENTER"), "editarTecla");
+        getActionMap().put("editarTecla", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (seccionActiva.equals("teclas") && opcionSeleccionada < 7) {
+                    esperandoTecla = true;
+                    teclaEditando = getTeclaEditandoNombre();
+                    GameWindow.reproducirSonido("resources/sounds/interact.wav");
+                    repaint();
+                }
+            }
+        });
         
 
         // Crear botones
         btnTeclas = crearBoton("Teclas", e -> {
             seccionActiva = "teclas";
             opcionSeleccionada = 0;
+            esperandoTecla = false;
             repaint();
         });
 
         btnPantalla = crearBoton("Pantalla", e -> {
             seccionActiva = "pantalla";
             opcionSeleccionada = 0;
+            esperandoTecla = false;
             repaint();
         });
 
         btnSonido = crearBoton("Sonido", e -> {
             seccionActiva = "sonido";
             opcionSeleccionada = 0;
+            esperandoTecla = false;
             repaint();
         });
 
@@ -117,6 +200,85 @@ public class GameSettings extends JPanel {
         add(btnPantalla);
         add(btnSonido);
     }
+    
+    private String getTeclaEditandoNombre() {
+        switch (opcionSeleccionada) {
+            case 0: return "ARRIBA";
+            case 1: return "ABAJO";
+            case 2: return "IZQUIERDA";
+            case 3: return "DERECHA";
+            case 4: return "INTERACTUAR";
+            case 5: return "PAUSA";
+            case 6: return "ADELANTAR TEXTO";
+            default: return "";
+        }
+    }
+    
+    private void modificarOpcion(int direccion) {
+        switch (seccionActiva) {
+            case "pantalla":
+                switch (opcionSeleccionada) {
+                    case 0: // Resolución
+                        resolucionActual += direccion;
+                        if (resolucionActual < 0) resolucionActual = resoluciones.length - 1;
+                        if (resolucionActual >= resoluciones.length) resolucionActual = 0;
+                        break;
+                    case 1: // Pantalla completa
+                        pantallaCompleta = !pantallaCompleta;
+                        break;
+                    case 2: // VSync
+                        vsync = !vsync;
+                        break;
+                }
+                break;
+            case "sonido":
+                switch (opcionSeleccionada) {
+                    case 0: // Volumen
+                        volumenGeneral += direccion * 10;
+                        if (volumenGeneral < 0) volumenGeneral = 0;
+                        if (volumenGeneral > 100) volumenGeneral = 100;
+                        break;
+                    case 1: // Música
+                        musicaActivada = !musicaActivada;
+                        break;
+                    case 2: // Efectos
+                        efectosActivados = !efectosActivados;
+                        break;
+                }
+                break;
+        }
+        repaint();
+    }
+    
+    @Override
+    public void keyTyped(KeyEvent e) {}
+    
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (esperandoTecla) {
+            String nuevaTecla = KeyEvent.getKeyText(e.getKeyCode()).toUpperCase();
+            
+            // Asignar la nueva tecla según la opción seleccionada
+            switch (opcionSeleccionada) {
+                case 0: teclaArriba = nuevaTecla; break;
+                case 1: teclaAbajo = nuevaTecla; break;
+                case 2: teclaIzquierda = nuevaTecla; break;
+                case 3: teclaDerecha = nuevaTecla; break;
+                case 4: teclaInteractuar = nuevaTecla; break;
+                case 5: teclaPausa = nuevaTecla; break;
+                case 6: teclaAdelantarTexto = nuevaTecla; break;
+            }
+            
+            esperandoTecla = false;
+            teclaEditando = "";
+            GameWindow.reproducirSonido("resources/sounds/interact.wav");
+            repaint();
+        }
+    }
+    
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
 
     private JButton crearBoton(String texto, java.awt.event.ActionListener listener) {
         JButton btn = new JButton(texto);
@@ -134,25 +296,25 @@ public class GameSettings extends JPanel {
         switch (seccionActiva) {
             case "teclas":
                 return new String[] {
-                    "W - ARRIBA",
-                    "S - ABAJO",
-                    "A - IZQUIERDA",
-                    "D - DERECHA",
-                    "E - INTERACTUAR",
-                    "ESC - PAUSA",
-                    "ENTER - ADELANTAR TEXTO"
+                    "ARRIBA: " + teclaArriba,
+                    "ABAJO: " + teclaAbajo,
+                    "IZQUIERDA: " + teclaIzquierda,
+                    "DERECHA: " + teclaDerecha,
+                    "INTERACTUAR: " + teclaInteractuar,
+                    "PAUSA: " + teclaPausa,
+                    "ADELANTAR TEXTO: " + teclaAdelantarTexto
                 };
             case "pantalla":
                 return new String[] {
-                    "Resolución: 1920x1080",
-                    "Pantalla completa: Activado",
-                    "Sincronización vertical: Desactivada"
+                    "Resolución: " + resoluciones[resolucionActual] + " < >",
+                    "Pantalla completa: " + (pantallaCompleta ? "Activado" : "Desactivado") + " < >",
+                    "Sincronización vertical: " + (vsync ? "Activada" : "Desactivada") + " < >"
                 };
             case "sonido":
                 return new String[] {
-                    "Volumen general: 100%",
-                    "Música: Activada",
-                    "Efectos: Activados"
+                    "Volumen general: " + volumenGeneral + "% < >",
+                    "Música: " + (musicaActivada ? "Activada" : "Desactivada") + " < >",
+                    "Efectos: " + (efectosActivados ? "Activados" : "Desactivados") + " < >"
                 };
             default:
                 return new String[]{};
@@ -227,8 +389,13 @@ public class GameSettings extends JPanel {
             int y = baseY + 60 + i * spacing - contentOffsetY;
 
             String texto = options[i];
-            if (i == opcionSeleccionada) {
-                texto = texto + " <";  // Agregamos los símbolos
+            
+            // Mostrar indicador de edición
+            if (i == opcionSeleccionada && esperandoTecla) {
+                texto = teclaEditando + ": [Presiona una tecla...]";
+                g2.setColor(Color.GREEN);
+            } else if (i == opcionSeleccionada) {
+                texto = "> " + texto + " <";
                 g2.setColor(Color.YELLOW);
             } else {
                 g2.setColor(Color.WHITE);
@@ -243,7 +410,12 @@ public class GameSettings extends JPanel {
 
         // Footer fijo abajo
         g2.setFont(GameWindow.Pixelart.deriveFont((float)(height * 0.03)));
-        String footer = "ESC - VOLVER AL MENU";
+        String footer;
+        if (seccionActiva.equals("teclas")) {
+            footer = "ENTER - CAMBIAR TECLA | ESC - VOLVER";
+        } else {
+            footer = "← → - MODIFICAR | ESC - VOLVER";
+        }
         int footerWidth = g2.getFontMetrics().stringWidth(footer);
         g2.setColor(Color.WHITE);
         g2.drawString(footer, (width - footerWidth) / 2, (int)(height * 0.95));
