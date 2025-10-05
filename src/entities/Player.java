@@ -1,7 +1,7 @@
 package entities;
 import java.awt.*;
 
-import main.CollisionMap;
+import Mapa.CollisionMap;
 import main.GW;
 import main.GamePanel;
 import main.GameWindow;

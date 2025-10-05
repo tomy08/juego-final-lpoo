@@ -3,12 +3,17 @@ public class GameThread extends Thread {
     private static final int FPS = 60;
     private static final long FRAME_TIME = 1000 / FPS; // Tiempo por frame en milisegundos
     
-    private GamePanel gamePanel;
+    private Updatable updatable;
     private boolean running;
     
-    public GameThread(GamePanel gamePanel) {
-        this.gamePanel = gamePanel;
+    public GameThread(Updatable updatable) {
+        this.updatable = updatable;
         this.running = false;
+    }
+    
+    public interface Updatable {
+        void update();
+        void repaint();
     }
     
     @Override
@@ -21,8 +26,8 @@ public class GameThread extends Thread {
             long deltaTime = currentTime - lastTime;
             
             // Actualizar juego
-            gamePanel.update();
-            gamePanel.repaint();
+            updatable.update();
+            updatable.repaint();
             
             // Control de FPS
             long frameTime = System.currentTimeMillis() - currentTime;

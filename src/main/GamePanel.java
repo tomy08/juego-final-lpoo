@@ -1,6 +1,7 @@
 package main;
 import javax.swing.*;
 
+import Mapa.CollisionMap;
 import entities.NPC;
 import entities.Player;
 
@@ -12,7 +13,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-public class GamePanel extends JPanel {
+public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private GameWindow gameWindow;
     private Player player;
@@ -51,7 +52,7 @@ public class GamePanel extends JPanel {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador en el centro de la pantalla
-        player = new Player(GW.SX(400), GW.SY(400), this);
+        player = new Player(GW.SX(300), GW.SY(400), this);
         NPCs.add(new NPC(GW.SX(200), GW.SY(200), GW.SX(40), "Mauro", this));
         NPCs.add(new NPC(GW.SX(500), GW.SY(200), GW.SX(40), "random", this));
         
@@ -66,6 +67,8 @@ public class GamePanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        
     }
     
     @Override
@@ -341,8 +344,7 @@ public class GamePanel extends JPanel {
     private void procesarOpcion(String opcion, NPC npc) {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
-                triggerNPC("Mauro");
-                triggerNPC("random");
+                gameWindow.startRitmo();
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }

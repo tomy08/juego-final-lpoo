@@ -3,6 +3,10 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
+
+import Levels.LevelPanel;
+import main.GameThread.Updatable;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -19,6 +23,7 @@ public class GameWindow extends JFrame implements KeyListener {
     private GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
+    private LevelPanel levelPanel;
     public static GameWindow instance;
 
     
@@ -126,12 +131,20 @@ public class GameWindow extends JFrame implements KeyListener {
         revalidate();
         repaint();
         requestFocus();
-        
-        // Iniciar thread del juego
-        if (gameThread == null || !gameThread.isRunning()) {
-            gameThread = new GameThread(gamePanel);
-            gameThread.start();
-        }
+
+        startGameThread(gamePanel); // ✅
+    }
+    
+    public void startRitmo() {
+        currentState = GameState.RITMO;
+        getContentPane().removeAll();
+        levelPanel = new LevelPanel(this);
+        getContentPane().add(levelPanel);
+        revalidate();
+        repaint();
+        requestFocus();
+
+        startGameThread(levelPanel); // ✅ en vez de crear el thread directamente
     }
     
     public void settingsGame() {
@@ -142,8 +155,17 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();                            // Redibuja
         gameSettings.requestFocusInWindow();  // Para recibir teclas
         currentState = GameState.SETTINGS;
-
+        gameThread = null;
     }
+    
+    private void startGameThread(Updatable panel) {
+        if (gameThread != null && gameThread.isRunning()) {
+            gameThread.stopGame(); // detiene el thread anterior
+        }
+        gameThread = new GameThread(panel);
+        gameThread.start();
+    }
+
     
     
     // Relativizar valores
@@ -182,17 +204,20 @@ public class GameWindow extends JFrame implements KeyListener {
             mainMenu.handleKeyPress(e.getKeyCode());
         } else if (currentState == GameState.PLAYING) {
             gamePanel.handleKeyPress(e.getKeyCode());
-        } 
-
-        
+        } else if (currentState == GameState.RITMO) {
+            levelPanel.handleKeyPress(e.getKeyCode());
+        }
     }
-    
+
     @Override
     public void keyReleased(KeyEvent e) {
         if (currentState == GameState.PLAYING) {
             gamePanel.handleKeyRelease(e.getKeyCode());
+        } else if (currentState == GameState.RITMO) {
+            levelPanel.handleKeyRelease(e.getKeyCode());
         }
     }
+
     
     @Override
     public void keyTyped(KeyEvent e) {
