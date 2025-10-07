@@ -135,10 +135,10 @@ public class GameWindow extends JFrame implements KeyListener {
         startGameThread(gamePanel); // ✅
     }
     
-    public void startRitmo() {
+    public void startRitmo(String levelName, int speed) {
         currentState = GameState.RITMO;
         getContentPane().removeAll();
-        levelPanel = new LevelPanel(this);
+        levelPanel = new LevelPanel(this, levelName, speed);
         getContentPane().add(levelPanel);
         revalidate();
         repaint();

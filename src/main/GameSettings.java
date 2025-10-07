@@ -94,7 +94,7 @@ public class GameSettings extends JPanel implements KeyListener {
         getActionMap().put("seccionSiguiente", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla && !seccionActiva.equals("teclas")) {
+                if (!esperandoTecla) {
                     cambiarSeccion(1);
                     GameWindow.reproducirSonido("resources/sounds/menu.wav");
                 }

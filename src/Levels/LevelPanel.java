@@ -22,6 +22,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Estadísticas
     private int puntaje = 0;
     private int combo = 0;
+    private int maxCombo = 0;
     
     // Vida
     private int Max_vida = 50;
@@ -38,14 +39,17 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int bueCount = 0;
     private int peteCount = 0;
     private int missCount = 0;
+    
+    // Juego
+    private boolean win = false;
 
-    public LevelPanel(GameWindow gw) {
+    public LevelPanel(GameWindow gw, String levelName, int speed) {
         this.gameWindow = gw;
         setBackground(Color.BLACK);
         setFocusable(true);
 
         
-        arrows = ChartLoader.loadChart(new File("resources/Levels/leveltest.txt"), gw, true, GW.SQ(15));
+        arrows = ChartLoader.loadChart(new File("resources/Levels/"+levelName+".txt"), gw, true, GW.SQ(speed));
     }
 
     public void update() {
@@ -59,16 +63,23 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
         
         // Desaparecer si se va o si llega a las notas del enemigo
-        for(int i = 0; i<arrows.size();i++) {
-        	arrow a = arrows.get(i);
-        	
-        	if(a.y < GW.SY(125) && a.x < GW.SX(1200)) {
-        		arrows.remove(i);
-        	} else if(a.y + a.size < 0) { // notas del jugador
-            	arrows.remove(i);
-            	combo = 0;
-            	vida -= 3;
-            	missCount++;
+        for (int i = 0; i < arrows.size(); i++) {
+            arrow a = arrows.get(i);
+
+            // Si es nota de fin
+            if (a.isEnd && a.y <= GW.SY(125)) {
+                System.out.println("¡Canción terminada!");
+                win = true;
+                return;
+            }
+
+            if (a.y < GW.SY(125) && a.x < GW.SX(1200)) {
+                arrows.remove(i);
+            } else if (a.y + a.size < 0) { // notas del jugador
+                arrows.remove(i);
+                combo = 0;
+                vida -= 3;
+                missCount++;
             }
         }
         
@@ -109,6 +120,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         g2d.setColor(Color.WHITE);
         g2d.setFont(GameWindow.Pixelart.deriveFont(15f));
         g2d.drawString("Juego de ritmo - presiona ESC para volver", 50, 50);
+        
+        
+        // PANTALLA DE GANAR UN MAPA
+        if(win) {
+        	drawWIN(g2d);
+        }
     }
     
     private void drawUI(Graphics2D g2d) {
@@ -149,9 +166,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(lastHitText.equals("SIGMA")) {
         		g2d.setColor(new Color(200,0,255));
         	} else if(lastHitText.equals("Aura")) {
-        		g2d.setColor(new Color(50,200,50));
-        	} else if(lastHitText.equals("Bue")) {
         		g2d.setColor(new Color(205,205,50));
+        	} else if(lastHitText.equals("Bue")) {
+        		g2d.setColor(new Color(50,200,50));
         	} else {
         		g2d.setColor(new Color(120, 0, 0));
         	}
@@ -162,16 +179,93 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
     }
     
+    private void drawWIN(Graphics2D g2d) {
+    	double porcentajeFinal = getAccuracyPercentage();
+    	
+    	// Oscurecer fondo
+    	g2d.setColor(new Color(0,0,0,150));
+    	g2d.fillRect(0, 0, getWidth(), getHeight());
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(45f));
+    	g2d.setColor(Color.WHITE);
+    	g2d.drawString("PUNTUACION", GW.SX(800), GW.SY(250));
+    	
+    	// Imagen de la nota final
+    	
+    	if(porcentajeFinal == 100) {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    	} else if (porcentajeFinal >= 95) {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    		System.out.println("S");
+    	} else if (porcentajeFinal >= 90) {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankA.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    		System.out.println("A");
+    	} else if (porcentajeFinal >= 80) {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    		System.out.println("B");
+    	} else if (porcentajeFinal >= 70) {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankC.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    		System.out.println("C");
+    	} else {
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankD.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
+    		System.out.println("D");
+    	}
+    	
+    	// Porcentaje
+    	
+    	g2d.drawString(porcentajeFinal+"%", GW.SX(600), GW.SY(700));
+    	
+    	// Max Combo
+    	int totalHits = sigmaCount + auraCount + bueCount + peteCount + missCount;
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+    	if(maxCombo == totalHits) {
+    		g2d.setColor(Color.YELLOW);
+    	}
+    	g2d.drawString("Max Combo: " + maxCombo, GW.SX(600), GW.SY(750));
+    	
+    	// Estadísticas
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(new Color(200,0,255));
+    	g2d.drawString("(" + porcentaje(sigmaCount, totalHits) + "%) SIGMA: " + sigmaCount, GW.SX(1050), GW.SY(400));
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(new Color(205,205,50));
+    	g2d.drawString("(" + porcentaje(auraCount, totalHits) + "%) Aura: " + auraCount, GW.SX(1050), GW.SY(475));
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(new Color(50,200,50));
+    	g2d.drawString("(" + porcentaje(bueCount, totalHits) + "%) Bue: " + bueCount, GW.SX(1050), GW.SY(550));
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(new Color(120, 0, 0));
+    	g2d.drawString("(" + porcentaje(peteCount, totalHits) + "%) Pete: " + peteCount, GW.SX(1050), GW.SY(625));
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(Color.WHITE);
+    	g2d.drawString("(" + porcentaje(missCount, totalHits) + "%) Misses: " + missCount, GW.SX(1050), GW.SY(700));
+    	
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
+    	g2d.setColor(Color.WHITE);
+    	g2d.drawString("ESC para volver", GW.SX(800), GW.SY(880));
+    }
+    
     // Calcular porcentaje
     
     public double getAccuracyPercentage() {
         int totalHits = sigmaCount + auraCount + bueCount + peteCount + missCount;
         if (totalHits == 0) return 0.0;
 
-        double scoreSum = sigmaCount * 100 + auraCount * 80 + bueCount * 50 + peteCount * 20 + missCount * 0;
+        double scoreSum = sigmaCount * 100 + auraCount * 90 + bueCount * 50 + peteCount * 20 + missCount * 0;
         double percentage = scoreSum / totalHits;
         return Math.round(percentage * 100.0) / 100.0; // redondear a 2 decimales
     }
+    
+    public double porcentaje(int numero, int total) {
+        if (total == 0) return 0.0;
+        double percentage = ((double) numero / (double) total) * 100.0;
+        return Math.round(percentage * 100.0) / 100.0; // redondea a 2 decimales
+    }
+
 
     
     // Chequear la columna segun la tecla
@@ -220,6 +314,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         SumaV = -2;
                     }
                     
+                    if(combo > maxCombo) {
+                    	maxCombo = combo;
+                    }
+                    
                     // Sumar o Restar vida
                     if(vida < Max_vida) {
                     	vida += SumaV;
@@ -252,8 +350,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Detectar teclas
     public void handleKeyPress(int keyCode) {
         if (keyCode == KeyEvent.VK_ESCAPE) {
-            gameWindow.startGame(); // volver al RPG
-            return;
+        	
+        	if(win) {
+        		gameWindow.startGame(); // volver al RPG
+                return;
+        	}
+            
         }
 
         int column = -1;

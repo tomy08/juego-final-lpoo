@@ -11,11 +11,13 @@ public class arrow {
 	public int size = GW.SX(80);
 	private double speed;
 	public double x, y;
+	public boolean isEnd = false;
 	
-	public arrow(double startX, double startY, double speed) {
+	public arrow(double startX, double startY, double speed, boolean isEnd) {
 		this.x = startX;
 		this.y = startY;
 		this.speed = speed;
+		this.isEnd = isEnd;
 	}
 	
 	public void move() {
@@ -27,7 +29,11 @@ public class arrow {
 	}
 	
 	public void draw(Graphics2D g2d) {
+		if(isEnd) {
+			return;
+		}
 		g2d.setColor(Color.CYAN);
+		
         g2d.fillRect((int)x, (int)y, size, size);
     }
 }

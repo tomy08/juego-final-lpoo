@@ -344,7 +344,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private void procesarOpcion(String opcion, NPC npc) {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
-                gameWindow.startRitmo();
+                gameWindow.startRitmo("leveltest", 20);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }
