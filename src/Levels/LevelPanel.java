@@ -27,7 +27,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Vida
     private int Max_vida = 50;
     private int vida = Max_vida/2;
-    private int barraAnchoMax = GW.SX(1350);
+    private int barraAltoMax = GW.SX(650);
     
     // Efectos
     private String lastHitText = "";
@@ -44,13 +44,18 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Juego
     private boolean win = false;
     private boolean pausa = false;
+    private boolean lose = false;
     private String level;
     private int speed;
     
     // Pausa
-    private String[] pauseOptions = {"Continuar", "Reiniciar", "Salir"};
+    private String[] pauseOptions = {"Continuar", "Reiniciar", "Configuracion", "Salir"};
     private int selectedPauseOption = 0;
 
+    // Perder
+    
+    private String[] loseOptions = {"Reintentar", "Salir"};
+    private int selectedLoseOption = 0;
 
     public LevelPanel(GameWindow gw, String levelName, int speed) {
         this.gameWindow = gw;
@@ -65,13 +70,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
     public void update() {
     	
-    	if(pausa) {
+    	if(pausa || lose) {
     		return;
     	}
     	
     	// Perder
     	if(vida <= 0) {
-    		System.out.println("perdiste");
+    		lose = true;
     	}
     	
     	// Max Vida
@@ -83,19 +88,18 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             a.move();
         }
         
-        // Desaparecer si se va o si llega a las notas del enemigo
+        // Desaparecer si se van
         for (int i = 0; i < arrows.size(); i++) {
             arrow a = arrows.get(i);
 
-            // Si es nota de fin
+            // Si es nota del final terminar
             if (a.isEnd && a.y <= GW.SY(125)) {
                 win = true;
                 return;
             }
-
-            if (a.y < GW.SY(125) && a.x < GW.SX(1200)) {
-                arrows.remove(i);
-            } else if (a.y + a.size < 0) { // notas del jugador
+            
+            // Si se pasa, desaparecer
+            if (a.y + a.size < 0) {
                 arrows.remove(i);
                 combo = 0;
                 vida -= 3;
@@ -112,22 +116,14 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         Graphics2D g2d = (Graphics2D) g;
         
         // Teclas Jugador
-    	int posX = GW.SX(1250);
+    	int posX = GW.SX(685);
     	for(int i = 0; i<4; i++) {
     		g2d.setColor(new Color(135,135,135,125));
     		if(columnPressed[i]) {
     			g2d.setColor(new Color(200,200,200,125));
     		}
-    		g2d.fillRect(posX, GW.SY(125), GW.SX(80), GW.SY(80));
-    		posX += GW.SX(125);
-    	}
-    	
-    	// Teclas Enemigo
-    	posX = GW.SX(225);
-    	for(int i = 0; i<4; i++) {
-    		g2d.setColor(new Color(155,155,155,125));
-    		g2d.fillRect(posX, GW.SY(125), GW.SX(80), GW.SY(80));
-    		posX += GW.SX(125);
+    		g2d.fillRect(posX, GW.SY(125), GW.SX(100), GW.SY(100));
+    		posX += GW.SX(150);
     	}
         
 
@@ -139,12 +135,18 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(GameWindow.Pixelart.deriveFont(15f));
-        g2d.drawString("Juego de ritmo - presiona ESC para volver", 50, 50);
+        g2d.drawString("ESC para pausar", 50, 50);
         
         
         // PANTALLA DE PAUSA
         if(pausa) {
         	drawPAUSE(g2d);
+        }
+        
+        // PANTALLA DE PERDER
+        
+        if(lose) {
+        	drawLOSE(g2d);
         }
         
         // PANTALLA DE WIN
@@ -158,33 +160,50 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	
     	// Vida Jugador
     	g2d.setColor(Color.RED);
-        g2d.fillRect(GW.SX(270), GW.SY(900), barraAnchoMax, GW.SY(20));
+        g2d.fillRect(GW.SX(1300), GW.SY(270), GW.SX(20), barraAltoMax);
         g2d.setColor(Color.BLACK);
         
-        int barraVida = (int)((vida / (double)Max_vida) * barraAnchoMax);
+        int barraVida = (int)((vida / (double)Max_vida) * barraAltoMax);
         g2d.setColor(Color.GREEN);
-        int barraVida_PosX = (GW.SX(270) + barraAnchoMax) - barraVida;
-        g2d.fillRect(barraVida_PosX, GW.SY(900), barraVida, GW.SY(20));
+        int barraVida_PosY = (GW.SY(270) + barraAltoMax) - barraVida;
+        g2d.fillRect(GW.SX(1300), barraVida_PosY, GW.SX(20), barraVida);
         
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
-        g2d.drawRect(GW.SX(270), GW.SY(900), barraAnchoMax, GW.SY(20));
+        g2d.drawRect(GW.SX(1300), GW.SY(270), GW.SX(20), barraAltoMax);
         
     	
-    	// Puntaje Jugador
-    	g2d.setColor(Color.WHITE);
-    	g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
-    	g2d.drawString("Puntaje: " + puntaje, GW.SX(850), GW.SY(1000));
-    	
-    	// Mostrar combo
+        // Puntaje Jugador
+        Font font1 = GameWindow.Pixelart.deriveFont(45f);
+        g2d.setFont(font1);
+        FontMetrics fm1 = g2d.getFontMetrics(font1);
+        String textoPuntaje = "" + puntaje;
+        int anchoPuntaje = fm1.stringWidth(textoPuntaje);
         g2d.setColor(Color.WHITE);
-        g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
-        g2d.drawString("Combo: " + combo, GW.SX(1250), GW.SY(1000));
+        g2d.drawString(textoPuntaje, GW.SX(1880) - anchoPuntaje, GW.SY(100));
         
+        int textWidth;
+        // Mostrar Combo
+        if(combo != 0) {
+        	g2d.setColor(Color.WHITE);
+            Font font = GameWindow.Pixelart.deriveFont(40f);
+            g2d.setFont(font);
+
+            // Centrar Texto
+            FontMetrics fm = g2d.getFontMetrics(font);
+            String textoCombo = "" + combo;
+            textWidth = fm.stringWidth(textoCombo);
+            g2d.drawString(textoCombo, GW.SX(955) - textWidth / 2, GW.SY(500));
+        }
+        
+
         // Mostrar porcentaje
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
-        g2d.drawString("Precisión: " + getAccuracyPercentage() + "%", GW.SX(450), GW.SY(1000));
+        Font font3 = GameWindow.Pixelart.deriveFont(45f);
+        g2d.setFont(font3);
+        FontMetrics fm3 = g2d.getFontMetrics(font3);
+        String textoPorcentaje = getAccuracyPercentage() + "%";
+        int anchoPorcentaje = fm3.stringWidth(textoPorcentaje);
+        g2d.drawString(textoPorcentaje, GW.SX(1880) - anchoPorcentaje, GW.SY(200));
 
         // Mostrar texto del hit
         if (!lastHitText.isEmpty() && System.currentTimeMillis() - hitDisplayTime < HIT_TEXT_DURATION) {
@@ -199,8 +218,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	}
             
             g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
-            int textWidth = g2d.getFontMetrics().stringWidth(lastHitText);
-            g2d.drawString(lastHitText, GW.SX(1475 - textWidth), GW.SY(400));
+            textWidth = g2d.getFontMetrics().stringWidth(lastHitText);
+            g2d.drawString(lastHitText, GW.SX(955) - textWidth / 2, GW.SY(600));
         }
     }
     
@@ -273,7 +292,6 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.setColor(new Color(0,0,0,150));
     	g2d.fillRect(0, 0, getWidth(), getHeight());
     	
-    	
     	g2d.setColor(Color.WHITE);
         g2d.setFont(GameWindow.Pixelart.deriveFont(80f));
         FontMetrics fm = g2d.getFontMetrics();
@@ -303,6 +321,39 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         
     }
     
+    public void drawLOSE(Graphics2D g2d) {
+    	// Oscurecer fondo
+    	g2d.setColor(new Color(0,0,0,150));
+    	g2d.fillRect(0, 0, getWidth(), getHeight());
+    	
+    	g2d.setColor(Color.WHITE);
+        g2d.setFont(GameWindow.Pixelart.deriveFont(80f));
+        FontMetrics fm = g2d.getFontMetrics();
+        String title = "PERDISTE";
+        int titleX = (getWidth() - fm.stringWidth(title)) / 2;
+        g2d.drawString(title, titleX, GW.SY(350));
+        
+     // Opciones
+        g2d.setFont(GameWindow.Pixelart.deriveFont(55f));
+        FontMetrics optionMetrics = g2d.getFontMetrics();
+        int startY = GW.SY(600);
+        int spacing = GW.SY(100);
+
+        for (int i = 0; i < loseOptions.length; i++) {
+            String option = loseOptions[i];
+            int optionX = (getWidth() - optionMetrics.stringWidth(option)) / 2;
+            int optionY = startY + (i * spacing);
+
+            if (i == selectedLoseOption) {
+                g2d.setColor(Color.YELLOW);
+                g2d.drawString("> " + option + " <", optionX - 50, optionY);
+            } else {
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(option, optionX, optionY);
+            }
+        }
+    }
+    
     // Calcular porcentaje
     
     public double getAccuracyPercentage() {
@@ -326,9 +377,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     private void checkHit(int column) {
         int hitY = GW.SY(150);         
-        int WindowPete = GW.SY(150);
-        int WindowBue = GW.SY(85);
-        int WindowAura = GW.SY(60);
+        int WindowPete = GW.SY(200);
+        int WindowBue = GW.SY(100);
+        int WindowAura = GW.SY(65);
         int WindowSigma = GW.SY(35);
         
         int SumaV;
@@ -387,8 +438,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
     
     private int getColumnFromX(int x) {
-        int baseX = GW.SX(1250); // donde arranca la primera columna del jugador
-        int spacing = GW.SX(125); // distancia entre columnas
+        int baseX = GW.SX(685); // donde arranca la primera columna del jugador
+        int spacing = GW.SX(150); // distancia entre columnas
         for (int i = 0; i < 4; i++) {
             int colX = baseX + i * spacing;
             if (Math.abs(x - colX) < spacing / 2) {
@@ -406,7 +457,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
                 return;
-        	} else {
+        	} else if(!lose){
         		pausa = !pausa;
         	}
             
@@ -429,6 +480,25 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                     break;
             }
             return;
+        }
+        
+        if(lose) {
+        	switch(keyCode) {
+        		case KeyEvent.VK_UP:
+        			selectedLoseOption = (selectedLoseOption - 1 + loseOptions.length) % loseOptions.length;
+        			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        			repaint();
+        			break;
+        		case KeyEvent.VK_DOWN:
+        			selectedLoseOption = (selectedLoseOption + 1) % loseOptions.length;
+        			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        			repaint();
+        			break;
+        		case KeyEvent.VK_ENTER:
+        			handleLoseSelection();
+        			break;
+        	}
+        	return;
         }
         
         int column = -1;
@@ -475,10 +545,24 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 pausa = false;
                 break;
             case 1: // Reiniciar
-            	gameWindow.startRitmo(level, speed); // Necesitás crear este método en GameWindow
+            	gameWindow.startRitmo(level, speed);
                 break;
-            case 2: // Salir
+            case 2:
+            	gameWindow.settingsGame();
+            	break;
+            case 3: // Salir
                 gameWindow.startGame(); // volver al RPG
+                break;
+        }
+    }
+    
+    private void handleLoseSelection() {
+        switch (selectedLoseOption) {
+            case 0: // Reintentar
+            	gameWindow.startRitmo(level, speed);
+                break;
+            case 1: // Salir
+            	gameWindow.startGame();
                 break;
         }
     }

@@ -57,8 +57,8 @@ public class NPC {
 		
 	}
 	
-	public void drawInteractive(Graphics2D g2d) {
-		if(interactive) {
+	public void drawInteractive(Graphics2D g2d, String tecla) {
+	    if(interactive) {
 	        g2d.setColor(new Color(0,0,0,125));
 	        g2d.fillRect((int)x - (int)panel.CameraX + size/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
 	        
@@ -68,9 +68,8 @@ public class NPC {
 	        g2d.drawRect((int)x - (int)panel.CameraX + size/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
 	        
 	        g2d.setFont(GameWindow.Pixelart.deriveFont(20f));
-	        g2d.drawString("E",(int)x - (int)panel.CameraX + size/2 - 7, (int)y - (int)panel.CameraY - 40);
-		}
-		
+	        g2d.drawString(tecla, (int)x - (int)panel.CameraX + size/2 - 7, (int)y - (int)panel.CameraY - 40);
+	    }
 	}
 	
 	public Rectangle getBounds() {

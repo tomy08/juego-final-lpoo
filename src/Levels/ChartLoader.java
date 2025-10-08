@@ -22,25 +22,18 @@ public class ChartLoader {
 
                 // marcador de finalización de un nivel
                 if (line.equals("3")) {
-                    int x = GW.SX(1000);
-                    int y = gw.scaleY(row * 80 + 1200);
+                    int x = GW.SX(10);
+                    int y = gw.scaleY(row * 100 + 1200);
                     arrows.add(new arrow(x, y, speed, true)); 
                     break;
                 }
-
 
                 String[] tokens = line.split("\\s+");
                 for (int col = 0; col < tokens.length; col++) {
                     if (tokens[col].equals("1")) {
                         int x, y;
-                        if (col < 4) {
-                            x = GW.SX(225) + col * GW.SX(125);
-                        } else if (col > 4) {
-                            x = GW.SX(1250) + (col - 5) * GW.SX(125);
-                        } else {
-                            continue;
-                        }
-                        y = gw.scaleY(row * 80 + 1200);
+                        x = GW.SX(685) + col * GW.SX(150);
+                        y = gw.scaleY(row * 100 + 1200);
                         arrows.add(new arrow(x, y, speed, false));
                     }
                 }

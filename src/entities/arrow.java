@@ -8,7 +8,7 @@ import java.awt.Rectangle;
 import main.GW;
 
 public class arrow {
-	public int size = GW.SX(80);
+	public int size = GW.SX(100);
 	private double speed;
 	public double x, y;
 	public boolean isEnd = false;

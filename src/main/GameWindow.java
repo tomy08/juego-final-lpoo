@@ -19,6 +19,7 @@ public class GameWindow extends JFrame implements KeyListener {
     private static final double ASPECT_RATIO = 16.0 / 9.0;
     
     private GameState currentState;
+    private GameState previousState;
     private MainMenu mainMenu;
     private GamePanel gamePanel;
     private GameThread gameThread;    
@@ -132,7 +133,7 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();
         requestFocus();
 
-        startGameThread(gamePanel); // ✅
+        startGameThread(gamePanel); // 
     }
     
     public void startRitmo(String levelName, int speed) {
@@ -144,19 +145,59 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();
         requestFocus();
 
-        startGameThread(levelPanel); // ✅ en vez de crear el thread directamente
+        startGameThread(levelPanel); //  en vez de crear el thread directamente
     }
     
     public void settingsGame() {
-         
-        getContentPane().removeAll();         // Quita panel anterior
-        getContentPane().add(gameSettings);   // Muestra panel de configuración
-        revalidate();                         // Actualiza layout
-        repaint();                            // Redibuja
-        gameSettings.requestFocusInWindow();  // Para recibir teclas
+        previousState = currentState;
+
+        if (gameThread != null && gameThread.isRunning()) {
+            gameThread.stopGame();
+            gameThread = null;
+        }
+
+        getContentPane().removeAll();
+        getContentPane().add(gameSettings);
+        revalidate();
+        repaint();
+        gameSettings.requestFocusInWindow();
+
         currentState = GameState.SETTINGS;
-        gameThread = null;
+        gameSettings.esperandoTecla = false;
     }
+
+    
+    public void returnFromSettings() {
+        if (previousState == GameState.RITMO && levelPanel != null) {
+            // Volver al levelPanel (modo ritmo)
+            getContentPane().removeAll();
+            getContentPane().add(levelPanel);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.RITMO;
+            
+            startGameThread(levelPanel);
+        } 
+        else if (previousState == GameState.PLAYING && gamePanel != null) {
+            getContentPane().removeAll();
+            getContentPane().add(gamePanel);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.PLAYING;
+            
+            startGameThread(gamePanel);
+        } else if (previousState == GameState.MAIN_MENU && gamePanel != null) {
+            getContentPane().removeAll();
+            getContentPane().add(mainMenu);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.MAIN_MENU;
+        }
+    }
+
     
     private void startGameThread(Updatable panel) {
         if (gameThread != null && gameThread.isRunning()) {

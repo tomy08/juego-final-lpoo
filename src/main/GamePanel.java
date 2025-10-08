@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private CollisionMap collisionMap; // Sistema de colisiones
     
     // Posiciones en el Mapa
-    private static int SCALE = 35; // Escala deseada
+    private static int SCALE = 35;
     
     // Interactuar con NPC
     public boolean interactuando = false;
@@ -55,9 +55,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador en el centro de la pantalla
-        player = new Player(4500, 4500, this);
-        NPCs.add(new NPC(4500, 4800, GW.SX(40), "Mauro", this));
-        NPCs.add(new NPC(4300, 5100, GW.SX(40), "random", this));
+        player = new Player(130 * SCALE, 130 * SCALE, this);
+        NPCs.add(new NPC(129 * SCALE, 135 * SCALE, GW.SX(40), "Mauro", this));
+        NPCs.add(new NPC(125 * SCALE, 140 * SCALE, GW.SX(40), "random", this));
         
         // Cargar el mapa de colisiones
         collisionMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
@@ -101,7 +101,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Dibujar NPCs
         for(NPC npc : NPCs) {
              npc.drawNPC(g2d);
-             npc.drawInteractive(g2d);
+             npc.drawInteractive(g2d, GameSettings.teclaInteractuar);
         }
         // Dibujar UI
         drawUI(g2d);
@@ -171,27 +171,28 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         double deltaX = 0, deltaY = 0;
         
         if(!interactuando) {
-            if (pressedKeys.contains(KeyEvent.VK_W) || pressedKeys.contains(KeyEvent.VK_UP)) {
-                deltaY = -1;
-                moving = true;
-            }
-            if (pressedKeys.contains(KeyEvent.VK_S) || pressedKeys.contains(KeyEvent.VK_DOWN)) {
-                deltaY = 1;
-                moving = true;
-            }
-            if (pressedKeys.contains(KeyEvent.VK_A) || pressedKeys.contains(KeyEvent.VK_LEFT)) {
-                deltaX = -1;
-                moving = true;
-            }
-            if (pressedKeys.contains(KeyEvent.VK_D) || pressedKeys.contains(KeyEvent.VK_RIGHT)) {
-                deltaX = 1;
-                moving = true;
-            }
-        
-            // Normalizar movimiento diagonal
-            if (deltaX != 0 && deltaY != 0) {
-                deltaX *= 0.707; // 1/sqrt(2) para mantener velocidad constante
-                deltaY *= 0.707;
+        	if (!interactuando) {
+                if (pressedKeys.contains(GameSettings.KEY_UP)) {
+                    deltaY = -1;
+                    moving = true;
+                }
+                if (pressedKeys.contains(GameSettings.KEY_DOWN)) {
+                    deltaY = 1;
+                    moving = true;
+                }
+                if (pressedKeys.contains(GameSettings.KEY_LEFT)) {
+                    deltaX = -1;
+                    moving = true;
+                }
+                if (pressedKeys.contains(GameSettings.KEY_RIGHT)) {
+                    deltaX = 1;
+                    moving = true;
+                }
+
+                if (deltaX != 0 && deltaY != 0) {
+                    deltaX *= 0.707;
+                    deltaY *= 0.707;
+                }
             }
         }
         
@@ -244,11 +245,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     public void handleKeyPress(int keyCode) {
         pressedKeys.add(keyCode);
         
-        if (keyCode == KeyEvent.VK_ESCAPE) {
+        if (keyCode == GameSettings.KEY_MENU) {
             gameWindow.backToMenu();
         }
-        
-        if (keyCode == KeyEvent.VK_E) {
+
+        if (keyCode == GameSettings.KEY_INTERACT) {
             for (NPC npc : NPCs) {
                 if (npc.interactive) {
                     interactNPC(npc);
@@ -256,29 +257,23 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 }
             }
         }
-        
-        // Seleccionar opciones al interactuar
-        if (interactuando) {
-            if (eligiendoOpcion) {
-                if (keyCode == KeyEvent.VK_LEFT) opcionSeleccionada = Math.max(0, opcionSeleccionada - 1);
-                if (keyCode == KeyEvent.VK_RIGHT) opcionSeleccionada = Math.min(opciones.length - 1, opcionSeleccionada + 1);
 
-                if (keyCode == KeyEvent.VK_ENTER) {
+        // Avanzar texto o confirmar opciones
+        if (interactuando && keyCode == GameSettings.KEY_CONFIRM) {
+            if (eligiendoOpcion) {
+                if (opcionSeleccionada >= 0 && opcionSeleccionada < opciones.length) {
                     procesarOpcion(opciones[opcionSeleccionada], currentNPC);
                 }
-                return;
-            }
-
-            if (keyCode == KeyEvent.VK_ENTER) {
+            } else {
                 if (textoActual.length() < textoCompleto.length()) {
                     textoActual = textoCompleto;
                 } else {
                     currentLine++;
                     loadCurrentLine(currentNPC);
                 }
-                return;
             }
         }
+
     }
     
     public void handleKeyRelease(int keyCode) {

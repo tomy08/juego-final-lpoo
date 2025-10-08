@@ -15,7 +15,7 @@ public class Player {
     private CollisionMap collisionMap;
     
     private long lastSound = 0;
-    private int delaySound = 300;
+    private int delaySound = 350;
     
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
