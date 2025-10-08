@@ -29,6 +29,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int vida = Max_vida/2;
     private int barraAnchoMax = GW.SX(1350);
     
+    // Efectos
     private String lastHitText = "";
     private long hitDisplayTime = 0;
     private static final long HIT_TEXT_DURATION = 600; 
@@ -42,9 +43,19 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     // Juego
     private boolean win = false;
+    private boolean pausa = false;
+    private String level;
+    private int speed;
+    
+    // Pausa
+    private String[] pauseOptions = {"Continuar", "Reiniciar", "Salir"};
+    private int selectedPauseOption = 0;
+
 
     public LevelPanel(GameWindow gw, String levelName, int speed) {
         this.gameWindow = gw;
+        this.level = levelName;
+        this.speed = speed;
         setBackground(Color.BLACK);
         setFocusable(true);
 
@@ -54,8 +65,18 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
     public void update() {
     	
+    	if(pausa) {
+    		return;
+    	}
+    	
+    	// Perder
     	if(vida <= 0) {
     		System.out.println("perdiste");
+    	}
+    	
+    	// Max Vida
+    	if(vida > Max_vida) {
+    		vida = Max_vida;
     	}
     	
         for (arrow a : arrows) {
@@ -68,7 +89,6 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
             // Si es nota de fin
             if (a.isEnd && a.y <= GW.SY(125)) {
-                System.out.println("¡Canción terminada!");
                 win = true;
                 return;
             }
@@ -122,7 +142,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         g2d.drawString("Juego de ritmo - presiona ESC para volver", 50, 50);
         
         
-        // PANTALLA DE GANAR UN MAPA
+        // PANTALLA DE PAUSA
+        if(pausa) {
+        	drawPAUSE(g2d);
+        }
+        
+        // PANTALLA DE WIN
         if(win) {
         	drawWIN(g2d);
         }
@@ -191,28 +216,21 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.drawString("PUNTUACION", GW.SX(800), GW.SY(250));
     	
     	// Imagen de la nota final
-    	
     	if(porcentajeFinal == 100) {
     		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
     	} else if (porcentajeFinal >= 95) {
     		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    		System.out.println("S");
     	} else if (porcentajeFinal >= 90) {
     		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankA.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    		System.out.println("A");
     	} else if (porcentajeFinal >= 80) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    		System.out.println("B");
+    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this); 		
     	} else if (porcentajeFinal >= 70) {
     		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankC.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    		System.out.println("C");
     	} else {
     		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankD.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    		System.out.println("D");
     	}
     	
     	// Porcentaje
-    	
     	g2d.drawString(porcentajeFinal+"%", GW.SX(600), GW.SY(700));
     	
     	// Max Combo
@@ -247,6 +265,42 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
     	g2d.setColor(Color.WHITE);
     	g2d.drawString("ESC para volver", GW.SX(800), GW.SY(880));
+    }
+    
+    private void drawPAUSE(Graphics2D g2d) {
+    	
+    	// Oscurecer fondo
+    	g2d.setColor(new Color(0,0,0,150));
+    	g2d.fillRect(0, 0, getWidth(), getHeight());
+    	
+    	
+    	g2d.setColor(Color.WHITE);
+        g2d.setFont(GameWindow.Pixelart.deriveFont(80f));
+        FontMetrics fm = g2d.getFontMetrics();
+        String title = "PAUSA";
+        int titleX = (getWidth() - fm.stringWidth(title)) / 2;
+        g2d.drawString(title, titleX, GW.SY(350));
+        
+        // Opciones
+        g2d.setFont(GameWindow.Pixelart.deriveFont(55f));
+        FontMetrics optionMetrics = g2d.getFontMetrics();
+        int startY = GW.SY(600);
+        int spacing = GW.SY(100);
+
+        for (int i = 0; i < pauseOptions.length; i++) {
+            String option = pauseOptions[i];
+            int optionX = (getWidth() - optionMetrics.stringWidth(option)) / 2;
+            int optionY = startY + (i * spacing);
+
+            if (i == selectedPauseOption) {
+                g2d.setColor(Color.YELLOW);
+                g2d.drawString("> " + option + " <", optionX - 50, optionY);
+            } else {
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(option, optionX, optionY);
+            }
+        }
+        
     }
     
     // Calcular porcentaje
@@ -321,8 +375,6 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                     // Sumar o Restar vida
                     if(vida < Max_vida) {
                     	vida += SumaV;
-                    } else {
-                    	vida = Max_vida;
                     }
 
                     hitDisplayTime = System.currentTimeMillis(); // empieza a mostrar el texto
@@ -354,10 +406,31 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
                 return;
+        	} else {
+        		pausa = !pausa;
         	}
             
         }
-
+        
+        if (pausa) {
+            switch (keyCode) {
+                case KeyEvent.VK_UP:
+                    selectedPauseOption = (selectedPauseOption - 1 + pauseOptions.length) % pauseOptions.length;
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    selectedPauseOption = (selectedPauseOption + 1) % pauseOptions.length;
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_ENTER:
+                    handlePauseSelection();
+                    break;
+            }
+            return;
+        }
+        
         int column = -1;
         if (keyCode == KeyEvent.VK_D) {
         	column = 0;
@@ -395,4 +468,19 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	columnPressed[3] = false;
         }
     }
+    
+    private void handlePauseSelection() {
+        switch (selectedPauseOption) {
+            case 0: // Continuar
+                pausa = false;
+                break;
+            case 1: // Reiniciar
+            	gameWindow.startRitmo(level, speed); // Necesitás crear este método en GameWindow
+                break;
+            case 2: // Salir
+                gameWindow.startGame(); // volver al RPG
+                break;
+        }
+    }
+    
 }
