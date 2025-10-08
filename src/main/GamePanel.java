@@ -21,6 +21,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
     
+    // Posiciones en el Mapa
+    private static int SCALE = 35; // Escala deseada
+    
     // Interactuar con NPC
     public boolean interactuando = false;
     private Properties dialogos;
@@ -52,12 +55,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador en el centro de la pantalla
-        player = new Player(GW.SX(300), GW.SY(400), this);
-        NPCs.add(new NPC(GW.SX(200), GW.SY(200), GW.SX(40), "Mauro", this));
-        NPCs.add(new NPC(GW.SX(500), GW.SY(200), GW.SX(40), "random", this));
+        player = new Player(4500, 4500, this);
+        NPCs.add(new NPC(4500, 4800, GW.SX(40), "Mauro", this));
+        NPCs.add(new NPC(4300, 5100, GW.SX(40), "random", this));
         
         // Cargar el mapa de colisiones
-        collisionMap = new CollisionMap("resources/collision_map.png");
+        collisionMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
         player.setCollisionMap(collisionMap);
         
         // Cargar Dialogos de los NPC
@@ -78,13 +81,19 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         // Dibujar mapa de colisiones de fondo
-        if (collisionMap != null && collisionMap.isLoaded()) {
-            // Dibujar la imagen del mapa ajustada a la cámara
-            g2d.drawImage(collisionMap.getImage(), 
-                         -(int)CameraX, 
-                         -(int)CameraY, 
-                         null);
+        
+
+        Image img = collisionMap.getImage();
+        if (img != null) {
+            int newW = img.getWidth(null) * SCALE;
+            int newH = img.getHeight(null) * SCALE;
+
+            g2d.drawImage(img,
+                -(int)CameraX, -(int)CameraY,
+                newW, newH,
+                null);
         }
+
         
         // Dibujar jugador
         player.draw(g2d);
