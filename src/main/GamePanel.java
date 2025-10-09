@@ -136,6 +136,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
             g2d.drawString(textoActual, GW.SX(340), GW.SY(750));
             
+            // Texto Ayuda
+            g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+            g2d.drawString(GameSettings.teclaAdelantarTexto + " >>", GW.SX(1350), GW.SY(925));
+            
             // Dibujar Opciones
             g2d.setFont(GameWindow.Pixelart.deriveFont(36f));
             if (eligiendoOpcion) {
@@ -171,7 +175,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         double deltaX = 0, deltaY = 0;
         
         if(!interactuando) {
-        	if (!interactuando) {
                 if (pressedKeys.contains(GameSettings.KEY_UP)) {
                     deltaY = -1;
                     moving = true;
@@ -193,7 +196,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                     deltaX *= 0.707;
                     deltaY *= 0.707;
                 }
-            }
         }
         
         // Interactuar con NPCs
@@ -257,10 +259,25 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 }
             }
         }
+        
+        if(interactuando && eligiendoOpcion) {
+        	switch(keyCode) {
+        		case KeyEvent.VK_LEFT:
+        			opcionSeleccionada = (opcionSeleccionada - 1 + opciones.length) % opciones.length;
+        			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        			repaint();
+        			break;
+        		case KeyEvent.VK_RIGHT:
+        			opcionSeleccionada = (opcionSeleccionada + 1) % opciones.length;
+        			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        			repaint();
+        			break;
+        	}
+        }
 
         // Avanzar texto o confirmar opciones
         if (interactuando && keyCode == GameSettings.KEY_CONFIRM) {
-            if (eligiendoOpcion) {
+            if (eligiendoOpcion && textoCompleto.equals(textoActual)) {
                 if (opcionSeleccionada >= 0 && opcionSeleccionada < opciones.length) {
                     procesarOpcion(opciones[opcionSeleccionada], currentNPC);
                 }
@@ -348,6 +365,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private void procesarOpcion(String opcion, NPC npc) {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
+            	triggerNPC("Mauro");
                 gameWindow.startRitmo("leveltest", 20);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");

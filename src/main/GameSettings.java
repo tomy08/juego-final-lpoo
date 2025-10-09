@@ -182,7 +182,7 @@ public class GameSettings extends JPanel implements KeyListener {
             case 3: return "DERECHA";
             case 4: return "INTERACTUAR";
             case 5: return "PAUSA";
-            case 6: return "ADELANTAR TEXTO";
+            case 6: return "SELECCIONAR";
             case 7: return "NOTA IZQUIERDA";
             case 8: return "NOTA ABAJO";
             case 9: return "NOTA ARRIBA";
@@ -351,7 +351,7 @@ public class GameSettings extends JPanel implements KeyListener {
                     "DERECHA: " + teclaDerecha,
                     "INTERACTUAR: " + teclaInteractuar,
                     "PAUSA: " + teclaPausa,
-                    "ADELANTAR TEXTO: " + teclaAdelantarTexto,
+                    "SELECCIONAR: " + teclaAdelantarTexto,
                     "NOTA IZQUIERDA: " + teclaNotaIzquierda,
                     "NOTA ABAJO: " + teclaNotaAbajo,
                     "NOTA ARRIBA: " + teclaNotaArriba,
@@ -361,7 +361,6 @@ public class GameSettings extends JPanel implements KeyListener {
                 return new String[] {
                     "Resolución: " + resoluciones[resolucionActual],
                     "Pantalla completa: " + (pantallaCompleta ? "Activado" : "Desactivado") ,
-                    "Sincronización vertical: " + (vsync ? "Activada" : "Desactivada")
                 };
             case "sonido":
                 return new String[] {
