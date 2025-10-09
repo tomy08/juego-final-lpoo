@@ -32,7 +32,7 @@ public class GameSettings extends JPanel implements KeyListener {
     // Estado de edición
     boolean esperandoTecla = false;
     String teclaEditando = "";
-    public boolean ignorarProximoEnter = true; // para solucionar el error del setting 
+    public boolean ignorarProximoEnter = true;
 
     
     // Configuraciones editables
@@ -45,8 +45,12 @@ public class GameSettings extends JPanel implements KeyListener {
     public static String teclaIzquierda = "A";
     public static String teclaDerecha = "D";
     public static String teclaInteractuar = "E";
-    public static String teclaPausa = "ESC";
-    public static String teclaAdelantarTexto = "ENTER";
+    public static String teclaPausa = "ESCAPE";
+    public static String teclaAdelantarTexto = "INTRO";
+    public static String teclaNotaIzquierda = "IZQUIERDA";
+    public static String teclaNotaAbajo = "ABAJO";
+    public static String teclaNotaArriba = "ARRIBA";
+    public static String teclaNotaDerecha = "DERECHA";
     
     public static int KEY_UP = KeyEvent.VK_W;
     public static int KEY_DOWN = KeyEvent.VK_S;
@@ -55,7 +59,10 @@ public class GameSettings extends JPanel implements KeyListener {
     public static int KEY_INTERACT = KeyEvent.VK_E;
     public static int KEY_MENU = KeyEvent.VK_ESCAPE;
     public static int KEY_CONFIRM = KeyEvent.VK_ENTER;
-
+    public static int KEY_NLEFT = KeyEvent.VK_LEFT;
+    public static int KEY_NDOWN = KeyEvent.VK_DOWN;
+    public static int KEY_NUP = KeyEvent.VK_UP;
+    public static int KEY_NRIGHT = KeyEvent.VK_RIGHT;
 
 
     
@@ -82,72 +89,36 @@ public class GameSettings extends JPanel implements KeyListener {
         // Añadir KeyListener
         addKeyListener(this);
 
-        // Key binding ESC
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(KeyStroke.getKeyStroke("ESCAPE"), "backToMenu");
-        getActionMap().put("backToMenu", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla) {
-                	GameWindow.instance.returnFromSettings();
-                }
-            }
-        });
-        
-     // Key binding para cambiar sección a la izquierda (Q)
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(KeyStroke.getKeyStroke("pressed Q"), "seccionAnterior");
-        getActionMap().put("seccionAnterior", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla) {
-                    cambiarSeccion(-1);
-                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                }
-            }
-        });
-
-        // Key binding para cambiar sección a la derecha (E)
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(KeyStroke.getKeyStroke("pressed E"), "seccionSiguiente");
-        getActionMap().put("seccionSiguiente", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla) {
-                    cambiarSeccion(1);
-                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                }
-            }
-        });
-
-
         // Key binding para mover selección hacia arriba
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(KeyStroke.getKeyStroke("UP"), "seleccionArriba");
+        	.put(KeyStroke.getKeyStroke("UP"), "seleccionArriba");
         getActionMap().put("seleccionArriba", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla) {
-                    int maxIndex = getOptionsArray().length - 1;
-                    opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
-                    repaint();
-                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                }
-            }
+        	@Override
+        	public void actionPerformed(java.awt.event.ActionEvent e) {
+        		if (!esperandoTecla) {
+        			int maxIndex = getOptionsArray().length - 1;
+        			opcionSeleccionada = (opcionSeleccionada <= 0) ? maxIndex : opcionSeleccionada - 1;
+        			actualizarScroll(); // <-- AÑADIR ESTA LÍNEA
+        			repaint();
+        			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        		}
+        	}
         });
 
         // Key binding para mover selección hacia abajo
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-            .put(KeyStroke.getKeyStroke("DOWN"), "seleccionAbajo");
+         	.put(KeyStroke.getKeyStroke("DOWN"), "seleccionAbajo");
         getActionMap().put("seleccionAbajo", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!esperandoTecla) {
-                    int maxIndex = getOptionsArray().length - 1;
-                    opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
-                    repaint();
-                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                }
-            }
+        	@Override
+        	public void actionPerformed(java.awt.event.ActionEvent e) {
+        		if (!esperandoTecla) {
+        			int maxIndex = getOptionsArray().length - 1;
+        			opcionSeleccionada = (opcionSeleccionada >= maxIndex) ? 0 : opcionSeleccionada + 1;
+                 	actualizarScroll(); // <-- AÑADIR ESTA LÍNEA
+                 	repaint();
+                 	GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        		}
+        	}
         });
         
         // Key binding para LEFT
@@ -175,29 +146,6 @@ public class GameSettings extends JPanel implements KeyListener {
                 }
             }
         });
-        
-        // Key binding para ENTER
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-        .put(KeyStroke.getKeyStroke("ENTER"), "editarTecla");
-    getActionMap().put("editarTecla", new AbstractAction() {
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-            // 🔹 ignorar el ENTER que abrió settings
-            if (ignorarProximoEnter) {
-                ignorarProximoEnter = false;
-                return;
-            }
-
-            if (seccionActiva.equals("teclas") && opcionSeleccionada < 7) {
-                esperandoTecla = true;
-                teclaEditando = getTeclaEditandoNombre();
-                GameWindow.reproducirSonido("resources/sounds/interact.wav");
-                repaint();
-            }
-        }
-    });
-
-        
 
         // Crear botones
         btnTeclas = crearBoton("Teclas", e -> {
@@ -235,6 +183,10 @@ public class GameSettings extends JPanel implements KeyListener {
             case 4: return "INTERACTUAR";
             case 5: return "PAUSA";
             case 6: return "ADELANTAR TEXTO";
+            case 7: return "NOTA IZQUIERDA";
+            case 8: return "NOTA ABAJO";
+            case 9: return "NOTA ARRIBA";
+            case 10: return "NOTA DERECHA";
             default: return "";
         }
     }
@@ -275,33 +227,103 @@ public class GameSettings extends JPanel implements KeyListener {
         repaint();
     }
     
-    @Override
-    public void keyTyped(KeyEvent e) {}
+    private void actualizarScroll() {
+        int height = getHeight();
+        
+        int rectHeight = (int)(height * 0.6);
+        int rectY = (height - rectHeight) / 2;
+        
+        int baseY = rectY + (int)(height * 0.05); 
+        int spacing = (int)(height * 0.07);
+        
+        int selectedY = baseY + 60 + opcionSeleccionada * spacing;
+        int lineHeight = (int)(height * 0.04); 
+        
+        int visibleTop = rectY + 200; 
+        
+        int visibleBottom = rectY + rectHeight - lineHeight; 
+
+        // Si la opción seleccionada está por encima del límite visible
+        if (selectedY - contentOffsetY < visibleTop) {
+            // Ajustar el scroll para que la opción aparezca en la parte superior del marco
+            contentOffsetY = selectedY - visibleTop;
+        } 
+        // Si la opción seleccionada está por debajo del límite visible
+        else if (selectedY + lineHeight - contentOffsetY > visibleBottom) {
+            // Ajustar el scroll para que la opción aparezca en la parte inferior del marco
+            contentOffsetY = selectedY + lineHeight - visibleBottom;
+        }
+        
+        // Asegurar que contentOffsetY nunca sea negativo
+        if (contentOffsetY < 0) {
+            contentOffsetY = 0;
+        }
+        
+        // Opcional: Limitar el scroll al final del contenido
+        int totalOptionsHeight = getOptionsArray().length * spacing + 60;
+        if (totalOptionsHeight < rectHeight) {
+            // Si el contenido es menor que el marco, no hay scroll
+            contentOffsetY = 0;
+        } else {
+            // Límite máximo de scroll (para que el último elemento se vea)
+            int maxScroll = totalOptionsHeight - rectHeight + (int)(height * 0.05); // Un pequeño margen
+            if (contentOffsetY > maxScroll) {
+                contentOffsetY = maxScroll;
+            }
+        }
+    }
     
     @Override
+    public void keyTyped(KeyEvent e) {}
+
+ // GameSettings.java
+
+    @Override
     public void keyPressed(KeyEvent e) {
-    	if (esperandoTecla) {
-    	    int keyCode = e.getKeyCode();
-    	    String nuevaTecla = KeyEvent.getKeyText(keyCode).toUpperCase();
+        if (esperandoTecla) {
+            int keyCode = e.getKeyCode();
+            String nuevaTecla = KeyEvent.getKeyText(keyCode).toUpperCase();
 
-    	    switch (opcionSeleccionada) {
-    	        case 0: teclaArriba = nuevaTecla; KEY_UP = keyCode; break;
-    	        case 1: teclaAbajo = nuevaTecla; KEY_DOWN = keyCode; break;
-    	        case 2: teclaIzquierda = nuevaTecla; KEY_LEFT = keyCode; break;
-    	        case 3: teclaDerecha = nuevaTecla; KEY_RIGHT = keyCode; break;
-    	        case 4: teclaInteractuar = nuevaTecla; KEY_INTERACT = keyCode; break;
-    	        case 5: teclaPausa = nuevaTecla; KEY_MENU = keyCode; break;
-    	        case 6: teclaAdelantarTexto = nuevaTecla; KEY_CONFIRM = keyCode; break;
-    	    }
+            switch (opcionSeleccionada) {
+                case 0: teclaArriba = nuevaTecla; KEY_UP = keyCode; break;
+                case 1: teclaAbajo = nuevaTecla; KEY_DOWN = keyCode; break;
+                case 2: teclaIzquierda = nuevaTecla; KEY_LEFT = keyCode; break;
+                case 3: teclaDerecha = nuevaTecla; KEY_RIGHT = keyCode; break;
+                case 4: teclaInteractuar = nuevaTecla; KEY_INTERACT = keyCode; break;
+                case 5: teclaPausa = nuevaTecla; KEY_MENU = keyCode; break;
+                case 6: teclaAdelantarTexto = nuevaTecla; KEY_CONFIRM = keyCode; break;
+                case 7: teclaNotaIzquierda = nuevaTecla; KEY_NLEFT = keyCode; break;
+                case 8: teclaNotaAbajo = nuevaTecla; KEY_NDOWN = keyCode; break;
+                case 9: teclaNotaArriba = nuevaTecla; KEY_NUP = keyCode; break;
+                case 10: teclaNotaDerecha = nuevaTecla; KEY_NRIGHT = keyCode; break;
+            }
 
-    	    esperandoTecla = false;
-    	    teclaEditando = "";
-    	    GameWindow.reproducirSonido("resources/sounds/interact.wav");
-    	    repaint();
-    	}
+            esperandoTecla = false;
+            teclaEditando = "";
+            GameWindow.reproducirSonido("resources/sounds/interact.wav");
+            repaint();
+        } else {
+            // Manejar teclas de navegación y control de la configuración
+            int keyCode = e.getKeyCode();
 
+            if (keyCode == KeyEvent.VK_ESCAPE) {
+                GameWindow.instance.returnFromSettings();
+            } else if (keyCode == KeyEvent.VK_Q) {
+                cambiarSeccion(-1);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+            } else if (keyCode == KeyEvent.VK_E) {
+                cambiarSeccion(1);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+            } else if (keyCode == KeyEvent.VK_ENTER) {
+                if (seccionActiva.equals("teclas") && opcionSeleccionada < 11) {
+                    esperandoTecla = true;
+                    teclaEditando = getTeclaEditandoNombre();
+                    GameWindow.reproducirSonido("resources/sounds/interact.wav");
+                    repaint();
+                }
+            }
+        }
     }
-
     
     @Override
     public void keyReleased(KeyEvent e) {}
@@ -329,7 +351,11 @@ public class GameSettings extends JPanel implements KeyListener {
                     "DERECHA: " + teclaDerecha,
                     "INTERACTUAR: " + teclaInteractuar,
                     "PAUSA: " + teclaPausa,
-                    "ADELANTAR TEXTO: " + teclaAdelantarTexto
+                    "ADELANTAR TEXTO: " + teclaAdelantarTexto,
+                    "NOTA IZQUIERDA: " + teclaNotaIzquierda,
+                    "NOTA ABAJO: " + teclaNotaAbajo,
+                    "NOTA ARRIBA: " + teclaNotaArriba,
+                    "NOTA DERECHA: " + teclaNotaDerecha
                 };
             case "pantalla":
                 return new String[] {

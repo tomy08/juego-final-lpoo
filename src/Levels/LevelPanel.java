@@ -2,6 +2,7 @@ package Levels;
 
 import entities.arrow;
 import main.GW;
+import main.GameSettings;
 import main.GameThread;
 import main.GameWindow;
 import main.GameThread.Updatable;
@@ -49,7 +50,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int speed;
     
     // Pausa
-    private String[] pauseOptions = {"Continuar", "Reiniciar", "Configuracion", "Salir"};
+    private String[] pauseOptions = {"Continuar", "Reiniciar", "Settings", "Salir"};
     private int selectedPauseOption = 0;
 
     // Perder
@@ -198,12 +199,27 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         
 
         // Mostrar porcentaje
+        Image image = percentageToRank(getAccuracyPercentage());
         Font font3 = GameWindow.Pixelart.deriveFont(45f);
         g2d.setFont(font3);
         FontMetrics fm3 = g2d.getFontMetrics(font3);
         String textoPorcentaje = getAccuracyPercentage() + "%";
         int anchoPorcentaje = fm3.stringWidth(textoPorcentaje);
         g2d.drawString(textoPorcentaje, GW.SX(1880) - anchoPorcentaje, GW.SY(200));
+        g2d.drawImage(image, GW.SX(1625), GW.SY(150), GW.SX(60), GW.SY(60), this);
+        
+        // Contadores
+        g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+        g2d.setColor(new Color(200,0,255));
+        g2d.drawString("SIGMA: " + sigmaCount, GW.SX(50), GW.SY(450));
+        g2d.setColor(new Color(205,205,50));
+        g2d.drawString("Aura: " + auraCount, GW.SX(50), GW.SY(500));
+        g2d.setColor(new Color(50,200,50));
+        g2d.drawString("Bue: " + bueCount, GW.SX(50), GW.SY(550));
+        g2d.setColor(new Color(120, 0, 0));
+        g2d.drawString("Pete: " + peteCount, GW.SX(50), GW.SY(600));
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Miss: " + missCount, GW.SX(50), GW.SY(650));
 
         // Mostrar texto del hit
         if (!lastHitText.isEmpty() && System.currentTimeMillis() - hitDisplayTime < HIT_TEXT_DURATION) {
@@ -235,19 +251,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.drawString("PUNTUACION", GW.SX(800), GW.SY(250));
     	
     	// Imagen de la nota final
-    	if(porcentajeFinal == 100) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    	} else if (porcentajeFinal >= 95) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankS.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    	} else if (porcentajeFinal >= 90) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankA.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    	} else if (porcentajeFinal >= 80) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this); 		
-    	} else if (porcentajeFinal >= 70) {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankC.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    	} else {
-    		g2d.drawImage(new ImageIcon("resources/Sprites/rankings/rankD.png").getImage(), GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
-    	}
+    	Image image = percentageToRank(porcentajeFinal);
+    	g2d.drawImage(image, GW.SX(550), GW.SY(300), GW.SX(300), GW.SY(300), this);
     	
     	// Porcentaje
     	g2d.drawString(porcentajeFinal+"%", GW.SX(600), GW.SY(700));
@@ -363,6 +368,24 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         double scoreSum = sigmaCount * 100 + auraCount * 90 + bueCount * 50 + peteCount * 20 + missCount * 0;
         double percentage = scoreSum / totalHits;
         return Math.round(percentage * 100.0) / 100.0; // redondear a 2 decimales
+    }
+    
+    public Image percentageToRank(double percentage) {
+    	
+    	if(percentage == 100) {
+    		return new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage();
+    	} else if (percentage >= 95) {
+    		return new ImageIcon("resources/Sprites/rankings/rankS.png").getImage();
+    	} else if (percentage >= 90) {
+    		return new ImageIcon("resources/Sprites/rankings/rankA.png").getImage();
+    	} else if (percentage >= 80) {
+    		return new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(); 		
+    	} else if (percentage >= 70) {
+    		return new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
+    	} else {
+    		return new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
+    	}
+    	
     }
     
     public double porcentaje(int numero, int total) {
@@ -502,19 +525,19 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
         
         int column = -1;
-        if (keyCode == KeyEvent.VK_D) {
+        if (keyCode == GameSettings.KEY_NLEFT) {
         	column = 0;
         	columnPressed[0] = true;
         }
-        else if (keyCode == KeyEvent.VK_F) {
+        else if (keyCode == GameSettings.KEY_NDOWN) {
         	column = 1;
         	columnPressed[1] = true;
         }
-        else if (keyCode == KeyEvent.VK_J) {
+        else if (keyCode == GameSettings.KEY_NUP) {
         	column = 2;
         	columnPressed[2] = true;
         }
-        else if (keyCode == KeyEvent.VK_K) {
+        else if (keyCode == GameSettings.KEY_NRIGHT) {
         	column = 3;
         	columnPressed[3] = true;
         }
@@ -525,16 +548,16 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     }
 
     public void handleKeyRelease(int keyCode) {
-    	if (keyCode == KeyEvent.VK_D) {
+    	if (keyCode == GameSettings.KEY_NLEFT) {
         	columnPressed[0] = false;
         }
-        else if (keyCode == KeyEvent.VK_F) {
+        else if (keyCode == GameSettings.KEY_NDOWN) {
         	columnPressed[1] = false;
         }
-        else if (keyCode == KeyEvent.VK_J) {
+        else if (keyCode == GameSettings.KEY_NUP) {
         	columnPressed[2] = false;
         }
-        else if (keyCode == KeyEvent.VK_K) {
+        else if (keyCode == GameSettings.KEY_NRIGHT) {
         	columnPressed[3] = false;
         }
     }

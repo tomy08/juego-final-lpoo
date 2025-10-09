@@ -133,7 +133,7 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();
         requestFocus();
 
-        startGameThread(gamePanel); // 
+        startGameThread(gamePanel);
     }
     
     public void startRitmo(String levelName, int speed) {
@@ -162,8 +162,10 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();
         gameSettings.requestFocusInWindow();
 
+        // Resetear estados
         currentState = GameState.SETTINGS;
         gameSettings.esperandoTecla = false;
+        gameSettings.ignorarProximoEnter = true;
     }
 
     

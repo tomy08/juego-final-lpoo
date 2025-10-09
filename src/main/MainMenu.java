@@ -94,7 +94,6 @@ public class MainMenu extends JPanel {
                 break;
             case 1: // SETTINGS
                 gameWindow.settingsGame();
-                
                 break;
                 
             case 2: // EXIT
