@@ -24,7 +24,7 @@ public class ChartLoader {
                 if (line.equals("3")) {
                     int x = GW.SX(10);
                     int y = gw.scaleY(row * 100 + 1200);
-                    arrows.add(new arrow(x, y, speed, true)); 
+                    arrows.add(new arrow(x, y, speed, true, false)); 
                     break;
                 }
 
@@ -34,7 +34,12 @@ public class ChartLoader {
                         int x, y;
                         x = GW.SX(685) + col * GW.SX(150);
                         y = gw.scaleY(row * 100 + 1200);
-                        arrows.add(new arrow(x, y, speed, false));
+                        arrows.add(new arrow(x, y, speed, false, false));
+                    } else if (tokens[col].equals("2")) {
+                        int x, y;
+                        x = GW.SX(685) + col * GW.SX(150);
+                        y = gw.scaleY(row * 100 + 1200);
+                        arrows.add(new arrow(x, y, speed, false, true));
                     }
                 }
                 row++;

@@ -20,6 +20,16 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     private boolean[] columnPressed = new boolean[4];
     
+    // Colores LNs
+ // Colores LNs
+    public Color[] colors = {
+        new Color(255, 0, 0, 125),    // Rojo
+        new Color(0, 255, 0, 125),    // Verde
+        new Color(0, 0, 255, 125),    // Azul
+        new Color(255, 255, 0, 125)   // Amarillo
+    };
+
+    
     // Estadísticas
     private int puntaje = 0;
     private int combo = 0;
@@ -67,6 +77,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
         
         arrows = ChartLoader.loadChart(new File("resources/Levels/"+levelName+".txt"), gw, true, GW.SQ(speed));
+        for (arrow a : arrows) {
+        	if(a.Long) {
+            	a.color = colors[getColumnFromX((int)a.x)];
+            } else if(!a.isEnd) {
+            	a.image = new ImageIcon("resources/Sprites/Ritmo/Nota"+(getColumnFromX((int)a.x)+1)+".png").getImage();
+            }
+        }
     }
 
     public void update() {
@@ -87,6 +104,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	
         for (arrow a : arrows) {
             a.move();
+            
         }
         
         // Desaparecer si se van
@@ -103,8 +121,16 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             if (a.y + a.size < 0) {
                 arrows.remove(i);
                 combo = 0;
-                vida -= 3;
+                vida -= 5;
                 missCount++;
+            }
+            
+            // Nota larga
+            if(a.Long && a.y <= GW.SY(125) && columnPressed[getColumnFromX((int)a.x)]) {
+            	arrows.remove(i);
+            	combo++;
+            	vida += 1;
+            	puntaje += 25;
             }
         }
         
@@ -115,21 +141,42 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        // Fondo
+        g2d.setColor(new Color(90,90,90));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
         
+        // Fondo transparente
+        g2d.setColor(new Color(0,0,0,125));
+        g2d.fillRect(GW.SX(650), 0, GW.SX(620), getHeight());
         // Teclas Jugador
     	int posX = GW.SX(685);
     	for(int i = 0; i<4; i++) {
-    		g2d.setColor(new Color(135,135,135,125));
+    		
     		if(columnPressed[i]) {
-    			g2d.setColor(new Color(200,200,200,125));
+    			g2d.drawImage(new ImageIcon("resources/Sprites/Ritmo/tecla"+(i+1)+"Press.png").getImage(),
+        				posX,
+        				GW.SY(125),
+        				GW.SX(100),
+        				GW.SY(100),
+        				this);
+    		} else {
+    			g2d.drawImage(new ImageIcon("resources/Sprites/Ritmo/tecla"+(i+1)+".png").getImage(),
+        				posX,
+        				GW.SY(125),
+        				GW.SX(100),
+        				GW.SY(100),
+        				this);
     		}
-    		g2d.fillRect(posX, GW.SY(125), GW.SX(100), GW.SY(100));
+    		
     		posX += GW.SX(150);
     	}
         
 
         for (arrow a : arrows) {
-            a.draw(g2d);
+            g2d.drawImage(a.image, (int)a.x, (int)a.y, a.size, a.size, this);
+            if(a.Long) {
+            	a.draw(g2d);
+            }
         }
         
         drawUI(g2d);
@@ -170,7 +217,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         g2d.fillRect(GW.SX(1300), barraVida_PosY, GW.SX(20), barraVida);
         
         g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(2));
+        g2d.setStroke(new BasicStroke(4));
         g2d.drawRect(GW.SX(1300), GW.SY(270), GW.SX(20), barraAltoMax);
         
     	
@@ -206,7 +253,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         String textoPorcentaje = getAccuracyPercentage() + "%";
         int anchoPorcentaje = fm3.stringWidth(textoPorcentaje);
         g2d.drawString(textoPorcentaje, GW.SX(1880) - anchoPorcentaje, GW.SY(200));
-        g2d.drawImage(image, GW.SX(1625), GW.SY(150), GW.SX(60), GW.SY(60), this);
+        g2d.drawImage(image, GW.SX(1600), GW.SY(150), GW.SX(60), GW.SY(60), this);
         
         // Contadores
         g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
@@ -439,7 +486,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "Pete";
                         puntaje += 25;
                         combo = 0; // resetear combo si pegaste mal
-                        SumaV = -2;
+                        SumaV = -8;
                     }
                     
                     if(combo > maxCombo) {
@@ -453,6 +500,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
                     hitDisplayTime = System.currentTimeMillis(); // empieza a mostrar el texto
                     arrows.remove(i);
+                    column = -1;
                     return;
                 }
             }
@@ -525,19 +573,19 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
         
         int column = -1;
-        if (keyCode == GameSettings.KEY_NLEFT) {
+        if (keyCode == GameSettings.KEY_NLEFT && !columnPressed[0]) {
         	column = 0;
         	columnPressed[0] = true;
         }
-        else if (keyCode == GameSettings.KEY_NDOWN) {
+        else if (keyCode == GameSettings.KEY_NDOWN && !columnPressed[1]) {
         	column = 1;
         	columnPressed[1] = true;
         }
-        else if (keyCode == GameSettings.KEY_NUP) {
+        else if (keyCode == GameSettings.KEY_NUP && !columnPressed[2]) {
         	column = 2;
         	columnPressed[2] = true;
         }
-        else if (keyCode == GameSettings.KEY_NRIGHT) {
+        else if (keyCode == GameSettings.KEY_NRIGHT && !columnPressed[3]) {
         	column = 3;
         	columnPressed[3] = true;
         }
