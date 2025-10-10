@@ -8,6 +8,9 @@ import main.GameWindow;
 import main.GameThread.Updatable;
 
 import javax.swing.*;
+
+import Sonidos.Musica;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -59,6 +62,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private String level;
     private int speed;
     
+    private int bpm; // Nuevo parámetro
+    
     // Pausa
     private String[] pauseOptions = {"Continuar", "Reiniciar", "Settings", "Salir"};
     private int selectedPauseOption = 0;
@@ -68,15 +73,16 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private String[] loseOptions = {"Reintentar", "Salir"};
     private int selectedLoseOption = 0;
 
-    public LevelPanel(GameWindow gw, String levelName, int speed) {
+    public LevelPanel(GameWindow gw, String levelName, int speed, int bpm) {
         this.gameWindow = gw;
         this.level = levelName;
         this.speed = speed;
+        this.bpm = bpm; // Guardar BPM
         setBackground(Color.BLACK);
         setFocusable(true);
 
-        
-        arrows = ChartLoader.loadChart(new File("resources/Levels/"+levelName+".txt"), gw, true, GW.SQ(speed));
+        Musica.reproducirMusica("resources/Music/"+levelName+".wav");
+        arrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SQ(speed), bpm);
         for (arrow a : arrows) {
         	if(a.Long) {
             	a.color = colors[getColumnFromX((int)a.x)];
@@ -90,6 +96,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	
     	if(pausa || lose) {
     		return;
+    	}
+    	
+    	if(!Musica.estaCorriendo() && !win) {
+    		Musica.reanudarMusica();
     	}
     	
     	// Perder
@@ -412,7 +422,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         int totalHits = sigmaCount + auraCount + bueCount + peteCount + missCount;
         if (totalHits == 0) return 0.0;
 
-        double scoreSum = sigmaCount * 100 + auraCount * 90 + bueCount * 50 + peteCount * 20 + missCount * 0;
+        double scoreSum = sigmaCount * 100 + auraCount * 95 + bueCount * 66 + peteCount * 25 + missCount * 0;
         double percentage = scoreSum / totalHits;
         return Math.round(percentage * 100.0) / 100.0; // redondear a 2 decimales
     }
@@ -527,9 +537,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
+        		Musica.detenerMusica();
                 return;
         	} else if(!lose){
         		pausa = !pausa;
+        		if(pausa) {
+        			Musica.pausarMusica();
+        		}
         	}
             
         }
@@ -616,7 +630,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 pausa = false;
                 break;
             case 1: // Reiniciar
-            	gameWindow.startRitmo(level, speed);
+            	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 2:
             	gameWindow.settingsGame();
@@ -630,7 +644,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void handleLoseSelection() {
         switch (selectedLoseOption) {
             case 0: // Reintentar
-            	gameWindow.startRitmo(level, speed);
+            	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 1: // Salir
             	gameWindow.startGame();

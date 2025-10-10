@@ -13,6 +13,8 @@ public class Player {
     private Color color;
     private GamePanel panel;
     private CollisionMap collisionMap;
+    public Image image;
+    public boolean facingLeft = false;
     
     private long lastSound = 0;
     private int delaySound = 350;

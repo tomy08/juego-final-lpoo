@@ -2,6 +2,7 @@ package main;
 import javax.swing.*;
 
 import Mapa.CollisionMap;
+import Sonidos.Musica;
 import entities.NPC;
 import entities.Player;
 
@@ -70,8 +71,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        
     }
     
     @Override
@@ -87,7 +86,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if (img != null) {
             int newW = img.getWidth(null) * SCALE;
             int newH = img.getHeight(null) * SCALE;
-
+            
             g2d.drawImage(img,
                 -(int)CameraX, -(int)CameraY,
                 newW, newH,
@@ -97,6 +96,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         // Dibujar jugador
         player.draw(g2d);
+        int drawX = (int)player.getX() - (int)CameraX;
+        int drawY = (int)player.getY() - (int)CameraY - player.getSize();
+        int drawW = player.getSize();
+        int drawH = player.getSize() * 2;
+        
+        if (player.facingLeft) {
+            g2d.drawImage(player.image, 
+                          drawX + drawW, drawY, 
+                          -drawW, drawH, 
+                          this);
+        } else {
+            g2d.drawImage(player.image, 
+                          drawX, drawY, 
+                          drawW, drawH, 
+                          this);
+        }
         
         // Dibujar NPCs
         for(NPC npc : NPCs) {
@@ -195,6 +210,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 if (deltaX != 0 && deltaY != 0) {
                     deltaX *= 0.707;
                     deltaY *= 0.707;
+                }
+                
+                if (moving) {
+                    if (deltaY < 0) { // Prioridad Arriba
+                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-up.png").getImage();
+                        player.facingLeft = false; // Resetear reflejo si se movía horizontalmente
+                    } else if (deltaY > 0) { // Prioridad Abajo
+                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-down.png").getImage();
+                        player.facingLeft = false;
+                    } else if (deltaX < 0) { // Izquierda
+                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
+                        player.facingLeft = true; // Establecer para reflejar
+                    } else if (deltaX > 0) { // Derecha
+                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
+                        player.facingLeft = false; // No reflejar
+                    }
                 }
         }
         
@@ -366,7 +397,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
             	triggerNPC("Mauro");
-                gameWindow.startRitmo("leveltest", 20);
+                gameWindow.startRitmo("Melody", 15, 135);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }
