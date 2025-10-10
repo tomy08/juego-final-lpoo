@@ -397,7 +397,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
             	triggerNPC("Mauro");
-                gameWindow.startRitmo("Melody", 15, 135);
+                gameWindow.startRitmo("Linzalata", 25, 222);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }

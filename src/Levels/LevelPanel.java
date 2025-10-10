@@ -14,17 +14,29 @@ import Sonidos.Musica;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class LevelPanel extends JPanel implements GameThread.Updatable {
 	
     private GameWindow gameWindow;
-    private List<arrow> arrows;
+    private java.util.concurrent.CopyOnWriteArrayList<arrow> arrows;
+    private final List<arrow> arrowsToRemove = new ArrayList<>();
     
     private boolean[] columnPressed = new boolean[4];
     
+    // Imagenes
+    private Image[] teclaImages = new Image[4];
+    private Image[] teclaPressImages = new Image[4];
+    private Image[] rankImages = new Image[6]; // Asume que tienes 6 ranks
+    
+    // Fonts
+    private final Font scoreFont = GameWindow.Pixelart.deriveFont(45f);
+    private final Font comboFont = GameWindow.Pixelart.deriveFont(40f);
+    private final Font statsFont = GameWindow.Pixelart.deriveFont(30f);
+    
     // Colores LNs
- // Colores LNs
     public Color[] colors = {
         new Color(255, 0, 0, 125),    // Rojo
         new Color(0, 255, 0, 125),    // Verde
@@ -39,7 +51,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int maxCombo = 0;
     
     // Vida
-    private int Max_vida = 50;
+    private int Max_vida = 70;
     private int vida = Max_vida/2;
     private int barraAltoMax = GW.SX(650);
     
@@ -61,8 +73,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private boolean lose = false;
     private String level;
     private int speed;
-    
-    private int bpm; // Nuevo parámetro
+    private int bpm;
     
     // Pausa
     private String[] pauseOptions = {"Continuar", "Reiniciar", "Settings", "Salir"};
@@ -80,10 +91,25 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         this.bpm = bpm; // Guardar BPM
         setBackground(Color.BLACK);
         setFocusable(true);
+        
+        // Cargar Imagenes
+        for(int i = 0; i < 4; i++) {
+            teclaImages[i] = new ImageIcon("resources/Sprites/Ritmo/tecla" + (i + 1) + ".png").getImage();
+            teclaPressImages[i] = new ImageIcon("resources/Sprites/Ritmo/tecla" + (i + 1) + "Press.png").getImage();
+        }
+        
+        rankImages[0] = new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage();
+        rankImages[1] = new ImageIcon("resources/Sprites/rankings/rankS.png").getImage();
+        rankImages[2] = new ImageIcon("resources/Sprites/rankings/rankA.png").getImage();
+        rankImages[3] = new ImageIcon("resources/Sprites/rankings/rankB.png").getImage();
+        rankImages[4] = new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
+        rankImages[5] = new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
 
         Musica.reproducirMusica("resources/Music/"+levelName+".wav");
-        arrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SQ(speed), bpm);
-        for (arrow a : arrows) {
+        List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SQ(speed), bpm);
+        this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
+        
+        for (arrow a : this.arrows) {
         	if(a.Long) {
             	a.color = colors[getColumnFromX((int)a.x)];
             } else if(!a.isEnd) {
@@ -93,58 +119,61 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     }
 
     public void update() {
-    	
-    	if(pausa || lose) {
-    		return;
-    	}
-    	
-    	if(!Musica.estaCorriendo() && !win) {
-    		Musica.reanudarMusica();
-    	}
-    	
-    	// Perder
-    	if(vida <= 0) {
-    		lose = true;
-    	}
-    	
-    	// Max Vida
-    	if(vida > Max_vida) {
-    		vida = Max_vida;
-    	}
-    	
-        for (arrow a : arrows) {
-            a.move();
-            
+        
+        if(pausa || lose) {
+            return;
         }
         
-        // Desaparecer si se van
-        for (int i = 0; i < arrows.size(); i++) {
-            arrow a = arrows.get(i);
+        if(!Musica.estaCorriendo() && !win) {
+            Musica.reanudarMusica();
+        }
+        
+        // Perder
+        if(vida <= 0) {
+            lose = true;
+        }
+        
+        // Max Vida
+        if(vida > Max_vida) {
+            vida = Max_vida;
+        }
+          
+        // Lógica de Notas
+        // Ya no usamos el Iterator de CopyOnWriteArrayList
+        
+        // Iteramos directamente y guardamos las flechas a eliminar en una lista temporal
+        arrowsToRemove.clear();
+        
+        for (arrow a : arrows) {
+            if (a == null) {
+                arrowsToRemove.add(a); 
+                continue;
+            }
+              
+            a.move();
 
-            // Si es nota del final terminar
-            if (a.isEnd && a.y <= GW.SY(125)) {
+            if(a.isEnd && a.y <= GW.SY(125)) {
                 win = true;
                 return;
             }
-            
-            // Si se pasa, desaparecer
+
             if (a.y + a.size < 0) {
-                arrows.remove(i);
+                arrowsToRemove.add(a); 
                 combo = 0;
-                vida -= 5;
+                vida -= 4;
                 missCount++;
+                continue;
             }
-            
-            // Nota larga
-            if(a.Long && a.y <= GW.SY(125) && columnPressed[getColumnFromX((int)a.x)]) {
-            	arrows.remove(i);
-            	combo++;
-            	vida += 1;
-            	puntaje += 25;
+
+            if(a.Long && a.y - a.size/2 <= GW.SY(125) && columnPressed[getColumnFromX((int)a.x)]) {
+                arrowsToRemove.add(a);
+                combo++;
+                vida += 1;
+                puntaje += 25;
             }
         }
         
-        
+        arrows.removeAll(arrowsToRemove);
     }
 
     @Override
@@ -163,30 +192,36 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	for(int i = 0; i<4; i++) {
     		
     		if(columnPressed[i]) {
-    			g2d.drawImage(new ImageIcon("resources/Sprites/Ritmo/tecla"+(i+1)+"Press.png").getImage(),
-        				posX,
-        				GW.SY(125),
-        				GW.SX(100),
-        				GW.SY(100),
-        				this);
-    		} else {
-    			g2d.drawImage(new ImageIcon("resources/Sprites/Ritmo/tecla"+(i+1)+".png").getImage(),
-        				posX,
-        				GW.SY(125),
-        				GW.SX(100),
-        				GW.SY(100),
-        				this);
-    		}
+    	        g2d.drawImage(teclaPressImages[i],
+    	            posX,
+    	            GW.SY(125),
+    	            GW.SX(100),
+    	            GW.SY(100),
+    	            this);
+    	    } else {
+    	        g2d.drawImage(teclaImages[i],
+    	            posX,
+    	            GW.SY(125),
+    	            GW.SX(100),
+    	            GW.SY(100),
+    	            this);
+    	    }
     		
     		posX += GW.SX(150);
     	}
         
 
         for (arrow a : arrows) {
-            g2d.drawImage(a.image, (int)a.x, (int)a.y, a.size, a.size, this);
-            if(a.Long) {
-            	a.draw(g2d);
-            }
+        	if(a != null ) {
+        		
+        		if(a.y < getHeight()) {
+        			 g2d.drawImage(a.image, (int)a.x, (int)a.y, a.size, a.size, this);
+                     if(a.Long) {
+                     	a.draw(g2d);
+        		}
+                     
+        	}
+}
         }
         
         drawUI(g2d);
@@ -232,9 +267,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         
     	
         // Puntaje Jugador
-        Font font1 = GameWindow.Pixelart.deriveFont(45f);
-        g2d.setFont(font1);
-        FontMetrics fm1 = g2d.getFontMetrics(font1);
+        g2d.setFont(scoreFont);
+        FontMetrics fm1 = g2d.getFontMetrics(scoreFont);
         String textoPuntaje = "" + puntaje;
         int anchoPuntaje = fm1.stringWidth(textoPuntaje);
         g2d.setColor(Color.WHITE);
@@ -244,11 +278,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         // Mostrar Combo
         if(combo != 0) {
         	g2d.setColor(Color.WHITE);
-            Font font = GameWindow.Pixelart.deriveFont(40f);
-            g2d.setFont(font);
+            g2d.setFont(comboFont);
 
             // Centrar Texto
-            FontMetrics fm = g2d.getFontMetrics(font);
+            FontMetrics fm = g2d.getFontMetrics(comboFont);
             String textoCombo = "" + combo;
             textWidth = fm.stringWidth(textoCombo);
             g2d.drawString(textoCombo, GW.SX(955) - textWidth / 2, GW.SY(500));
@@ -257,16 +290,15 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
         // Mostrar porcentaje
         Image image = percentageToRank(getAccuracyPercentage());
-        Font font3 = GameWindow.Pixelart.deriveFont(45f);
-        g2d.setFont(font3);
-        FontMetrics fm3 = g2d.getFontMetrics(font3);
+        g2d.setFont(scoreFont);
+        FontMetrics fm3 = g2d.getFontMetrics(scoreFont);
         String textoPorcentaje = getAccuracyPercentage() + "%";
         int anchoPorcentaje = fm3.stringWidth(textoPorcentaje);
         g2d.drawString(textoPorcentaje, GW.SX(1880) - anchoPorcentaje, GW.SY(200));
         g2d.drawImage(image, GW.SX(1600), GW.SY(150), GW.SX(60), GW.SY(60), this);
         
         // Contadores
-        g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+        g2d.setFont(statsFont);
         g2d.setColor(new Color(200,0,255));
         g2d.drawString("SIGMA: " + sigmaCount, GW.SX(50), GW.SY(450));
         g2d.setColor(new Color(205,205,50));
@@ -290,7 +322,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         		g2d.setColor(new Color(120, 0, 0));
         	}
             
-            g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+            g2d.setFont(statsFont);
             textWidth = g2d.getFontMetrics().stringWidth(lastHitText);
             g2d.drawString(lastHitText, GW.SX(955) - textWidth / 2, GW.SY(600));
         }
@@ -430,17 +462,17 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     public Image percentageToRank(double percentage) {
     	
     	if(percentage == 100) {
-    		return new ImageIcon("resources/Sprites/rankings/rankSS.png").getImage();
+    		return rankImages[0];
     	} else if (percentage >= 95) {
-    		return new ImageIcon("resources/Sprites/rankings/rankS.png").getImage();
+    		return rankImages[1];
     	} else if (percentage >= 90) {
-    		return new ImageIcon("resources/Sprites/rankings/rankA.png").getImage();
+    		return rankImages[2];
     	} else if (percentage >= 80) {
-    		return new ImageIcon("resources/Sprites/rankings/rankB.png").getImage(); 		
+    		return rankImages[3];	
     	} else if (percentage >= 70) {
-    		return new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
+    		return rankImages[4];
     	} else {
-    		return new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
+    		return rankImages[5];
     	}
     	
     }
@@ -459,8 +491,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         int hitY = GW.SY(150);         
         int WindowPete = GW.SY(200);
         int WindowBue = GW.SY(100);
-        int WindowAura = GW.SY(65);
-        int WindowSigma = GW.SY(35);
+        int WindowAura = GW.SY(70);
+        int WindowSigma = GW.SY(40);
         
         int SumaV;
         
@@ -476,7 +508,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "SIGMA";
                         puntaje += 200;
                         combo++;
-                        SumaV = 2;
+                        SumaV = 3;
                         
                     } else if (Math.abs(a.y - hitY) <= WindowAura) {
                     	auraCount++;
@@ -496,7 +528,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "Pete";
                         puntaje += 25;
                         combo = 0; // resetear combo si pegaste mal
-                        SumaV = -8;
+                        SumaV = -6;
                     }
                     
                     if(combo > maxCombo) {
@@ -504,7 +536,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                     }
                     
                     // Sumar o Restar vida
-                    if(vida < Max_vida) {
+                    if(vida <= Max_vida) {
                     	vida += SumaV;
                     }
 
@@ -630,6 +662,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 pausa = false;
                 break;
             case 1: // Reiniciar
+            	Musica.detenerMusica();
             	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 2:
@@ -644,6 +677,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void handleLoseSelection() {
         switch (selectedLoseOption) {
             case 0: // Reintentar
+            	Musica.detenerMusica();
             	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 1: // Salir
