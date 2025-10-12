@@ -47,6 +47,19 @@ public class CollisionMapGenerator {
         g2d.fillRect(1400, 100, 50, 600);   // Pared larga
         g2d.fillRect(1400, 600, 300, 50);   // Pared horizontal
         
+        // Dibujar zonas de teleport con diferentes IDs (según el valor del canal rojo)
+        // Teleport ID 255 (rojo más intenso) - en el centro
+        g2d.setColor(new Color(255, 0, 0));
+        g2d.fillRect(960 - 40, 540 - 40, 80, 80);
+        
+        // Teleport ID 220 (rojo medio) - arriba a la izquierda
+        g2d.setColor(new Color(220, 0, 0));
+        g2d.fillRect(200, 200, 80, 80);
+        
+        // Teleport ID 200 (rojo más tenue) - abajo a la derecha
+        g2d.setColor(new Color(200, 0, 0));
+        g2d.fillRect(1600, 800, 80, 80);
+        
         g2d.dispose();
         
         // Guardar la imagen
@@ -57,6 +70,10 @@ public class CollisionMapGenerator {
             System.out.println("✓ Mapa de colisiones generado exitosamente en: " + outputFile.getAbsolutePath());
             System.out.println("  Tamaño: " + width + "x" + height + " pixels");
             System.out.println("  Negro = Colisión, Blanco = Libre");
+            System.out.println("  Rojo = Teleport (El valor del canal R define el ID del teleport)");
+            System.out.println("    - RGB(255,0,0) = Teleport ID 255");
+            System.out.println("    - RGB(220,0,0) = Teleport ID 220");
+            System.out.println("    - RGB(200,0,0) = Teleport ID 200");
         } catch (Exception e) {
             System.err.println("Error al guardar la imagen:");
             e.printStackTrace();

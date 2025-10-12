@@ -1,6 +1,7 @@
 package Mapa;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +11,7 @@ public class CollisionMap {
     private BufferedImage collisionImage;
     private int width;
     private int height;
-    private double scaleFactor = 35.0; // Escala visual, no afecta el mapa real
-
+    private double scaleFactor = 28.0; 
     public CollisionMap(String imagePath) {
         try {
             File imageFile = new File(imagePath);
@@ -56,8 +56,119 @@ public class CollisionMap {
 
         int rgb = collisionImage.getRGB(mapX, mapY);
         Color color = new Color(rgb, true);
+        
+        // Ignorar colisión en zonas rojas (teleport)
+        if (isRedPixel(color)) {
+            return false;
+        }
+        
         int brightness = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
         return brightness < 128;
+    }
+    
+    // 🔹 Verifica si hay un teleport en la posición dada
+    public boolean isTeleportZone(int x, int y) {
+        if (collisionImage == null) return false;
+
+        // Convertir coordenadas del mundo (escaladas) a píxeles del mapa original
+        int mapX = (int)(x / scaleFactor);
+        int mapY = (int)(y / scaleFactor);
+
+        if (mapX < 0 || mapX >= collisionImage.getWidth() ||
+            mapY < 0 || mapY >= collisionImage.getHeight()) {
+            return false;
+        }
+
+        int rgb = collisionImage.getRGB(mapX, mapY);
+        Color color = new Color(rgb, true);
+        return isRedPixel(color);
+    }
+    
+    // 🔹 Obtiene el ID del teleport según el grado de rojo (0-255)
+    public int getTeleportId(int x, int y) {
+        if (collisionImage == null) return -1;
+
+        // Convertir coordenadas del mundo (escaladas) a píxeles del mapa original
+        int mapX = (int)(x / scaleFactor);
+        int mapY = (int)(y / scaleFactor);
+
+        if (mapX < 0 || mapX >= collisionImage.getWidth() ||
+            mapY < 0 || mapY >= collisionImage.getHeight()) {
+            return -1;
+        }
+
+        int rgb = collisionImage.getRGB(mapX, mapY);
+        Color color = new Color(rgb, true);
+        
+        if (isRedPixel(color)) {
+            // Retornar el valor del canal rojo como ID del teleport
+            // Esto permite tener hasta 56 teleports diferentes (200-255)
+            return color.getRed();
+        }
+        
+        return -1;
+    }
+    
+    // 🔹 Verifica si el jugador está en una zona de teleport (verifica rectángulo)
+    public boolean isTeleportZoneRect(int x, int y, int width, int height) {
+        // Verificar las 4 esquinas y el centro
+        if (isTeleportZone(x, y)) return true;
+        if (isTeleportZone(x + width - 1, y)) return true;
+        if (isTeleportZone(x, y + height - 1)) return true;
+        if (isTeleportZone(x + width - 1, y + height - 1)) return true;
+        if (isTeleportZone(x + width/2, y + height/2)) return true;
+        
+        return false;
+    }
+    
+    // 🔹 Obtiene el ID del teleport donde está el jugador (verifica rectángulo)
+    public int getTeleportIdRect(int x, int y, int width, int height) {
+        // Verificar el centro primero (más preciso)
+        int id = getTeleportId(x + width/2, y + height/2);
+        if (id != -1) return id;
+        
+        // Verificar las 4 esquinas
+        id = getTeleportId(x, y);
+        if (id != -1) return id;
+        
+        id = getTeleportId(x + width - 1, y);
+        if (id != -1) return id;
+        
+        id = getTeleportId(x, y + height - 1);
+        if (id != -1) return id;
+        
+        id = getTeleportId(x + width - 1, y + height - 1);
+        if (id != -1) return id;
+        
+        return -1;
+    }
+    
+    // 🔹 Encuentra la posición correspondiente del teleport en el otro mapa según el ID
+    public Point findTeleportDestination(int teleportId) {
+        if (collisionImage == null) return null;
+        
+        // Buscar el píxel rojo con el mismo ID en el mapa
+        for (int y = 0; y < collisionImage.getHeight(); y++) {
+            for (int x = 0; x < collisionImage.getWidth(); x++) {
+                int rgb = collisionImage.getRGB(x, y);
+                Color color = new Color(rgb, true);
+                if (isRedPixel(color) && color.getRed() == teleportId) {
+                    // Devolver la posición escalada
+                    return new Point((int)(x * scaleFactor), (int)(y * scaleFactor));
+                }
+            }
+        }
+        
+        return null; // No se encontró teleport con ese ID
+    }
+    
+    // 🔹 Verifica si un color es rojo (teleport)
+    private boolean isRedPixel(Color color) {
+        // Un píxel es considerado rojo si:
+        // - Red > 200
+        // - Green < 100
+        // - Blue < 100
+        return color.getRed() > 200 && color.getGreen() < 100 && color.getBlue() < 100;
     }
 
     public boolean hasCollisionRect(int x, int y, int width, int height) {

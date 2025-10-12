@@ -22,8 +22,15 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
     
+    // Sistema de Teleport
+    private CollisionMap plantaAltaMap;
+    private CollisionMap plantaBajaMap;
+    private boolean enPlantaAlta = true; // true = PLANTA_ALTA, false = PLANTA_BAJA
+    private boolean estaEnZonaTeleport = false;
+    private int currentTeleportId = -1; // ID del teleport actual
+    
     // Posiciones en el Mapa
-    private static int SCALE = 35;
+    private static int SCALE = 28; // Reducido en 20%
     
     // Interactuar con NPC
     public boolean interactuando = false;
@@ -60,8 +67,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         NPCs.add(new NPC(129 * SCALE, 135 * SCALE, GW.SX(40), "Mauro", this));
         NPCs.add(new NPC(125 * SCALE, 140 * SCALE, GW.SX(40), "random", this));
         
-        // Cargar el mapa de colisiones
-        collisionMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
+        // Cargar ambos mapas de colisiones
+        plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
+        plantaBajaMap = new CollisionMap("resources/Collision_Maps/PLANTA_BAJA.png");
+        
+        // Establecer mapa inicial
+        collisionMap = plantaAltaMap;
         player.setCollisionMap(collisionMap);
         
         // Cargar Dialogos de los NPC
@@ -132,6 +143,30 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Mostrar posición del jugador (para debug)
         g2d.setColor(Color.YELLOW);
         g2d.drawString("Posición: (" + (int)player.getX() + ", " + (int)player.getY() + ")", GW.SX(10), getHeight() - GW.SY(20));
+        
+        // Mostrar mapa actual
+        g2d.setColor(Color.CYAN);
+        String mapaActual = enPlantaAlta ? "PLANTA ALTA" : "PLANTA BAJA";
+        g2d.drawString("Mapa: " + mapaActual, GW.SX(10), getHeight() - GW.SY(40));
+        
+        // Mostrar ID de teleport (debug)
+        if (estaEnZonaTeleport && currentTeleportId != -1) {
+            g2d.setColor(Color.MAGENTA);
+            g2d.drawString("Teleport ID: " + currentTeleportId, GW.SX(10), getHeight() - GW.SY(60));
+        }
+        
+        // Indicador de teleport disponible
+        if (estaEnZonaTeleport && !interactuando) {
+            g2d.setColor(new Color(255, 50, 50, 200));
+            g2d.fillRect(getWidth() / 2 - GW.SX(150), GW.SY(100), GW.SX(300), GW.SY(60));
+            
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(GW.SX(3)));
+            g2d.drawRect(getWidth() / 2 - GW.SX(150), GW.SY(100), GW.SX(300), GW.SY(60));
+            
+            g2d.setFont(new Font("Arial", Font.BOLD, GW.SY(24)));
+            g2d.drawString("Presiona E para teleport", getWidth() / 2 - GW.SX(135), GW.SY(140));
+        }
         
         // Texto interactuar con NPC
         if(interactuando) {
@@ -273,6 +308,26 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             player.move(deltaX, deltaY, getWidth(), getHeight());
         }
         player.update();
+        
+        // Verificar si el jugador está en zona de teleport
+        estaEnZonaTeleport = collisionMap.isTeleportZoneRect(
+            (int)player.getX(), 
+            (int)player.getY(), 
+            player.getSize(), 
+            player.getSize()
+        );
+        
+        // Obtener el ID del teleport si está en zona de teleport
+        if (estaEnZonaTeleport) {
+            currentTeleportId = collisionMap.getTeleportIdRect(
+                (int)player.getX(), 
+                (int)player.getY(), 
+                player.getSize(), 
+                player.getSize()
+            );
+        } else {
+            currentTeleportId = -1;
+        }
     }
     
     public void handleKeyPress(int keyCode) {
@@ -280,6 +335,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         if (keyCode == GameSettings.KEY_MENU) {
             gameWindow.backToMenu();
+        }
+
+        // Tecla E para teleport
+        if (keyCode == KeyEvent.VK_E && estaEnZonaTeleport && !interactuando) {
+            realizarTeleport();
         }
 
         if (keyCode == GameSettings.KEY_INTERACT) {
@@ -406,6 +466,47 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         opciones = null;
         currentLine++;
         loadCurrentLine(currentNPC);
+    }
+    
+    /**
+     * Realiza el teleport entre PLANTA_ALTA y PLANTA_BAJA
+     */
+    private void realizarTeleport() {
+        if (currentTeleportId == -1) {
+            System.err.println("⚠ No se puede teleportar: ID de teleport inválido");
+            return;
+        }
+        
+        // Reproducir sonido de teleport
+        GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        
+        // Cambiar de mapa
+        enPlantaAlta = !enPlantaAlta;
+        
+        // Actualizar el mapa de colisiones
+        collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
+        player.setCollisionMap(collisionMap);
+        
+        // Buscar la posición de destino en el nuevo mapa con el mismo ID
+        Point destino = collisionMap.findTeleportDestination(currentTeleportId);
+        
+        if (destino != null) {
+            player.setX(destino.x);
+            player.setY(destino.y);
+            System.out.println("✓ Teleport realizado (ID: " + currentTeleportId + ") a: " + destino.x + ", " + destino.y);
+        } else {
+            System.err.println("⚠ No se encontró destino de teleport con ID " + currentTeleportId + " en el nuevo mapa");
+            // Revertir el cambio de mapa si no hay destino
+            enPlantaAlta = !enPlantaAlta;
+            collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
+            player.setCollisionMap(collisionMap);
+        }
+        
+        // Actualizar la cámara
+        player.update();
+        
+        // Forzar repaint
+        repaint();
     }
 
 }
