@@ -8,26 +8,30 @@ public class Musica {
     private static String rutaActual = null;
     private static boolean loop = false;
 
+    // Reproducir música desde un archivo
     public static void reproducirMusica(String rutaArchivo) {
-        try {
-        	
-        	 if (clip != null && clip.isRunning() && rutaArchivo.equals(rutaActual)) {
-                 return;
-             }
+        // Revisar si la música está activada globalmente
+        if (!main.GameWindow.musicaActivada) {
+            detenerMusica();
+            return;
+        }
 
-             // Si hay otra musica lo para
-             if (clip != null) {
-                 clip.stop();
-                 clip.close();
-             }
-             
-            loop = false;
+        try {
+            if (clip != null && clip.isRunning() && rutaArchivo.equals(rutaActual)) return;
+            if (clip != null) {
+                clip.stop();
+                clip.close();
+            }
+
             AudioInputStream audioInput = AudioSystem.getAudioInputStream(new File(rutaArchivo));
             clip = AudioSystem.getClip();
             clip.open(audioInput);
-            
-            clip.start();
-            
+
+            if (main.GameWindow.musicaActivada) {
+                clip.start();
+                if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
+            }
+
             rutaActual = rutaArchivo;
         } catch (Exception e) {
             System.out.println("Error al reproducir música: " + e.getMessage());
@@ -47,18 +51,42 @@ public class Musica {
     }
 
     public static void reanudarMusica() {
-        if (clip != null && !clip.isRunning()) {
+        if (clip != null && !clip.isRunning() && main.GameWindow.musicaActivada) {
             clip.start();
+            if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
         }
     }
-   
+
     public static void enableLoop() {
-    	if(clip != null) {
-    		clip.loop(Clip.LOOP_CONTINUOUSLY); // Loop para que cuando termine vuelva
-    	}
+        loop = true;
+        if (clip != null) {
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
+    }
+
+    public static void disableLoop() {
+        loop = false;
+    }
+
+    public static void setVolumen(float valor) {
+        try {
+            if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float dB = (float) (-60.0 + 60.0 * valor);
+                if (dB < control.getMinimum()) dB = control.getMinimum();
+                if (dB > control.getMaximum()) dB = control.getMaximum();
+                control.setValue(dB);
+            }
+        } catch (Exception e) {
+            System.out.println("Error al ajustar volumen: " + e.getMessage());
+        }
     }
 
     public static boolean estaCorriendo() {
         return clip != null && clip.isRunning();
+    }
+
+    public static String getRutaActual() {
+        return rutaActual;
     }
 }

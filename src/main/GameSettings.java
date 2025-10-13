@@ -45,6 +45,7 @@ public class GameSettings extends JPanel implements KeyListener {
     public static String teclaIzquierda = "A";
     public static String teclaDerecha = "D";
     public static String teclaInteractuar = "E";
+    public static String teclaInventario = "I";
     public static String teclaPausa = "ESCAPE";
     public static String teclaAdelantarTexto = "INTRO";
     public static String teclaNotaIzquierda = "IZQUIERDA";
@@ -57,6 +58,7 @@ public class GameSettings extends JPanel implements KeyListener {
     public static int KEY_LEFT = KeyEvent.VK_A;
     public static int KEY_RIGHT = KeyEvent.VK_D;
     public static int KEY_INTERACT = KeyEvent.VK_E;
+    public static int KEY_INVENTORY = KeyEvent.VK_I;
     public static int KEY_MENU = KeyEvent.VK_ESCAPE;
     public static int KEY_CONFIRM = KeyEvent.VK_ENTER;
     public static int KEY_NLEFT = KeyEvent.VK_LEFT;
@@ -152,6 +154,7 @@ public class GameSettings extends JPanel implements KeyListener {
             seccionActiva = "teclas";
             opcionSeleccionada = 0;
             esperandoTecla = false;
+            requestFocusInWindow();
             repaint();
         });
 
@@ -159,6 +162,7 @@ public class GameSettings extends JPanel implements KeyListener {
             seccionActiva = "pantalla";
             opcionSeleccionada = 0;
             esperandoTecla = false;
+            requestFocusInWindow();
             repaint();
         });
 
@@ -166,6 +170,7 @@ public class GameSettings extends JPanel implements KeyListener {
             seccionActiva = "sonido";
             opcionSeleccionada = 0;
             esperandoTecla = false;
+            requestFocusInWindow();
             repaint();
         });
 
@@ -181,12 +186,13 @@ public class GameSettings extends JPanel implements KeyListener {
             case 2: return "IZQUIERDA";
             case 3: return "DERECHA";
             case 4: return "INTERACTUAR";
-            case 5: return "PAUSA";
-            case 6: return "SELECCIONAR";
-            case 7: return "NOTA IZQUIERDA";
-            case 8: return "NOTA ABAJO";
-            case 9: return "NOTA ARRIBA";
-            case 10: return "NOTA DERECHA";
+            case 5: return "INVENTARIO";
+            case 6: return "PAUSA";
+            case 7: return "SELECCIONAR";
+            case 8: return "NOTA IZQUIERDA";
+            case 9: return "NOTA ABAJO";
+            case 10: return "NOTA ARRIBA";
+            case 11: return "NOTA DERECHA";
             default: return "";
         }
     }
@@ -210,19 +216,40 @@ public class GameSettings extends JPanel implements KeyListener {
                 break;
             case "sonido":
                 switch (opcionSeleccionada) {
-                    case 0: // Volumen
-                        volumenGeneral += direccion * 10;
-                        if (volumenGeneral < 0) volumenGeneral = 0;
-                        if (volumenGeneral > 100) volumenGeneral = 100;
-                        break;
-                    case 1: // Música
-                        musicaActivada = !musicaActivada;
-                        break;
-                    case 2: // Efectos
-                        efectosActivados = !efectosActivados;
-                        break;
+                case 0: // Volumen general
+                    volumenGeneral += direccion * 10;
+                    if (volumenGeneral < 0) volumenGeneral = 0;
+                    if (volumenGeneral > 100) volumenGeneral = 100;
+
+                    // Aplica a música
+                    Sonidos.Musica.setVolumen(volumenGeneral / 100f);
+
+                    // Aplica a efectos
+                    GameWindow.volumenGlobal = volumenGeneral / 100f;
+                    break;
+
+
+                case 1: // Música activada/desactivada
+                    musicaActivada = !musicaActivada;
+                    if (musicaActivada) {
+                        // Reanudar música de fondo
+                        Sonidos.Musica.reanudarMusica();
+                    } else {
+                        // Pausar música
+                        Sonidos.Musica.pausarMusica();
+                    }
+                    break;
+
+
+                case 2: // Efectos activados/desactivados
+                    efectosActivados = !efectosActivados;
+                    GameWindow.efectosActivados = efectosActivados; // sincronizar con GameWindow
+                    break;
+
                 }
                 break;
+
+
         }
         repaint();
     }
@@ -290,12 +317,13 @@ public class GameSettings extends JPanel implements KeyListener {
                 case 2: teclaIzquierda = nuevaTecla; KEY_LEFT = keyCode; break;
                 case 3: teclaDerecha = nuevaTecla; KEY_RIGHT = keyCode; break;
                 case 4: teclaInteractuar = nuevaTecla; KEY_INTERACT = keyCode; break;
-                case 5: teclaPausa = nuevaTecla; KEY_MENU = keyCode; break;
-                case 6: teclaAdelantarTexto = nuevaTecla; KEY_CONFIRM = keyCode; break;
-                case 7: teclaNotaIzquierda = nuevaTecla; KEY_NLEFT = keyCode; break;
-                case 8: teclaNotaAbajo = nuevaTecla; KEY_NDOWN = keyCode; break;
-                case 9: teclaNotaArriba = nuevaTecla; KEY_NUP = keyCode; break;
-                case 10: teclaNotaDerecha = nuevaTecla; KEY_NRIGHT = keyCode; break;
+                case 5: teclaInventario = nuevaTecla; KEY_INVENTORY = keyCode; break;
+                case 6: teclaPausa = nuevaTecla; KEY_MENU = keyCode; break;
+                case 7: teclaAdelantarTexto = nuevaTecla; KEY_CONFIRM = keyCode; break;
+                case 8: teclaNotaIzquierda = nuevaTecla; KEY_NLEFT = keyCode; break;
+                case 9: teclaNotaAbajo = nuevaTecla; KEY_NDOWN = keyCode; break;
+                case 10: teclaNotaArriba = nuevaTecla; KEY_NUP = keyCode; break;
+                case 11: teclaNotaDerecha = nuevaTecla; KEY_NRIGHT = keyCode; break;
             }
 
             esperandoTecla = false;
@@ -350,6 +378,7 @@ public class GameSettings extends JPanel implements KeyListener {
                     "IZQUIERDA: " + teclaIzquierda,
                     "DERECHA: " + teclaDerecha,
                     "INTERACTUAR: " + teclaInteractuar,
+                    "INVENTARIO: " + teclaInventario,
                     "PAUSA: " + teclaPausa,
                     "SELECCIONAR: " + teclaAdelantarTexto,
                     "NOTA IZQUIERDA: " + teclaNotaIzquierda,

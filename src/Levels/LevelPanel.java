@@ -105,7 +105,14 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         rankImages[4] = new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
         rankImages[5] = new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
 
-        Musica.reproducirMusica("resources/Music/"+levelName+".wav");
+        if (GameWindow.musicaActivada) {
+            Musica.reproducirMusica("resources/Music/" + levelName + ".wav");
+        } else {
+            Musica.detenerMusica();
+        }
+
+
+
         List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SQ(speed), bpm);
         this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
         
@@ -124,9 +131,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             return;
         }
         
-        if(!Musica.estaCorriendo() && !win) {
+        if (GameWindow.musicaActivada && !Musica.estaCorriendo() && !win) {
             Musica.reanudarMusica();
         }
+
         
         // Perder
         if(vida <= 0) {

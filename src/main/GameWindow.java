@@ -2,6 +2,7 @@ package main;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 
 import Levels.LevelPanel;
@@ -26,6 +27,11 @@ public class GameWindow extends JFrame implements KeyListener {
     private GameSettings gameSettings;
     private LevelPanel levelPanel;
     public static GameWindow instance;
+    public static float volumenGlobal = 1.0f; // 0.0 a 1.0
+    public static boolean efectosActivados = true;
+    public static boolean musicaActivada = true; // flag global
+
+
 
     
     public static Font Pixelart; // Font
@@ -56,15 +62,30 @@ public class GameWindow extends JFrame implements KeyListener {
     }
     
     public static void reproducirSonido(String rutaArchivo) {
+        if (!efectosActivados) return; // No reproducir si efectos desactivados
+
         try {
             AudioInputStream audioInput = AudioSystem.getAudioInputStream(new File(rutaArchivo));
             Clip clip = AudioSystem.getClip();
             clip.open(audioInput);
+
+            // Ajustar volumen según volumen global
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float dB = (float)(-60.0 + 60.0 * volumenGlobal); // volumenGlobal = 0.0 a 1.0
+                if (dB < control.getMinimum()) dB = control.getMinimum();
+                if (dB > control.getMaximum()) dB = control.getMaximum();
+                control.setValue(dB);
+            }
+
             clip.start();
         } catch (Exception e) {
             System.out.println("Error al reproducir sonido: " + e.getMessage());
         }
     }
+
+
+
     
     public static void cargar_font() {
     	try {
