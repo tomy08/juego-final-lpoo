@@ -5,6 +5,9 @@ import Mapa.CollisionMap;
 import main.GW;
 import main.GamePanel;
 import main.GameWindow;
+import entities.Inventory;
+import entities.Item;
+import entities.ItemStack;
 
 public class Player {
     private double x, y;
@@ -15,6 +18,7 @@ public class Player {
     private CollisionMap collisionMap;
     public Image image;
     public boolean facingLeft = false;
+    public Inventory inventory;
     
     private long lastSound = 0;
     private int delaySound = 350;
@@ -27,6 +31,8 @@ public class Player {
         this.panel = panel;
         this.color = Color.CYAN;
         this.collisionMap = null; // Se establecerá después
+        // Crear inventario: hotbar 9, grid 9x3 (como Minecraft simplificado)
+        this.inventory = new Inventory(9, 9, 3);
     }
     
     /**
@@ -97,6 +103,12 @@ public class Player {
     // Getters
     public Rectangle getBounds() {
     	return new Rectangle((int)x, (int)y, size, size);
+    }
+    
+    // Permitir recoger un item (devuelve lo que no pudo entrar)
+    public int pickupItem(Item item, int amount) {
+        if (item == null || amount <= 0) return amount;
+        return inventory.addItem(item, amount);
     }
     public double getX() { return x; }
     public double getY() { return y; }

@@ -62,6 +62,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private int opcionPausa = 0;
     private String[] opcionesPausa = {"CONTINUAR","SETTINGS", "VOLVER AL MENU"};
 
+    // Inventario
+    private boolean inventoryOpen = false;
+
     
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
@@ -141,6 +144,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
         // Dibujar UI
         drawUI(g2d);
+        // Dibujar hotbar (si el jugador tiene uno)
+        if (player != null && player.inventory != null) {
+            player.inventory.drawHotbar(g2d, getWidth(), getHeight(), GW.SX(48), (int)CameraX, (int)CameraY);
+            if (inventoryOpen) {
+                player.inventory.drawFullInventory(g2d, getWidth(), getHeight());
+            }
+        }
     }
     
     private void drawUI(Graphics2D g2d) {
@@ -390,6 +400,24 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             gameWindow.backToMenu();
         }
 
+        // Tecla para abrir/cerrar inventario
+        if (keyCode == GameSettings.KEY_INVENTORY) {
+            inventoryOpen = !inventoryOpen;
+            GameWindow.reproducirSonido("resources/sounds/menu.wav");
+            repaint();
+            return;
+        }
+
+        // Selección de hotbar con teclas 1-9
+        if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
+            int num = keyCode - KeyEvent.VK_1; // 0-based
+            if (player != null && player.inventory != null) {
+                player.inventory.setSelectedHotbar(num);
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                repaint();
+            }
+        }
+
         // Tecla E para teleport
         if (keyCode == KeyEvent.VK_E && estaEnZonaTeleport && !interactuando) {
             realizarTeleport();
@@ -510,7 +538,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
             	triggerNPC("Mauro");
-                gameWindow.startRitmo("Linzalata", 25, 222);
+                gameWindow.startRitmo("Linzalata", 10, 222);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }
