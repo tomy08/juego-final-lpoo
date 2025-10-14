@@ -26,10 +26,15 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     private boolean[] columnPressed = new boolean[4];
     
+    
+    // Tiempo Canción
+    private double virtualTimeMs = 0.0;      // tiempo virtual de la canción
+    private long lastUpdateNs = System.nanoTime(); // último tiempo del update
+    
     // Imagenes
     private Image[] teclaImages = new Image[4];
     private Image[] teclaPressImages = new Image[4];
-    private Image[] rankImages = new Image[6]; // Asume que tienes 6 ranks
+    private Image[] rankImages = new Image[6];
     
     // Fonts
     private final Font scoreFont = GameWindow.Pixelart.deriveFont(45f);
@@ -105,18 +110,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         rankImages[4] = new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
         rankImages[5] = new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
 
-        if (GameWindow.musicaActivada) {
-            Musica.reproducirMusica("resources/Music/" + levelName + ".wav");
-        } else {
-            Musica.detenerMusica();
-        }
-
-
-
-        List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SQ(speed), bpm);
+        Musica.reproducirMusica("resources/Music/"+levelName+".wav");
+        List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SY(speed), bpm);
         this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
         
         for (arrow a : this.arrows) {
+        	System.out.println(a.y);
         	if(a.Long) {
             	a.color = colors[getColumnFromX((int)a.x)];
             } else if(!a.isEnd) {
@@ -127,14 +126,21 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
     public void update() {
         
+    	if (!pausa && !lose) {
+            long now = System.nanoTime();
+            double deltaMs = (now - lastUpdateNs) / 1_000_000.0; // nanosegundos a milisegundos
+            virtualTimeMs += deltaMs;  // solo sumamos si no está en pausa
+            lastUpdateNs = now;
+        } else {
+            lastUpdateNs = System.nanoTime();
+        }
         if(pausa || lose) {
             return;
         }
         
-        if (GameWindow.musicaActivada && !Musica.estaCorriendo() && !win) {
+        if(!Musica.estaCorriendo() && !win) {
             Musica.reanudarMusica();
         }
-
         
         // Perder
         if(vida <= 0) {
@@ -145,20 +151,17 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         if(vida > Max_vida) {
             vida = Max_vida;
         }
-          
-        // Lógica de Notas
-        // Ya no usamos el Iterator de CopyOnWriteArrayList
         
-        // Iteramos directamente y guardamos las flechas a eliminar en una lista temporal
         arrowsToRemove.clear();
-        
         for (arrow a : arrows) {
             if (a == null) {
                 arrowsToRemove.add(a); 
                 continue;
             }
               
-            a.move();
+            
+            a.update(virtualTimeMs, GW.SY(125)); // recalcula su Y según tiempo virtual
+
 
             if(a.isEnd && a.y <= GW.SY(125)) {
                 win = true;
@@ -690,6 +693,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 break;
             case 1: // Salir
             	gameWindow.startGame();
+            	Musica.detenerMusica();
                 break;
         }
     }

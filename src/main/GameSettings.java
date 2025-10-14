@@ -150,7 +150,7 @@ public class GameSettings extends JPanel implements KeyListener {
         });
 
         // Crear botones
-        btnTeclas = crearBoton("Teclas", e -> {
+        btnTeclas = crearBoton("TECLAS", e -> {
             seccionActiva = "teclas";
             opcionSeleccionada = 0;
             esperandoTecla = false;
@@ -158,7 +158,7 @@ public class GameSettings extends JPanel implements KeyListener {
             repaint();
         });
 
-        btnPantalla = crearBoton("Pantalla", e -> {
+        btnPantalla = crearBoton("PANTALLA", e -> {
             seccionActiva = "pantalla";
             opcionSeleccionada = 0;
             esperandoTecla = false;
@@ -166,7 +166,7 @@ public class GameSettings extends JPanel implements KeyListener {
             repaint();
         });
 
-        btnSonido = crearBoton("Sonido", e -> {
+        btnSonido = crearBoton("SONIDO", e -> {
             seccionActiva = "sonido";
             opcionSeleccionada = 0;
             esperandoTecla = false;

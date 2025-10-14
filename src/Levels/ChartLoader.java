@@ -2,75 +2,52 @@ package Levels;
 
 import java.io.*;
 import java.util.*;
-
 import entities.arrow;
 import main.GW;
 import main.GameWindow;
 
 public class ChartLoader {
 
-    public static List<arrow> loadChart(File file, GameWindow gw, boolean isEnemy, double arrowSpeed, int bpm) {
+    public static List<arrow> loadChart(File file, GameWindow gw, boolean isEnemy, double arrowSpeed, double bpm) {
         List<arrow> arrows = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             int row = 0;
-            
-            // --- CONSTANTES DE JUEGO Y MÚSICA ---
-            
-            // 1. Posición Y de la zona de golpeo (escalada).
-            final int HIT_Y_SCALED = GW.SY(125); 
-            final double BASE_DISTANCE_PER_BEAT = GW.SY(38);
-            final double BASE_BPM = 120.0;
-            
-            // 4. Factor de espaciado vertical por fila (row).
-            // Asumiendo que cada 'row' representa 1/4 de beat (1/16 de nota).
-            final double BEAT_DIVISION = 4.0; 
-            
-            // --- CÁLCULO DE ESPACIADO ---
 
-            // 1. Distancia que representa un 1/4 de nota (un beat completo) ajustado por BPM.
-            // Si BPM > 120, esta distancia será menor (notas más juntas).
-            double distancePerFullBeat = BASE_DISTANCE_PER_BEAT * (BASE_BPM / bpm);
-            
-            // 2. Distancia que representa una sola ROW (1/16 de nota), escalada por la velocidad.
-            // (La distancia base de 1/16) * (El multiplicador de velocidad)
-            double distancePerRow = (distancePerFullBeat / BEAT_DIVISION) * arrowSpeed;
+            final int HIT_Y_SCALED = (int)GW.SY(125); 
+            final double BEAT_DIVISION = 4.0;
 
+            double msPerBeat = 60000.0 / bpm;
+            double msPerRow = msPerBeat / BEAT_DIVISION; 
+
+            double pixelsPerMs = GW.DSY(0.15) * arrowSpeed; // ajustar escala visual
 
             while ((line = br.readLine()) != null) {
-
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if(line.isEmpty()) continue;
 
-                // Distancia total de scroll acumulada hasta esta 'row'
-                double totalScrollDistance = row * distancePerRow;
+                double hitTimeMs = row * msPerRow;
 
-
-                if (line.equals("3")) {
+                if(line.equals("3")) { // fin del nivel
                     int x = GW.SX(10);
-                    // La posición Y inicial es HIT_Y_SCALED + la distancia total acumulada.
-                    int y = HIT_Y_SCALED + (int)totalScrollDistance; 
-                    arrows.add(new arrow(x, y, arrowSpeed, true, false)); 
+                    arrows.add(new arrow(x, HIT_Y_SCALED, pixelsPerMs, true, false, hitTimeMs));
                     break;
                 }
 
                 String[] tokens = line.split("\\s+");
-                for (int col = 0; col < tokens.length; col++) {
-                    if (tokens[col].equals("1") || tokens[col].equals("2")) {
-                        int x, y;
-                        x = GW.SX(685) + col * GW.SX(150);
-                        
-                        // La Y inicial es: Posición de Golpeo + Distancia de Scroll Necesaria.
-                        y = HIT_Y_SCALED + (int)totalScrollDistance; 
-
+                for(int col = 0; col < tokens.length; col++) {
+                    if(tokens[col].equals("1") || tokens[col].equals("2")) {
+                        int x = GW.SX(685) + col * GW.SX(150);
                         boolean isLong = tokens[col].equals("2");
-                        arrows.add(new arrow(x, y, arrowSpeed, false, isLong)); 
+
+                        arrows.add(new arrow(x, HIT_Y_SCALED, pixelsPerMs, false, isLong, hitTimeMs));
                     }
                 }
                 row++;
             }
-        } catch (IOException e) {
+
+        } catch(IOException e) {
             e.printStackTrace();
         }
 

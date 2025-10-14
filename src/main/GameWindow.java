@@ -246,7 +246,10 @@ public class GameWindow extends JFrame implements KeyListener {
     	double scale = Math.min(getWidth() / (double) ORIGINAL_WIDTH, getHeight() / (double) ORIGINAL_HEIGHT);
     	return (int)(original * scale);
     }
-
+	
+	public double DscaleY(double originalY) {
+        return (originalY * (getHeight() / (double) ORIGINAL_HEIGHT));
+    }
     
     public void exitGame() {
         if (gameThread != null) {

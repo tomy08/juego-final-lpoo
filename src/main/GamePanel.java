@@ -55,6 +55,14 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     public double CameraX = 0;
     public double CameraY = 0;
     
+    
+    //Menu de pausa
+    
+    private boolean paused = false;
+    private int opcionPausa = 0;
+    private String[] opcionesPausa = {"CONTINUAR","SETTINGS", "VOLVER AL MENU"};
+
+    
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
         setBackground(Color.DARK_GRAY);
@@ -82,6 +90,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        
     }
     
     @Override
@@ -207,9 +217,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 }
             }
         }
+        
+        if (paused) {
+            drawPauseMenu(g2d);
+        }
+
     }
     
     public void update() {
+    	
+    	if (paused) return; // No actualiza nada si está pausado
+
         // Interactuar con NPCs
         if (interactuando && textoActual.length() < textoCompleto.length()) {
             long now = System.currentTimeMillis();
@@ -333,6 +351,41 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     public void handleKeyPress(int keyCode) {
         pressedKeys.add(keyCode);
         
+        
+     
+        if (keyCode == KeyEvent.VK_ESCAPE) {
+            paused = !paused;
+            repaint();
+            return; // evita ejecutar otras acciones cuando estás pausado
+        }
+        
+     // Controles del menu de pausa
+        if (paused) {
+            if (keyCode == KeyEvent.VK_UP) {
+                opcionPausa = (opcionPausa - 1 + opcionesPausa.length) % opcionesPausa.length;
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                repaint();
+            } else if (keyCode == KeyEvent.VK_DOWN) {
+                opcionPausa = (opcionPausa + 1) % opcionesPausa.length;
+                GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                repaint();
+            } else if (keyCode == KeyEvent.VK_ENTER) {
+                if (opcionPausa == 0) { // Continuar
+                    paused = false;
+                } else if (opcionPausa == 1) { // Ir al menú de configuración
+                    gameWindow.settingsGame();
+                }
+
+                else if (opcionPausa == 2) { // Volver al menú
+                    gameWindow.backToMenu();
+                }
+                GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+                repaint();
+            }
+            return; // Evita que se siga ejecutando lógica normal
+        }
+
+
         if (keyCode == GameSettings.KEY_MENU) {
             gameWindow.backToMenu();
         }
@@ -508,5 +561,45 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Forzar repaint
         repaint();
     }
+    
+    private void drawPauseMenu(Graphics2D g2d) {
+        // Fondo semitransparente oscuro
+        g2d.setColor(new Color(0, 0, 0, 200));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        // Título
+        g2d.setFont(GameWindow.Pixelart.deriveFont(90f));
+        g2d.setColor(Color.WHITE);
+        String titulo = "PAUSA";
+        FontMetrics fmTitulo = g2d.getFontMetrics();
+        int xTitulo = (getWidth() - fmTitulo.stringWidth(titulo)) / 2;
+        int yTitulo = getHeight() / 2 - 250;
+        g2d.drawString(titulo, xTitulo, yTitulo);
+
+        // Opciones
+        g2d.setFont(GameWindow.Pixelart.deriveFont(55f));
+        FontMetrics fmOpciones = g2d.getFontMetrics();
+
+        int espacioEntreOpciones = 90;
+        int yInicial = getHeight() / 2 - 50;
+
+        for (int i = 0; i < opcionesPausa.length; i++) {
+            String opcion = opcionesPausa[i];
+            int x = (getWidth() - fmOpciones.stringWidth(opcion)) / 2;
+            int y = yInicial + i * espacioEntreOpciones;
+
+            if (i == opcionPausa) {
+                g2d.setColor(Color.YELLOW);
+                g2d.drawString("> " + opcion  + " <", x - 50, y); // Agrega el "<" a la derecha
+            } else {
+                g2d.setColor(Color.WHITE);
+                g2d.drawString(opcion, x, y);
+            }
+        }
+    }
+
+
+
+
 
 }
