@@ -1,0 +1,143 @@
+package entities;
+
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Color;
+import java.awt.Font;
+
+/**
+ * Inventario estilo Minecraft: slots, hotbar y stacks.
+ */
+public class Inventory {
+    private ItemStack[] slots; // total slots (hotbar + grid)
+    private int hotbarSize;
+    private int columns;
+    private int rows;
+    private int selectedHotbar = 0;
+
+    public Inventory(int hotbarSize, int columns, int rows) {
+        this.hotbarSize = hotbarSize;
+        this.columns = columns;
+        this.rows = rows;
+        this.slots = new ItemStack[hotbarSize + columns * rows];
+        for (int i = 0; i < slots.length; i++) slots[i] = new ItemStack(null, 0);
+    }
+
+    public int getTotalSlots() { return slots.length; }
+    public int getHotbarSize() { return hotbarSize; }
+    public int getColumns() { return columns; }
+    public int getRows() { return rows; }
+    public int getSelectedHotbar() { return selectedHotbar; }
+
+    public void setSelectedHotbar(int idx) {
+        if (idx < 0) idx = 0;
+        if (idx >= hotbarSize) idx = hotbarSize - 1;
+        this.selectedHotbar = idx;
+    }
+
+    public ItemStack getSlot(int idx) {
+        if (idx < 0 || idx >= slots.length) return null;
+        return slots[idx];
+    }
+
+    /**
+     * Intenta agregar una cantidad de un item al inventario. Devuelve la cantidad que no se pudo insertar.
+     */
+    public int addItem(Item item, int amount) {
+        if (item == null || amount <= 0) return amount;
+
+        // Primero intentar stacks existentes del mismo item
+        for (int i = 0; i < slots.length; i++) {
+            ItemStack s = slots[i];
+            if (!s.isEmpty() && s.getItem().equals(item)) {
+                amount = s.add(amount);
+                if (amount <= 0) return 0;
+            }
+        }
+
+        // Después llenar slots vacíos
+        for (int i = 0; i < slots.length; i++) {
+            ItemStack s = slots[i];
+            if (s.isEmpty()) {
+                int toPut = Math.min(item.getMaxStack(), amount);
+                slots[i] = new ItemStack(item, toPut);
+                amount -= toPut;
+                if (amount <= 0) return 0;
+            }
+        }
+
+        return amount; // lo que no cupo
+    }
+
+    /**
+     * Remueve items de un slot específico. Devuelve la cantidad removida.
+     */
+    public int removeFromSlot(int slotIndex, int amount) {
+        if (slotIndex < 0 || slotIndex >= slots.length || amount <= 0) return 0;
+        ItemStack s = slots[slotIndex];
+        if (s.isEmpty()) return 0;
+        int removed = s.remove(amount);
+        if (s.isEmpty()) slots[slotIndex] = new ItemStack(null, 0);
+        return removed;
+    }
+
+    // --- Helpers para dibujar UI ---
+    public void drawHotbar(Graphics2D g2d, int panelWidth, int panelHeight, int scale, int cameraX, int cameraY) {
+        int slotSize = scale;
+        int totalW = hotbarSize * (slotSize + 6);
+        int startX = (panelWidth - totalW) / 2;
+        int y = panelHeight - slotSize - 20;
+
+        for (int i = 0; i < hotbarSize; i++) {
+            int x = startX + i * (slotSize + 6);
+            if (i == selectedHotbar) {
+                g2d.setColor(Color.YELLOW);
+                g2d.fillRect(x-4, y-4, slotSize+8, slotSize+8);
+            }
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.fillRect(x, y, slotSize, slotSize);
+            g2d.setColor(Color.WHITE);
+            g2d.drawRect(x, y, slotSize, slotSize);
+
+            ItemStack s = slots[i];
+            if (!s.isEmpty()) {
+                Image img = s.getItem().getImage();
+                if (img != null) g2d.drawImage(img, x+4, y+4, slotSize-8, slotSize-8, null);
+                g2d.setFont(new Font("Arial", Font.BOLD, 14));
+                g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-6);
+            }
+        }
+    }
+
+    public void drawFullInventory(Graphics2D g2d, int panelWidth, int panelHeight) {
+        int slotSize = 64;
+        int padding = 8;
+        int gridW = columns * (slotSize + padding);
+        int gridH = rows * (slotSize + padding);
+        int startX = (panelWidth - gridW) / 2;
+        int startY = (panelHeight - gridH) / 2;
+
+        g2d.setColor(new Color(0,0,0,180));
+        g2d.fillRect(startX - 20, startY - 40, gridW + 40, gridH + 80);
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < columns; c++) {
+                int idx = hotbarSize + r * columns + c;
+                int x = startX + c * (slotSize + padding);
+                int y = startY + r * (slotSize + padding);
+                g2d.setColor(Color.DARK_GRAY);
+                g2d.fillRect(x, y, slotSize, slotSize);
+                g2d.setColor(Color.WHITE);
+                g2d.drawRect(x, y, slotSize, slotSize);
+
+                ItemStack s = slots[idx];
+                if (!s.isEmpty()) {
+                    Image img = s.getItem().getImage();
+                    if (img != null) g2d.drawImage(img, x+6, y+6, slotSize-12, slotSize-12, null);
+                    g2d.setFont(new Font("Arial", Font.BOLD, 16));
+                    g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-10);
+                }
+            }
+        }
+    }
+}
