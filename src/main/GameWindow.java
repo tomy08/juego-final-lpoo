@@ -2,6 +2,7 @@ package main;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 
 import Levels.LevelPanel;
@@ -19,12 +20,18 @@ public class GameWindow extends JFrame implements KeyListener {
     private static final double ASPECT_RATIO = 16.0 / 9.0;
     
     private GameState currentState;
+    private GameState previousState;
     private MainMenu mainMenu;
     private GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
     private LevelPanel levelPanel;
     public static GameWindow instance;
+    public static float volumenGlobal = 1.0f; // 0.0 a 1.0
+    public static boolean efectosActivados = true;
+    public static boolean musicaActivada = true; // flag global
+
+
 
     
     public static Font Pixelart; // Font
@@ -55,15 +62,30 @@ public class GameWindow extends JFrame implements KeyListener {
     }
     
     public static void reproducirSonido(String rutaArchivo) {
+        if (!efectosActivados) return; // No reproducir si efectos desactivados
+
         try {
             AudioInputStream audioInput = AudioSystem.getAudioInputStream(new File(rutaArchivo));
             Clip clip = AudioSystem.getClip();
             clip.open(audioInput);
+
+            // Ajustar volumen según volumen global
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float dB = (float)(-60.0 + 60.0 * volumenGlobal); // volumenGlobal = 0.0 a 1.0
+                if (dB < control.getMinimum()) dB = control.getMinimum();
+                if (dB > control.getMaximum()) dB = control.getMaximum();
+                control.setValue(dB);
+            }
+
             clip.start();
         } catch (Exception e) {
             System.out.println("Error al reproducir sonido: " + e.getMessage());
         }
     }
+
+
+
     
     public static void cargar_font() {
     	try {
@@ -132,31 +154,73 @@ public class GameWindow extends JFrame implements KeyListener {
         repaint();
         requestFocus();
 
-        startGameThread(gamePanel); // ✅
+        startGameThread(gamePanel);
     }
     
-    public void startRitmo(String levelName, int speed) {
+    public void startRitmo(String levelName, int speed, int bpm) {
         currentState = GameState.RITMO;
         getContentPane().removeAll();
-        levelPanel = new LevelPanel(this, levelName, speed);
+        levelPanel = new LevelPanel(this, levelName, speed, bpm);
         getContentPane().add(levelPanel);
         revalidate();
         repaint();
         requestFocus();
 
-        startGameThread(levelPanel); // ✅ en vez de crear el thread directamente
+        startGameThread(levelPanel); //  en vez de crear el thread directamente
     }
     
     public void settingsGame() {
-         
-        getContentPane().removeAll();         // Quita panel anterior
-        getContentPane().add(gameSettings);   // Muestra panel de configuración
-        revalidate();                         // Actualiza layout
-        repaint();                            // Redibuja
-        gameSettings.requestFocusInWindow();  // Para recibir teclas
+        previousState = currentState;
+
+        if (gameThread != null && gameThread.isRunning()) {
+            gameThread.stopGame();
+            gameThread = null;
+        }
+
+        getContentPane().removeAll();
+        getContentPane().add(gameSettings);
+        revalidate();
+        repaint();
+        gameSettings.requestFocusInWindow();
+
+        // Resetear estados
         currentState = GameState.SETTINGS;
-        gameThread = null;
+        gameSettings.esperandoTecla = false;
+        gameSettings.ignorarProximoEnter = true;
     }
+
+    
+    public void returnFromSettings() {
+        if (previousState == GameState.RITMO && levelPanel != null) {
+            // Volver al levelPanel (modo ritmo)
+            getContentPane().removeAll();
+            getContentPane().add(levelPanel);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.RITMO;
+            
+            startGameThread(levelPanel);
+        } 
+        else if (previousState == GameState.PLAYING && gamePanel != null) {
+            getContentPane().removeAll();
+            getContentPane().add(gamePanel);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.PLAYING;
+            
+            startGameThread(gamePanel);
+        } else if (previousState == GameState.MAIN_MENU && gamePanel != null) {
+            getContentPane().removeAll();
+            getContentPane().add(mainMenu);
+            revalidate();
+            repaint();
+            requestFocus();
+            currentState = GameState.MAIN_MENU;
+        }
+    }
+
     
     private void startGameThread(Updatable panel) {
         if (gameThread != null && gameThread.isRunning()) {
@@ -182,7 +246,10 @@ public class GameWindow extends JFrame implements KeyListener {
     	double scale = Math.min(getWidth() / (double) ORIGINAL_WIDTH, getHeight() / (double) ORIGINAL_HEIGHT);
     	return (int)(original * scale);
     }
-
+	
+	public double DscaleY(double originalY) {
+        return (originalY * (getHeight() / (double) ORIGINAL_HEIGHT));
+    }
     
     public void exitGame() {
         if (gameThread != null) {

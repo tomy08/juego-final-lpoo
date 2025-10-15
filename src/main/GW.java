@@ -15,4 +15,7 @@ public class GW {
     	return GameWindow.instance.scaleSquare(value);
     }
 	
+    public static double DSY(double value) {
+        return GameWindow.instance.DscaleY(value);
+    }
 }

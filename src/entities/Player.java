@@ -13,9 +13,11 @@ public class Player {
     private Color color;
     private GamePanel panel;
     private CollisionMap collisionMap;
+    public Image image;
+    public boolean facingLeft = false;
     
     private long lastSound = 0;
-    private int delaySound = 300;
+    private int delaySound = 350;
     
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
