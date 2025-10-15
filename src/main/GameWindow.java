@@ -6,6 +6,7 @@ import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 
 import Levels.LevelPanel;
+import Sonidos.Musica;
 import main.GameThread.Updatable;
 
 import java.awt.*;
@@ -153,6 +154,8 @@ public class GameWindow extends JFrame implements KeyListener {
         revalidate();
         repaint();
         requestFocus();
+        Musica.reproducirMusica("resources/Music/Fondo.wav");
+        Musica.enableLoop();
 
         startGameThread(gamePanel);
     }
@@ -250,6 +253,12 @@ public class GameWindow extends JFrame implements KeyListener {
 	public double DscaleY(double originalY) {
         return (originalY * (getHeight() / (double) ORIGINAL_HEIGHT));
     }
+	
+	// Mensaje al ganar en Ritmo
+	
+	public void SWM(String message) {
+		gamePanel.ShowWinMessage(message);
+	}
     
     public void exitGame() {
         if (gameThread != null) {

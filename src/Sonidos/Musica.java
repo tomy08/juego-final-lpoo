@@ -3,19 +3,14 @@ package Sonidos;
 import java.io.File;
 import javax.sound.sampled.*;
 
+import main.GameWindow;
+
 public class Musica {
     private static Clip clip;
     private static String rutaActual = null;
     private static boolean loop = false;
 
-    // Reproducir música desde un archivo
     public static void reproducirMusica(String rutaArchivo) {
-        // Revisar si la música está activada globalmente
-        if (!main.GameWindow.musicaActivada) {
-            detenerMusica();
-            return;
-        }
-
         try {
             if (clip != null && clip.isRunning() && rutaArchivo.equals(rutaActual)) return;
             if (clip != null) {
@@ -27,10 +22,11 @@ public class Musica {
             clip = AudioSystem.getClip();
             clip.open(audioInput);
 
-            if (main.GameWindow.musicaActivada) {
-                clip.start();
-                if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
-            }
+            // ✅ Ahora sí se aplica correctamente el volumen activo
+            setVolumen(GameWindow.volumenGlobal);
+
+            clip.start();
+            if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
 
             rutaActual = rutaArchivo;
         } catch (Exception e) {
@@ -39,7 +35,7 @@ public class Musica {
     }
 
     public static void detenerMusica() {
-        if (clip != null && clip.isRunning()) {
+        if (clip != null) {
             clip.stop();
         }
     }
@@ -51,7 +47,7 @@ public class Musica {
     }
 
     public static void reanudarMusica() {
-        if (clip != null && !clip.isRunning() && main.GameWindow.musicaActivada) {
+        if (clip != null && !clip.isRunning()) {
             clip.start();
             if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
         }
@@ -71,6 +67,7 @@ public class Musica {
     public static void setVolumen(float valor) {
         try {
             if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                
                 FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
                 float dB = (float) (-60.0 + 60.0 * valor);
                 if (dB < control.getMinimum()) dB = control.getMinimum();

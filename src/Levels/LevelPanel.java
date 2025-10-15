@@ -110,12 +110,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         rankImages[4] = new ImageIcon("resources/Sprites/rankings/rankC.png").getImage();
         rankImages[5] = new ImageIcon("resources/Sprites/rankings/rankD.png").getImage();
 
+        Musica.disableLoop();
         Musica.reproducirMusica("resources/Music/"+levelName+".wav");
+        
         List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SY(speed), bpm);
         this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
         
         for (arrow a : this.arrows) {
-        	System.out.println(a.y);
         	if(a.Long) {
             	a.color = colors[getColumnFromX((int)a.x)];
             } else if(!a.isEnd) {
@@ -136,10 +137,6 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
         if(pausa || lose) {
             return;
-        }
-        
-        if(!Musica.estaCorriendo() && !win) {
-            Musica.reanudarMusica();
         }
         
         // Perder
@@ -164,7 +161,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
 
             if(a.isEnd && a.y <= GW.SY(125)) {
-                win = true;
+            	Ganar();
                 return;
             }
 
@@ -176,7 +173,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 continue;
             }
 
-            if(a.Long && a.y - a.size/2 <= GW.SY(125) && columnPressed[getColumnFromX((int)a.x)]) {
+            if(a.Long && a.y - a.size*2/3 <= GW.SY(125) && columnPressed[getColumnFromX((int)a.x)]) {
                 arrowsToRemove.add(a);
                 combo++;
                 vida += 1;
@@ -501,9 +498,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void checkHit(int column) {
         int hitY = GW.SY(150);         
         int WindowPete = GW.SY(200);
-        int WindowBue = GW.SY(100);
-        int WindowAura = GW.SY(70);
-        int WindowSigma = GW.SY(40);
+        int WindowBue = GW.SY(120);
+        int WindowAura = GW.SY(80);
+        int WindowSigma = GW.SY(45);
         
         int SumaV;
         
@@ -539,7 +536,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "Pete";
                         puntaje += 25;
                         combo = 0; // resetear combo si pegaste mal
-                        SumaV = -6;
+                        SumaV = -7;
                     }
                     
                     if(combo > maxCombo) {
@@ -572,6 +569,58 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         }
         return -1;
     }
+    
+    // Ganar
+    private void Ganar() {
+    	win = true;
+    	System.out.print("Ganaste");
+    	// Añadir Item al inventario del gamepanel
+    }
+    
+    // Mensaje según qué vos eliminaste
+    private String LevelToMSG(String level) {
+    	String message = "";
+    	
+    	switch(level) {
+    	case "Melody":
+    		message = "Has desbloqueado la zona ''El Taller'' ";
+    		break;
+    	
+    	case "Los Vagos":
+    		message = "Espantaste a Los Vagos de la cantina.";
+    		break;
+    		
+    	case "Gennuso":
+    		message = "Has conseguido ''IG de renna_gm''";
+    		break;
+    		
+    	case "Rita":
+    		message = "Has conseguido ''Procesador''";
+    		break;
+    		
+    	case "Casas":
+    		message = "Has conseguido ''Llave del SUM''";
+    		break;
+    		
+    	case "Ledesma":
+    		message = "Has conseguido ''Pastafrola''";
+    		break;
+    		
+    	case "Pecile":
+    		message = "Has conseguido ''Llave de la reja''";
+    		break;
+    		
+    	case "Signorello":
+    		message = "Has conseguido ''Marcador de Findlay''";
+    		break;
+    		
+    	case "Martin":
+    		message = "Has conseguido ''Marcador de Findlay''";
+    		break;
+    	}
+    	
+    	return message;
+    }
 
     
     // Detectar teclas
@@ -580,12 +629,15 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
+        		gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
         		Musica.detenerMusica();
                 return;
         	} else if(!lose){
         		pausa = !pausa;
         		if(pausa) {
         			Musica.pausarMusica();
+        		} else {
+        			Musica.reanudarMusica();
         		}
         	}
             
@@ -671,6 +723,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         switch (selectedPauseOption) {
             case 0: // Continuar
                 pausa = false;
+                Musica.reanudarMusica();
                 break;
             case 1: // Reiniciar
             	Musica.detenerMusica();

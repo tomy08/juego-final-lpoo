@@ -232,11 +232,11 @@ public class GameSettings extends JPanel implements KeyListener {
                 case 1: // Música activada/desactivada
                     musicaActivada = !musicaActivada;
                     if (musicaActivada) {
-                        // Reanudar música de fondo
-                        Sonidos.Musica.reanudarMusica();
+                        GameWindow.musicaActivada = musicaActivada;
+                        Sonidos.Musica.setVolumen(volumenGeneral / 100f);
                     } else {
-                        // Pausar música
-                        Sonidos.Musica.pausarMusica();
+                    	GameWindow.musicaActivada = musicaActivada;
+                    	Sonidos.Musica.setVolumen(0);
                     }
                     break;
 
@@ -343,7 +343,7 @@ public class GameSettings extends JPanel implements KeyListener {
                 cambiarSeccion(1);
                 GameWindow.reproducirSonido("resources/sounds/menu.wav");
             } else if (keyCode == KeyEvent.VK_ENTER) {
-                if (seccionActiva.equals("teclas") && opcionSeleccionada < 11) {
+                if (seccionActiva.equals("teclas") && opcionSeleccionada < 12) {
                     esperandoTecla = true;
                     teclaEditando = getTeclaEditandoNombre();
                     GameWindow.reproducirSonido("resources/sounds/interact.wav");

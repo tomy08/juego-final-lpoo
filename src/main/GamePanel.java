@@ -64,12 +64,14 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
 
     // Inventario
     private boolean inventoryOpen = false;
-
     
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
         setBackground(Color.DARK_GRAY);
         setFocusable(true);
+        
+        Musica.reproducirMusica("resources/Music/Fondo.wav");
+        Musica.enableLoop();
         
         pressedKeys = new HashSet<>();
         
@@ -538,7 +540,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(npc.Tipo.equals("random")) {
             if (opcion.equals("SI")) {
             	triggerNPC("Mauro");
-                gameWindow.startRitmo("Linzalata", 10, 222);
+                gameWindow.startRitmo("Ricky", 13, 170);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
         }
@@ -626,8 +628,20 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
     }
 
+    // Mostrar mensaje al ganar
+    public void ShowWinMessage(String message) {
+        currentNPC = null;
+        interactuando = true;
+        eligiendoOpcion = false;
+        opciones = null;
+        textoCompleto = message;     
+        textoActual = "";
+        currentLine = -1;
+        nombreNPC = "";
+        lastCharTime = System.currentTimeMillis() + 250;
 
-
+        repaint();
+    }
 
 
 }
