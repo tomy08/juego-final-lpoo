@@ -18,7 +18,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private GameWindow gameWindow;
     private Player player;
-    private ArrayList<NPC> NPCs = new ArrayList<>();
+    // Lista activa de NPCs (se cambia según el mapa)
+    private ArrayList<NPC> NPCs;
+    // NPCs por mapa
+    private ArrayList<NPC> npcPlantaAlta = new ArrayList<>();
+    private ArrayList<NPC> npcPlantaBaja = new ArrayList<>();
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
     
@@ -73,10 +77,20 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         pressedKeys = new HashSet<>();
         
-        // Inicializar jugador en el centro de la pantalla
-        player = new Player(130 * SCALE, 130 * SCALE, this);
-        NPCs.add(new NPC(129 * SCALE, 135 * SCALE, GW.SX(40), "Mauro", this));
-        NPCs.add(new NPC(125 * SCALE, 140 * SCALE, GW.SX(40), "random", this));
+    // Inicializar jugador en el centro de la pantalla
+    player = new Player(130 * SCALE, 130 * SCALE, this);
+
+    // Poblar NPCs por mapa
+    // NPCs para PLANTA ALTA
+    npcPlantaAlta.add(new NPC(129 * SCALE, 135 * SCALE, GW.SX(40), "Mauro", this));
+    npcPlantaAlta.add(new NPC(125 * SCALE, 140 * SCALE, GW.SX(40), "random", this));
+
+    // NPCs para PLANTA BAJA (ejemplo, ajustar posiciones/Tipos según necesidad)
+    npcPlantaBaja.add(new NPC(200 * SCALE, 150 * SCALE, GW.SX(40), "Baja1", this));
+    npcPlantaBaja.add(new NPC(220 * SCALE, 160 * SCALE, GW.SX(40), "Baja2", this));
+
+    // Establecer lista activa a la planta inicial
+    loadNPCsForCurrentMap();
         
         // Cargar ambos mapas de colisiones
         plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
@@ -95,6 +109,27 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
         
         
+    }
+
+    /**
+     * Carga la lista de NPCs correspondiente al mapa actual (planta alta/baja).
+     * Mantiene el estado necesario para interacción.
+     */
+    private void loadNPCsForCurrentMap() {
+        if (enPlantaAlta) {
+            NPCs = npcPlantaAlta;
+        } else {
+            NPCs = npcPlantaBaja;
+        }
+
+        // Opcional: resetear interacciones activas si corresponde
+        interactuando = false;
+        currentNPC = null;
+        textoActual = "";
+        textoCompleto = "";
+        eligiendoOpcion = false;
+        opciones = null;
+        opcionSeleccionada = 0;
     }
     
     @Override
@@ -564,9 +599,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Cambiar de mapa
         enPlantaAlta = !enPlantaAlta;
         
-        // Actualizar el mapa de colisiones
-        collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
-        player.setCollisionMap(collisionMap);
+    // Actualizar el mapa de colisiones
+    collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
+    player.setCollisionMap(collisionMap);
+
+    // Cargar/activar los NPCs correspondientes al mapa destino
+    loadNPCsForCurrentMap();
         
         // Buscar la posición de destino en el nuevo mapa con el mismo ID
         Point destino = collisionMap.findTeleportDestination(currentTeleportId);
