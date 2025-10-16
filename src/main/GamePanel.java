@@ -179,9 +179,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
         // Dibujar UI
         drawUI(g2d);
-        // Dibujar hotbar (si el jugador tiene uno)
+        // Dibujar inventario detallado solo cuando está abierto (se accede con la tecla configurada)
         if (player != null && player.inventory != null) {
-            player.inventory.drawHotbar(g2d, getWidth(), getHeight(), GW.SX(48), (int)CameraX, (int)CameraY);
             if (inventoryOpen) {
                 player.inventory.drawFullInventory(g2d, getWidth(), getHeight());
             }
@@ -443,15 +442,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             return;
         }
 
-        // Selección de hotbar con teclas 1-9
-        if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
-            int num = keyCode - KeyEvent.VK_1; // 0-based
-            if (player != null && player.inventory != null) {
-                player.inventory.setSelectedHotbar(num);
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                repaint();
-            }
-        }
+        
 
         // Tecla E para teleport
         if (keyCode == KeyEvent.VK_E && estaEnZonaTeleport && !interactuando) {
