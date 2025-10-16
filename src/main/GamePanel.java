@@ -5,6 +5,7 @@ import Mapa.CollisionMap;
 import Sonidos.Musica;
 import entities.NPC;
 import entities.Player;
+import entities.NPCManager;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -73,20 +74,15 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         Musica.reproducirMusica("resources/Music/Fondo.wav");
         Musica.enableLoop();
         
-        pressedKeys = new HashSet<>();
-        
-        // Inicializar jugador en el centro de la pantalla
-        player = new Player(130 * SCALE, 130 * SCALE, this);
-        NPCs.add(new NPC(129 * SCALE, 135 * SCALE, GW.SX(40), "Mauro", this));
-        NPCs.add(new NPC(125 * SCALE, 140 * SCALE, GW.SX(40), "random", this));
-        
         // Cargar ambos mapas de colisiones
         plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
         plantaBajaMap = new CollisionMap("resources/Collision_Maps/PLANTA_BAJA.png");
         
-        // Establecer mapa inicial
-        collisionMap = plantaAltaMap;
-        player.setCollisionMap(collisionMap);
+        pressedKeys = new HashSet<>();
+        
+        // Inicializar jugador
+        player = new Player(130 * SCALE, 159 * SCALE, this);
+        CargarZona(0);
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -528,27 +524,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     }
     
     public void triggerNPC(String targetTipo) {
-        for (NPC npc : NPCs) {
-            if (npc.Tipo.equals(targetTipo)) {
-                npc.Trigger = true;
-                return;
-            }
+        NPC npc = NPCManager.getNPCByTipo(targetTipo);
+        if (npc != null) {
+            npc.Trigger = true;
         }
-    }
-    
-    private void procesarOpcion(String opcion, NPC npc) {
-        if(npc.Tipo.equals("random")) {
-            if (opcion.equals("SI")) {
-            	triggerNPC("Mauro");
-                gameWindow.startRitmo("Ricky", 13, 170);
-            }
-            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
-        }
-        
-        eligiendoOpcion = false;
-        opciones = null;
-        currentLine++;
-        loadCurrentLine(currentNPC);
     }
     
     /**
@@ -642,6 +621,67 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
 
         repaint();
     }
-
+    
+    // Cargar zona y npcs
+    private void CargarZona(int zona) { // 0 = Planta Alta, 1 = Planta Baja, 2 = Ascensor secreto niejejej
+    	switch(zona) {
+    	case 0: // PLANTA ALTA
+    		
+    		// Mapa
+            collisionMap = plantaAltaMap;
+            player.setCollisionMap(collisionMap);
+            enPlantaAlta = true;
+            
+            // NPCs
+            
+            // Borrar npcs anteriores
+            NPCs.clear();
+            
+            // Generar NPCs
+            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 130 * SCALE, 156 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("random", 125 * SCALE, 140 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 130 * SCALE, 135 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 14 * SCALE, 62 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Moya", 123 * SCALE, 128 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gera", 43 * SCALE, 20 * SCALE, GW.SX(40), this));
+            
+    		break;
+    		
+    	case 1: // PLANTA BAJA
+    		// Mapa
+            collisionMap = plantaBajaMap;
+            player.setCollisionMap(collisionMap);
+            enPlantaAlta = false;
+            
+            // NPCs
+            NPCs.clear();
+       
+            // Generar NPCs
+    		break;
+    		
+    	case 2: // ASCENSOR SECRETO
+    		
+    		break;
+    		
+    	default:
+    		System.out.print("No se ha cargado ningún mapa");
+    	}
+    }
+    
+    // Procesar Opciones NPCs
+    private void procesarOpcion(String opcion, NPC npc) {
+        if(npc.Tipo.equals("random")) {
+            if (opcion.equals("SI")) {
+            	triggerNPC("Mauro");
+            	gameWindow.startRitmo("Moya", 12, 153);
+            }
+            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+        }
+        
+        eligiendoOpcion = false;
+        opciones = null;
+        currentLine++;
+        loadCurrentLine(currentNPC);
+    }
 
 }

@@ -21,7 +21,7 @@ public class ChartLoader {
             double msPerBeat = 60000.0 / bpm;
             double msPerRow = msPerBeat / BEAT_DIVISION; 
 
-            double pixelsPerMs = GW.DSY(0.15) * arrowSpeed; // ajustar escala visual
+            double pixelsPerMs = GW.DSY(0.15) * arrowSpeed;
 
             while ((line = br.readLine()) != null) {
                 line = line.trim();

@@ -161,6 +161,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
 
             if(a.isEnd && a.y <= GW.SY(125)) {
+            	arrows.remove(a);
             	Ganar();
                 return;
             }
@@ -225,7 +226,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         		if(a.y < getHeight()) {
         			 g2d.drawImage(a.image, (int)a.x, (int)a.y, a.size, a.size, this);
                      if(a.Long) {
-                     	a.draw(g2d);
+                     	a.draw(g2d, bpm);
         		}
                      
         	}
