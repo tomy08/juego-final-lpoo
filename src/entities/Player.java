@@ -32,7 +32,7 @@ public class Player {
         this.color = Color.CYAN;
         this.collisionMap = null; // Se establecerá después
         // Crear inventario: hotbar 9, grid 9x3 (como Minecraft simplificado)
-        this.inventory = new Inventory(9, 9, 3);
+        this.inventory = new Inventory(9, 3);
     }
     
     /**

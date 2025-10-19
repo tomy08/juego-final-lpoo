@@ -41,7 +41,7 @@ public class arrow {
     public void draw(Graphics2D g2d, double bpm) {
         if(Long) {
             // base de la nota larga
-            double base = GW.DSY(0.3);
+            double base = GW.DSY(0.31);
             double factor = speed * (60000.0 / bpm);
 
             int scaledHeight = (int)(base * factor);

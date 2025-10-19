@@ -10,30 +10,21 @@ import java.awt.Font;
  */
 public class Inventory {
     private ItemStack[] slots; // total slots (hotbar + grid)
-    private int hotbarSize;
     private int columns;
     private int rows;
     private int selectedHotbar = 0;
 
-    public Inventory(int hotbarSize, int columns, int rows) {
-        this.hotbarSize = hotbarSize;
+    public Inventory(int columns, int rows) {
         this.columns = columns;
         this.rows = rows;
-        this.slots = new ItemStack[hotbarSize + columns * rows];
+        this.slots = new ItemStack[columns * rows];
         for (int i = 0; i < slots.length; i++) slots[i] = new ItemStack(null, 0);
     }
 
     public int getTotalSlots() { return slots.length; }
-    public int getHotbarSize() { return hotbarSize; }
     public int getColumns() { return columns; }
     public int getRows() { return rows; }
     public int getSelectedHotbar() { return selectedHotbar; }
-
-    public void setSelectedHotbar(int idx) {
-        if (idx < 0) idx = 0;
-        if (idx >= hotbarSize) idx = hotbarSize - 1;
-        this.selectedHotbar = idx;
-    }
 
     public ItemStack getSlot(int idx) {
         if (idx < 0 || idx >= slots.length) return null;
@@ -81,34 +72,6 @@ public class Inventory {
         return removed;
     }
 
-    // --- Helpers para dibujar UI ---
-    public void drawHotbar(Graphics2D g2d, int panelWidth, int panelHeight, int scale, int cameraX, int cameraY) {
-        int slotSize = scale;
-        int totalW = hotbarSize * (slotSize + 6);
-        int startX = (panelWidth - totalW) / 2;
-        int y = panelHeight - slotSize - 20;
-
-        for (int i = 0; i < hotbarSize; i++) {
-            int x = startX + i * (slotSize + 6);
-            if (i == selectedHotbar) {
-                g2d.setColor(Color.YELLOW);
-                g2d.fillRect(x-4, y-4, slotSize+8, slotSize+8);
-            }
-            g2d.setColor(Color.DARK_GRAY);
-            g2d.fillRect(x, y, slotSize, slotSize);
-            g2d.setColor(Color.WHITE);
-            g2d.drawRect(x, y, slotSize, slotSize);
-
-            ItemStack s = slots[i];
-            if (!s.isEmpty()) {
-                Image img = s.getItem().getImage();
-                if (img != null) g2d.drawImage(img, x+4, y+4, slotSize-8, slotSize-8, null);
-                g2d.setFont(new Font("Arial", Font.BOLD, 14));
-                g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-6);
-            }
-        }
-    }
-
     public void drawFullInventory(Graphics2D g2d, int panelWidth, int panelHeight) {
         int slotSize = 64;
         int padding = 8;
@@ -122,7 +85,7 @@ public class Inventory {
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < columns; c++) {
-                int idx = hotbarSize + r * columns + c;
+                int idx = r * columns + c;
                 int x = startX + c * (slotSize + padding);
                 int y = startY + r * (slotSize + padding);
                 g2d.setColor(Color.DARK_GRAY);

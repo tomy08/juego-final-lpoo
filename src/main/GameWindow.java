@@ -23,7 +23,7 @@ public class GameWindow extends JFrame implements KeyListener {
     private GameState currentState;
     private GameState previousState;
     private MainMenu mainMenu;
-    private GamePanel gamePanel;
+    public GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
     private LevelPanel levelPanel;

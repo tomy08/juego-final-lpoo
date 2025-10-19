@@ -140,11 +140,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
              npc.drawNPC(g2d);
              npc.drawInteractive(g2d, GameSettings.teclaInteractuar);
         }
+        
         // Dibujar UI
         drawUI(g2d);
-        // Dibujar hotbar (si el jugador tiene uno)
         if (player != null && player.inventory != null) {
-            player.inventory.drawHotbar(g2d, getWidth(), getHeight(), GW.SX(48), (int)CameraX, (int)CameraY);
             if (inventoryOpen) {
                 player.inventory.drawFullInventory(g2d, getWidth(), getHeight());
             }
@@ -159,7 +158,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         g2d.drawString("ESC para volver al menú", GW.SX(10), GW.SY(45));
         
         // Mostrar posición del jugador (para debug)
-        g2d.setColor(Color.YELLOW);
+        g2d.setColor(Color.BLACK);
         g2d.drawString("Posición: (" + (int)player.getX() + ", " + (int)player.getY() + ")", GW.SX(10), getHeight() - GW.SY(20));
         
         // Mostrar mapa actual
@@ -361,10 +360,15 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         
      
-        if (keyCode == KeyEvent.VK_ESCAPE) {
+        if (keyCode == GameSettings.KEY_MENU) {
+        	if(inventoryOpen) {
+        		inventoryOpen = false;
+        		repaint();
+        		return;
+        	}
             paused = !paused;
             repaint();
-            return; // evita ejecutar otras acciones cuando estás pausado
+            return;
         }
         
      // Controles del menu de pausa
@@ -393,11 +397,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             return; // Evita que se siga ejecutando lógica normal
         }
 
-
-        if (keyCode == GameSettings.KEY_MENU) {
-            gameWindow.backToMenu();
-        }
-
         // Tecla para abrir/cerrar inventario
         if (keyCode == GameSettings.KEY_INVENTORY) {
             inventoryOpen = !inventoryOpen;
@@ -410,7 +409,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
             int num = keyCode - KeyEvent.VK_1; // 0-based
             if (player != null && player.inventory != null) {
-                player.inventory.setSelectedHotbar(num);
                 GameWindow.reproducirSonido("resources/sounds/menu.wav");
                 repaint();
             }
@@ -541,13 +539,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         // Reproducir sonido de teleport
         GameWindow.reproducirSonido("resources/sounds/menu.wav");
-        
-        // Cambiar de mapa
-        enPlantaAlta = !enPlantaAlta;
-        
-        // Actualizar el mapa de colisiones
-        collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
-        player.setCollisionMap(collisionMap);
+
+        // Cargar mapa destino
+        if(enPlantaAlta) {
+        	CargarZona(1);
+        } else {
+        	CargarZona(0);
+        }
         
         // Buscar la posición de destino en el nuevo mapa con el mismo ID
         Point destino = collisionMap.findTeleportDestination(currentTeleportId);
@@ -648,6 +646,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		break;
     		
     	case 1: // PLANTA BAJA
+    		
     		// Mapa
             collisionMap = plantaBajaMap;
             player.setCollisionMap(collisionMap);
@@ -657,6 +656,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             NPCs.clear();
        
             // Generar NPCs
+            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 187 * SCALE, 164 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Lavega", 187 * SCALE, 167 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Melody", 171 * SCALE, 113 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 197 * SCALE, 237 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 200 * SCALE, 110 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 201 * SCALE, 99 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 141 * SCALE, 239 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 212 * SCALE, 99 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Rita", 139 * SCALE, 245 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 148 * SCALE, 219 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 237 * SCALE, 207 * SCALE, GW.SX(40), this));
     		break;
     		
     	case 2: // ASCENSOR SECRETO
@@ -670,13 +680,46 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Procesar Opciones NPCs
     private void procesarOpcion(String opcion, NPC npc) {
-        if(npc.Tipo.equals("random")) {
-            if (opcion.equals("SI")) {
-            	triggerNPC("Mauro");
+    	
+    	// Npcs
+    	switch(npc.Tipo) {
+    	
+    	case "random":
+    		if (opcion.equals("SI")) {
+            	gameWindow.startRitmo("test", 13, 135);
+            }
+            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+    		break;
+    		
+    	case "Melody":
+    		if (opcion.equals("SI")) {
+            	gameWindow.startRitmo("Melody", 7, 135);
+            }
+            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+    		break;
+    		
+    	case "Moya":
+    		if (opcion.equals("SI")) {
             	gameWindow.startRitmo("Moya", 12, 153);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
-        }
+    		break;
+    		
+    	case "Linzalata":
+    		if (opcion.equals("SI")) {
+            	gameWindow.startRitmo("Linzalata", 13, 222);
+            }
+            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+    		break;
+    		
+    	case "Ricky":
+    		if (opcion.equals("SI")) {
+            	gameWindow.startRitmo("Moya", 13, 170);
+            }
+            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+    		break;
+    		
+    	}
         
         eligiendoOpcion = false;
         opciones = null;

@@ -162,7 +162,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
 
             if(a.isEnd && a.y <= GW.SY(125)) {
             	arrows.remove(a);
-            	Ganar();
+            	if(!win) {
+            		Ganar();
+            	}
+            	
                 return;
             }
 
@@ -575,6 +578,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void Ganar() {
     	win = true;
     	System.out.print("Ganaste");
+    	
+    	gameWindow.gamePanel.triggerNPC("Mauro"); // test
+    	
     	// Añadir Item al inventario del gamepanel
     }
     
