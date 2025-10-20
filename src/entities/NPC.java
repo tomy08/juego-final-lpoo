@@ -16,7 +16,7 @@ public class NPC {
 	public String Tipo;
 	public int line = 1;
 	public int FinalLine = -1;
-	public boolean Trigger = false;
+	public int Trigger = 0; // IDs de trigger para poder tener mas varianza
 	
 	public boolean interactive = false;
 	private GamePanel panel;
@@ -34,18 +34,25 @@ public class NPC {
 	public int npcLine() {
 		
 		// Triggers de NPCs
-		if(Tipo.equals("Mauro") && Trigger) {
+		
+		if(Tipo.equals("Zambrana") && Trigger == 1) {
 			line = 3;
 		}
+		if(Tipo.equals("Melody") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Melody") && Trigger == 2) {
+			line = 8;
+		}
+		if(Tipo.equals("Kreimer") && Trigger == 1) {
+			line = 3;
+		}
+		
 		
 		return line;
 	}
 	
 	public int npcFinalLine() {
-		
-		if(Tipo.equals("random") && Trigger) {
-			FinalLine = 1;
-		}
 		
 		return FinalLine;
 	}

@@ -50,9 +50,14 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private String textoActual = "";
     private long lastCharTime = 0;
     private int charDelay = 25;
+    
+    // Zonas desbloqueadas:
+    
+    public boolean taller = false;
 
     
     // Seguimiento de Camara
+    
     public double CameraX = 0;
     public double CameraY = 0;
     
@@ -75,8 +80,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         Musica.enableLoop();
         
         // Cargar ambos mapas de colisiones
-        plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTA_ALTA.png");
-        plantaBajaMap = new CollisionMap("resources/Collision_Maps/PLANTA_BAJA.png");
+        plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTAALTA.png");
+        plantaBajaMap = new CollisionMap("resources/Collision_Maps/PLANTABAJA.png");
         
         pressedKeys = new HashSet<>();
         
@@ -201,7 +206,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             
             // Escribir Texto
             g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
-            g2d.drawString(textoActual, GW.SX(340), GW.SY(750));
+            drawDialogue(g2d, textoActual, GW.SX(340), GW.SY(750), GW.SX(1200)); // 300px es el ancho máximo del cuadro
             
             // Texto Ayuda
             g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
@@ -281,12 +286,19 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                         player.facingLeft = false;
                     } else if (deltaX < 0) { // Izquierda
                         player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
-                        player.facingLeft = true; // Establecer para reflejar
+                        player.facingLeft = true;
                     } else if (deltaX > 0) { // Derecha
                         player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
-                        player.facingLeft = false; // No reflejar
+                        player.facingLeft = false;
                     }
                 }
+        }
+        
+        // No está permitido taller en planta baja si no se desbloquea
+        if (!taller && !enPlantaAlta) {
+            if (player.getX() > 168 * SCALE) {  
+                player.setX(168 * SCALE);
+            }
         }
         
         // Interactuar con NPCs
@@ -354,6 +366,42 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             currentTeleportId = -1;
         }
     }
+    
+    // Desarmar Texto
+    
+    public ArrayList<String> wrapText(String text, FontMetrics fm, int maxWidth) {
+        ArrayList<String> lines = new ArrayList<>();
+        StringBuilder currentLine = new StringBuilder();
+
+        for (String word : text.split(" ")) {
+            String testLine = currentLine + word + " ";
+            if (fm.stringWidth(testLine) > maxWidth) {
+                lines.add(currentLine.toString());
+                currentLine = new StringBuilder(word + " ");
+            } else {
+                currentLine.append(word).append(" ");
+            }
+        }
+
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine.toString());
+        }
+
+        return lines;
+    }
+    
+    // Dibujar Texto separado
+    public void drawDialogue(Graphics2D g, String text, int x, int y, int maxWidth) {
+        FontMetrics fm = g.getFontMetrics();
+        ArrayList<String> lines = wrapText(text, fm, maxWidth);
+        int lineHeight = fm.getHeight();
+
+        for (int i = 0; i < lines.size(); i++) {
+            g.drawString(lines.get(i), x, y + (i * lineHeight));
+        }
+    }
+
+
     
     public void handleKeyPress(int keyCode) {
         pressedKeys.add(keyCode);
@@ -474,7 +522,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         currentNPC = npc;
         currentLine = npc.npcLine();
         nombreNPC = npc.Tipo;
-
+        
+        if(nombreNPC.equals("Zambrana") && triggeredNPC("Melody") == 0) {
+        	triggerNPC("Melody", 1);
+        }
         loadCurrentLine(npc);
     }
     
@@ -521,11 +572,18 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         repaint();
     }
     
-    public void triggerNPC(String targetTipo) {
+    // Darle trigger a un npc
+    public void triggerNPC(String targetTipo, int trigger) {
         NPC npc = NPCManager.getNPCByTipo(targetTipo);
         if (npc != null) {
-            npc.Trigger = true;
+            npc.Trigger = trigger;
         }
+    }
+    
+    // Verificar qué trigger tiene un npc
+    public int triggeredNPC(String targetTipo) {
+    	NPC npc = NPCManager.getNPCByTipo(targetTipo);
+        return npc.Trigger;
     }
     
     /**
@@ -656,17 +714,24 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             NPCs.clear();
        
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 187 * SCALE, 164 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Lavega", 187 * SCALE, 167 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Melody", 171 * SCALE, 113 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 197 * SCALE, 237 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 200 * SCALE, 110 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 201 * SCALE, 99 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 141 * SCALE, 239 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 212 * SCALE, 99 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Rita", 139 * SCALE, 245 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 148 * SCALE, 219 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 237 * SCALE, 207 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Lavega", 67 * SCALE, 167 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Melody", 49 * SCALE, 105 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 72 * SCALE, 237 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 75 * SCALE, 110 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 56 * SCALE, 109 * SCALE, GW.SX(60), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 17 * SCALE, 238 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Guerra", 15 * SCALE, 230 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 85 * SCALE, 96 * SCALE, GW.SX(90), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Rita", 14 * SCALE, 245 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 219 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 115 * SCALE, 207 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Martin", 123 * SCALE, 196 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Casas", 209 * SCALE, 238 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Martin", 179 * SCALE, 196 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ulises", 195 * SCALE, 173 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 206 * SCALE, GW.SX(40), this));
     		break;
     		
     	case 2: // ASCENSOR SECRETO

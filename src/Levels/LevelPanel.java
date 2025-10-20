@@ -577,11 +577,55 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Ganar
     private void Ganar() {
     	win = true;
-    	System.out.print("Ganaste");
-    	
-    	gameWindow.gamePanel.triggerNPC("Mauro"); // test
-    	
+    	LevelToReward(level);
+    }
+    
+    
+    private void LevelToReward(String level) {
+    	switch(level) {
     	// Añadir Item al inventario del gamepanel
+    	case "Melody":
+    		
+    		// Desbloquear taller
+    		gameWindow.gamePanel.triggerNPC("Zambrana", 1);
+    		gameWindow.gamePanel.triggerNPC("Melody", 2);
+    		gameWindow.gamePanel.triggerNPC("Kreimer", 1);
+    		gameWindow.gamePanel.taller = true;
+    		
+    		break;
+    	
+    	case "Los Vagos":
+    		// trigger al de la cantina para que te de un item al hablar
+    		break;
+    		
+    	case "Gennuso":
+    		// Conseguir Item: IG de renaa_gm
+    		break;
+    		
+    	case "Rita":
+    		// Conseguir Item: Procesador
+    		break;
+    		
+    	case "Casas":
+    		// Conseguir Item: Llave de SUM
+    		break;
+    		
+    	case "Ledesma":
+    		// Conseguir Item: Pastafrola
+    		break;
+    		
+    	case "Pecile":
+    		// Conseguir Item: Llave de la reja
+    		break;
+    		
+    	case "Signorello":
+    		// Conseguir Item: Marcador de findlay
+    		break;
+    		
+    	case "Martin":
+    		// Conseguir Item: Marcador de findlay
+    		break;
+    	}
     }
     
     // Mensaje según qué vos eliminaste

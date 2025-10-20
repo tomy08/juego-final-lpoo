@@ -66,7 +66,7 @@ public class CollisionMap {
         return brightness < 128;
     }
     
-    // 🔹 Verifica si hay un teleport en la posición dada
+    // Verifica si hay un teleport en la posición dada
     public boolean isTeleportZone(int x, int y) {
         if (collisionImage == null) return false;
 
@@ -84,7 +84,6 @@ public class CollisionMap {
         return isRedPixel(color);
     }
     
-    // 🔹 Obtiene el ID del teleport según el grado de rojo (0-255)
     public int getTeleportId(int x, int y) {
         if (collisionImage == null) return -1;
 
