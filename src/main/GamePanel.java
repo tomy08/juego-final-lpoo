@@ -55,6 +55,34 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     public boolean taller = false;
 
+    // Tienda
+    
+    public int monedas = 0;
+    private boolean EnTienda = false;
+    private String[] itemsCantina = {
+    		"Pancho",
+    		"Jugo Placer",
+    		"Cachafaz"
+    };
+    private int[] precioCantina = {
+    	18000,
+    	25000,
+    	300000,
+    };
+    private int[] StockItem = {
+    		3,
+    		3,
+    		1
+    };
+    private String[] infoItem = {
+    	"Más vida máxima",
+    	"Multiplicador de $",
+    	"???",
+    };
+    private int OpcionTienda = 0;
+    private String textoTienda = "";
+    private Color tiendaColor;
+    
     
     // Seguimiento de Camara
     
@@ -190,44 +218,100 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             g2d.drawString("Presiona E para teleport", getWidth() / 2 - GW.SX(135), GW.SY(140));
         }
         
-        // Texto interactuar con NPC
-        if(interactuando) {
-            g2d.setColor(new Color(0,0,0,100));
-            g2d.fillRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
+        // Abrir la tienda/Cantina
+        if(EnTienda) {
+    		
+    		g2d.setColor(new Color(0,0,0,100));
+            g2d.fillRect(GW.SX(520), GW.SY(200), GW.SX(880), GW.SY(700));
             
             // Dibujar borde
             g2d.setColor(Color.WHITE);
             g2d.setStroke(new BasicStroke(GW.SX(4)));
-            g2d.drawRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
+            g2d.drawRect(GW.SX(520), GW.SY(200), GW.SX(880), GW.SY(700));
             
             // Escribir Nombre
-            g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
-            g2d.drawString(nombreNPC, GW.SX(340), GW.SY(700));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(45f));
+            g2d.drawString("Cantina", GW.SX(560), GW.SY(300));
             
-            // Escribir Texto
-            g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
-            drawDialogue(g2d, textoActual, GW.SX(340), GW.SY(750), GW.SX(1200)); // 300px es el ancho máximo del cuadro
-            
-            // Texto Ayuda
+            // Ayuda
             g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
-            g2d.drawString(GameSettings.teclaAdelantarTexto + " >>", GW.SX(1350), GW.SY(925));
+            g2d.drawString("ESC - Cerrar", GW.SX(1120), GW.SY(300));
             
-            // Dibujar Opciones
-            g2d.setFont(GameWindow.Pixelart.deriveFont(36f));
-            if (eligiendoOpcion) {
-                for (int i = 0; i < opciones.length; i++) {
-                    int x = GW.SX(480) + i * GW.SX(384);
-                    int y = GW.SY(900);
-                    if (i == opcionSeleccionada) {
-                        g2d.setColor(Color.YELLOW);
-                        g2d.drawString(opciones[i] + " <", x, y);
-                        continue;
-                    }
-                    else g2d.setColor(Color.WHITE);
-
-                    g2d.drawString(opciones[i], x, y);
-                }
+            // Plata
+            g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+            g2d.drawString(monedas + "$", GW.SX(560), GW.SY(870));
+            
+            // Texto al Comprar
+            g2d.setColor(tiendaColor);
+            g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+            g2d.drawString(textoTienda, GW.SX(560), GW.SY(800));
+            
+            int posY = 500;
+            int i = 0;
+            for(String itemCantina : itemsCantina) {
+            	
+            	g2d.setColor(Color.WHITE);
+            	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+            	if(StockItem[i] == 0) { // No queda Stock del item
+            		g2d.setColor(new Color(120,120,120));
+            	}
+            	if(i == OpcionTienda) { // Seleccionando un Item
+            		if(StockItem[OpcionTienda] > 0) {
+            			g2d.setColor(Color.YELLOW);
+            		}
+            		g2d.drawString(itemCantina + " - " + precioCantina[i] + "$ <", GW.SX(560), GW.SY(posY));
+            	} else {
+            		g2d.drawString(itemCantina + " - " + precioCantina[i] + "$", GW.SX(560), GW.SY(posY));
+            	}
+            	posY += 100;
+            	i++;
             }
+            
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+            g2d.drawString(infoItem[OpcionTienda], GW.SX(1100), GW.SY(600));
+    		
+    	}
+        
+        if(interactuando) {
+        		
+        		g2d.setColor(new Color(0,0,0,100));
+                g2d.fillRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
+                
+                // Dibujar borde
+                g2d.setColor(Color.WHITE);
+                g2d.setStroke(new BasicStroke(GW.SX(4)));
+                g2d.drawRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
+                
+                // Escribir Nombre
+                g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
+                g2d.drawString(nombreNPC, GW.SX(340), GW.SY(700));
+                
+                // Escribir Texto
+                g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+                drawDialogue(g2d, textoActual, GW.SX(340), GW.SY(750), GW.SX(1200)); // 300px es el ancho máximo del cuadro
+                
+                // Texto Ayuda
+                g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+                g2d.drawString(GameSettings.teclaAdelantarTexto + " >>", GW.SX(1350), GW.SY(925));
+                
+                // Dibujar Opciones
+                g2d.setFont(GameWindow.Pixelart.deriveFont(36f));
+                if (eligiendoOpcion) {
+                    for (int i = 0; i < opciones.length; i++) {
+                        int x = GW.SX(480) + i * GW.SX(384);
+                        int y = GW.SY(900);
+                        if (i == opcionSeleccionada) {
+                            g2d.setColor(Color.YELLOW);
+                            g2d.drawString(opciones[i] + " <", x, y);
+                            continue;
+                        }
+                        else g2d.setColor(Color.WHITE);
+
+                        g2d.drawString(opciones[i], x, y);
+                    }
+                }
+            
         }
         
         if (paused) {
@@ -414,6 +498,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         		repaint();
         		return;
         	}
+        	if(EnTienda) {
+        		EnTienda = false;
+        		repaint();
+        		return;
+        	}
             paused = !paused;
             repaint();
             return;
@@ -490,6 +579,44 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         			break;
         	}
         }
+        
+        if(EnTienda) {
+        	switch(keyCode) {
+    		case KeyEvent.VK_UP:
+    			OpcionTienda = (OpcionTienda - 1 + itemsCantina.length) % itemsCantina.length;
+    			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+    			repaint();
+    			break;
+    		case KeyEvent.VK_DOWN:
+    			OpcionTienda = (OpcionTienda + 1) % itemsCantina.length;
+    			GameWindow.reproducirSonido("resources/sounds/menu.wav");
+    			repaint();
+    			break;
+    		case KeyEvent.VK_ENTER:
+    			
+    			if(monedas >= precioCantina[OpcionTienda] && StockItem[OpcionTienda] > 0) { // Puede comprar
+    				// Agregar Item Al inventario
+    				monedas -= precioCantina[OpcionTienda];
+    				precioCantina[OpcionTienda] *= 2; // Subir el precio en cada compra
+    				StockItem[OpcionTienda]--; // restar 1 stock en el item
+    				
+    				// Cambiar Texto
+    				tiendaColor = new Color(255,255,255);
+    				textoTienda = "Has comprado el item";
+    				
+    				// GameWindow.reproducirSonido("Compra");
+    				System.out.println("El jugador compró un " + itemsCantina[OpcionTienda] + " a un precio de: " + precioCantina[OpcionTienda]);
+    			} else { // No puede comprar
+    				
+    				// GameWindow.reproducirSonido("Rechazo");
+    				tiendaColor = new Color(200,0,0);
+    				textoTienda = "No se puede comprar este Item.";
+    				System.out.println("No se pudo comprar el item");
+    			}
+    			
+    			break;
+        	}
+        }
 
         // Avanzar texto o confirmar opciones
         if (interactuando && keyCode == GameSettings.KEY_CONFIRM) {
@@ -523,9 +650,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         currentLine = npc.npcLine();
         nombreNPC = npc.Tipo;
         
+        // Cambios en otros NPCs
         if(nombreNPC.equals("Zambrana") && triggeredNPC("Melody") == 0) {
         	triggerNPC("Melody", 1);
         }
+        
         loadCurrentLine(npc);
     }
     
@@ -695,7 +824,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             
             // Generar NPCs
             NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 130 * SCALE, 156 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("random", 125 * SCALE, 140 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 130 * SCALE, 135 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 14 * SCALE, 62 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Moya", 123 * SCALE, 128 * SCALE, GW.SX(40), this));
@@ -736,6 +864,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case 2: // ASCENSOR SECRETO
     		
+    		NPCs.add(NPCManager.getOrCreateNPC("Ricky", 34 * SCALE, 47 * SCALE, GW.SX(50), this));
+    		
     		break;
     		
     	default:
@@ -748,13 +878,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     	
     	// Npcs
     	switch(npc.Tipo) {
-    	
-    	case "random":
-    		if (opcion.equals("SI")) {
-            	gameWindow.startRitmo("test", 13, 135);
-            }
-            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
-    		break;
     		
     	case "Melody":
     		if (opcion.equals("SI")) {
@@ -784,6 +907,25 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
     		break;
     		
+    	case "Cantina":
+    		if(opcion.equals("Comprar")) {
+    			EnTienda = true;
+    			OpcionTienda = 0;
+    		}
+    		if(opcion.equals("Hablar")) {
+    			if(npc.Trigger == 0) { // Default
+            		currentLine = 2; // 1 menos porque despu�s currentLine se suma
+            	} else if(npc.Trigger == 1) { // Recompensa por echar a los vagos
+            		currentLine = 5;
+            		triggerNPC("Cantina", 2);
+            	} else if(npc.Trigger == 2) { // Nada
+            		currentLine = 16;
+            	} else if(npc.Trigger == 3) { // Ten�s el ig de rena
+            		currentLine = 9;
+            	}
+    		}
+    		if (opcion.equals("Salir")) System.out.println("Usuario dijo que no");
+    		break;
     	}
         
         eligiendoOpcion = false;

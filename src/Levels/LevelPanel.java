@@ -387,6 +387,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.setColor(Color.WHITE);
     	g2d.drawString("(" + porcentaje(missCount, totalHits) + "%) Misses: " + missCount, GW.SX(1050), GW.SY(700));
     	
+    	// Monedas Conseguidas:
+    	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+    	g2d.setColor(Color.WHITE);
+    	g2d.drawString("Conseguiste:", GW.SX(250), GW.SY(500));
+    	g2d.drawString((int) (puntaje * getAccuracyPercentage() / 400) + "$", GW.SX(250), GW.SY(550));
+    	
+    	// Ayuda
     	g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
     	g2d.setColor(Color.WHITE);
     	g2d.drawString("ESC para volver", GW.SX(800), GW.SY(880));
@@ -548,8 +555,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                     }
                     
                     // Sumar o Restar vida
-                    if(vida <= Max_vida) {
+                    if(vida + SumaV <= Max_vida) {
                     	vida += SumaV;
+                    } else if (vida + SumaV >= Max_vida) {
+                    	vida = Max_vida;
                     }
 
                     hitDisplayTime = System.currentTimeMillis(); // empieza a mostrar el texto
@@ -578,6 +587,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void Ganar() {
     	win = true;
     	LevelToReward(level);
+    	gameWindow.gamePanel.monedas += (int) (puntaje * getAccuracyPercentage() / 200);
     }
     
     
