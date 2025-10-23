@@ -2,8 +2,12 @@ package entities;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 
+import javax.swing.ImageIcon;
+
+import main.GW;
 import main.GamePanel;
 import main.GameWindow;
 
@@ -21,6 +25,10 @@ public class NPC {
 	public boolean interactive = false;
 	private GamePanel panel;
 	private Color color;
+	
+	// imagen
+	
+	public Image image;
 
 	public NPC(double startX, double startY, int size, String Tipo, GamePanel panel) {
 		this.x = startX;
@@ -29,6 +37,8 @@ public class NPC {
 		this.panel = panel;
 		this.Tipo = Tipo;
 		this.color = Color.GREEN;
+		
+		image = new ImageIcon("resources/Sprites/NPC/"+Tipo+".png").getImage();
 	}
 	
 	public int npcLine() {
@@ -100,8 +110,16 @@ public class NPC {
 	
 	public void drawNPC(Graphics2D g2d) {
 		
-		g2d.setColor(color);
-        g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+		if (image != null) {
+	        g2d.drawImage(image, 
+	                      (int)x - (int)panel.CameraX - GW.SX(4), 
+	                      (int)y - (int)panel.CameraY - size, 
+	                      size + GW.SX(8), size*2, 
+	                      panel);
+	    } else {
+			g2d.setColor(color);
+	        g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+	    }
 		
 	}
 	

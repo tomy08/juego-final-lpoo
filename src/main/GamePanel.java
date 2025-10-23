@@ -99,6 +99,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Inventario
     private boolean inventoryOpen = false;
     
+    // Render
+    ArrayList<Object> renderList = new ArrayList<>();
+
+    
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
         setBackground(Color.DARK_GRAY);
@@ -116,6 +120,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Inicializar jugador
         player = new Player(130 * SCALE, 159 * SCALE, this);
         CargarZona(0);
+        
+        
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -149,28 +155,40 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
 
         
-        // Dibujar jugador
-        player.draw(g2d);
-        int drawX = (int)player.getX() - (int)CameraX;
-        int drawY = (int)player.getY() - (int)CameraY - player.getSize();
-        int drawW = player.getSize();
-        int drawH = player.getSize() * 2;
         
-        if (player.facingLeft) {
-            g2d.drawImage(player.image, 
-                          drawX + drawW, drawY, 
-                          -drawW, drawH, 
-                          this);
-        } else {
-            g2d.drawImage(player.image, 
-                          drawX, drawY, 
-                          drawW, drawH, 
-                          this);
-        }
         
         // Dibujar NPCs
+        
+        if(renderList.size() > 0) {
+        	 for (Object o : renderList) {
+                 if (o instanceof Player p) {
+                 	
+                 	// Dibujar jugador
+                     player.draw(g2d);
+                     
+                     int drawX = (int)player.getX() - (int)CameraX;
+                     int drawY = (int)player.getY() - (int)CameraY - player.getSize();
+                     int drawW = player.getSize();
+                     int drawH = player.getSize() * 2;
+                     
+                     if (player.facingLeft) {
+                         g2d.drawImage(player.image, 
+                                       drawX + drawW, drawY, 
+                                       -drawW, drawH, 
+                                       this);
+                     } else {
+                         g2d.drawImage(player.image, 
+                                       drawX, drawY, 
+                                       drawW, drawH, 
+                                       this);
+                     }
+                 }
+                 else if (o instanceof NPC n) n.drawNPC(g2d);
+             }
+        }
+       
+
         for(NPC npc : NPCs) {
-             npc.drawNPC(g2d);
              npc.drawInteractive(g2d, GameSettings.teclaInteractuar);
         }
         
@@ -362,6 +380,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 }
                 
                 if (moving) {
+                	
+                	// Reordenar Lista
+                	renderList.sort((a, b) -> {
+                	    int yA = 0;
+                	    int yB = 0;
+
+                	    if (a instanceof Player p) yA = (int)p.getY();
+                	    if (a instanceof NPC n) yA = (int)n.y;
+
+                	    if (b instanceof Player p) yB = (int)p.getY();
+                	    if (b instanceof NPC n) yB = (int)n.y;
+
+                	    return Integer.compare(yA, yB);
+                	});
+
+                	
                     if (deltaY < 0) { // Prioridad Arriba
                         player.image = new ImageIcon("resources/Sprites/Jugador/pj-up.png").getImage();
                         player.facingLeft = false; // Resetear reflejo si se movía horizontalmente
@@ -821,13 +855,19 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             
             // Borrar npcs anteriores
             NPCs.clear();
+            renderList.clear();
+            renderList.add(player);
             
             // Generar NPCs
             NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 130 * SCALE, 156 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 130 * SCALE, 135 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 14 * SCALE, 62 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Moya", 123 * SCALE, 128 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Moya", 123 * SCALE, 128 * SCALE, GW.SX(45), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gera", 43 * SCALE, 20 * SCALE, GW.SX(40), this));
+            
+            for (NPC npc : NPCs) {
+                renderList.add(npc);
+            }
             
     		break;
     		
@@ -840,9 +880,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             
             // NPCs
             NPCs.clear();
+            renderList.clear();
+            renderList.add(player);
        
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, GW.SX(45), this));
             NPCs.add(NPCManager.getOrCreateNPC("Lavega", 67 * SCALE, 167 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Melody", 49 * SCALE, 105 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 72 * SCALE, 237 * SCALE, GW.SX(40), this));
@@ -860,11 +902,24 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             NPCs.add(NPCManager.getOrCreateNPC("Ulises", 195 * SCALE, 173 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 206 * SCALE, GW.SX(40), this));
+            
+            for (NPC npc : NPCs) {
+                renderList.add(npc);
+            }
     		break;
     		
     	case 2: // ASCENSOR SECRETO
     		
+    		// NPCs
+            NPCs.clear();
+    		renderList.clear();
+            renderList.add(player);
+            
+            // Generar NPCs
     		NPCs.add(NPCManager.getOrCreateNPC("Ricky", 34 * SCALE, 47 * SCALE, GW.SX(50), this));
+    		for (NPC npc : NPCs) {
+                renderList.add(npc);
+            }
     		
     		break;
     		
