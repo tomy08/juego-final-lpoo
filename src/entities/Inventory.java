@@ -72,6 +72,54 @@ public class Inventory {
         return removed;
     }
 
+    /**
+     * Verifica si el inventario tiene al menos 'amount' unidades de un item con el id dado.
+     */
+    public boolean hasItem(String itemId, int amount) {
+        int total = 0;
+        for (int i = 0; i < slots.length; i++) {
+            ItemStack s = slots[i];
+            if (!s.isEmpty() && s.getItem().getId().equals(itemId)) {
+                total += s.getAmount();
+                if (total >= amount) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Cuenta cuántas unidades de un item específico hay en el inventario.
+     */
+    public int countItem(String itemId) {
+        int total = 0;
+        for (int i = 0; i < slots.length; i++) {
+            ItemStack s = slots[i];
+            if (!s.isEmpty() && s.getItem().getId().equals(itemId)) {
+                total += s.getAmount();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Remueve una cantidad específica de un item del inventario. Devuelve la cantidad realmente removida.
+     */
+    public int removeItem(String itemId, int amount) {
+        int toRemove = amount;
+        int removed = 0;
+        for (int i = 0; i < slots.length && toRemove > 0; i++) {
+            ItemStack s = slots[i];
+            if (!s.isEmpty() && s.getItem().getId().equals(itemId)) {
+                int canRemove = Math.min(s.getAmount(), toRemove);
+                s.remove(canRemove);
+                if (s.isEmpty()) slots[i] = new ItemStack(null, 0);
+                removed += canRemove;
+                toRemove -= canRemove;
+            }
+        }
+        return removed;
+    }
+
     public void drawFullInventory(Graphics2D g2d, int panelWidth, int panelHeight) {
         int slotSize = 64;
         int padding = 8;

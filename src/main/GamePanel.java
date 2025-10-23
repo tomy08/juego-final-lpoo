@@ -6,10 +6,13 @@ import Sonidos.Musica;
 import entities.NPC;
 import entities.Player;
 import entities.NPCManager;
+import entities.Item;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
@@ -125,8 +128,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
-        try (InputStream input = getClass().getResourceAsStream("dialogos.properties")) {
-            dialogos.load(input);
+        InputStream input = getClass().getResourceAsStream("dialogos.properties");
+        try {
+            if (input == null) {
+                // Intentar fallback a archivo en disco (modo desarrollo)
+                File f = new File("src/main/dialogos.properties");
+                if (f.exists()) {
+                    input = new FileInputStream(f);
+                }
+            }
+            if (input != null) {
+                try (InputStream in = input) {
+                    dialogos.load(in);
+                }
+            } else {
+                System.err.println("Aviso: dialogos.properties no encontrado en classpath ni en src/main/");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -689,6 +706,20 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         	triggerNPC("Melody", 1);
         }
         
+        // Kreimer: verificar si tiene pan sin tacc
+        if(nombreNPC.equals("Kreimer")) {
+        	if(npc.Trigger == 1 && playerHasItem("pan_sin_tacc", 1)) {
+        		// Si tiene pan sin tacc, pasar a la l�nea donde agradece
+        		removePlayerItem("pan_sin_tacc", 1);
+        		currentLine = 6; // L�nea antes de "Fua wacho..."
+        	}
+        }
+        
+        // Findlay: verificar si tiene 8 marcadores
+        if(nombreNPC.equals("Findlay") && npc.Trigger == 1 && countPlayerItem("marcador_findlay") >= 8) {
+        	currentLine = 9; // Listo amigo gracias
+        }
+        
         loadCurrentLine(npc);
     }
     
@@ -742,11 +773,59 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             npc.Trigger = trigger;
         }
     }
+
+    /**
+     * Entrega un item al inventario del jugador. Si no cabe, devuelve la cantidad que no entró.
+     * spriteFilename debe ser el nombre de archivo dentro de resources/Sprites/Items
+     */
+    public int givePlayerItem(String id, String displayName, String spriteFilename, int amount, int maxStack) {
+        if (player == null) return amount;
+        java.awt.Image img = null;
+        try {
+            img = new javax.swing.ImageIcon("resources/Sprites/Items/" + spriteFilename).getImage();
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar la imagen del item: " + spriteFilename);
+        }
+        Item item = new Item(id, displayName, img, maxStack);
+        int leftover = player.pickupItem(item, amount);
+        if (leftover > 0) {
+            System.out.println("Inventario lleno: no cupo " + leftover + "x " + displayName);
+            if (gameWindow != null) gameWindow.SWM("No cupo " + leftover + "x " + displayName + " en tu inventario.");
+        } else {
+            System.out.println("Obtuviste: " + amount + "x " + displayName);
+            if (gameWindow != null) gameWindow.SWM("Has conseguido: " + displayName);
+        }
+        return leftover;
+    }
     
     // Verificar qué trigger tiene un npc
     public int triggeredNPC(String targetTipo) {
     	NPC npc = NPCManager.getNPCByTipo(targetTipo);
         return npc.Trigger;
+    }
+    
+    /**
+     * Verifica si el jugador tiene al menos 'amount' unidades de un item.
+     */
+    public boolean playerHasItem(String itemId, int amount) {
+        if (player == null || player.inventory == null) return false;
+        return player.inventory.hasItem(itemId, amount);
+    }
+    
+    /**
+     * Cuenta cuántas unidades de un item tiene el jugador.
+     */
+    public int countPlayerItem(String itemId) {
+        if (player == null || player.inventory == null) return 0;
+        return player.inventory.countItem(itemId);
+    }
+    
+    /**
+     * Remueve items del inventario del jugador. Devuelve la cantidad realmente removida.
+     */
+    public int removePlayerItem(String itemId, int amount) {
+        if (player == null || player.inventory == null) return 0;
+        return player.inventory.removeItem(itemId, amount);
     }
     
     /**
@@ -943,7 +1022,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Moya":
     		if (opcion.equals("SI")) {
-            	gameWindow.startRitmo("Moya", 12, 153);
+            	gameWindow.startRitmo("Moya", 1, 153);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
     		break;
@@ -974,25 +1053,61 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             		currentLine = 5;
             		triggerNPC("Cantina", 2);
             	} else if(npc.Trigger == 2) { // Nada
-            		currentLine = 16;
+            		if(playerHasItem("renaa_gm", 1)) {
+            			currentLine = 9; // Tiene el IG de renaa
+            			npc.Trigger = 3;
+            		} else {
+            			currentLine = 16; // No tiene nada
+            		}
             	} else if(npc.Trigger == 3) { // Ten�s el ig de rena
             		currentLine = 9;
+            	} else if(npc.Trigger == 4) { // Ya le diste todo
+            		currentLine = 16;
             	}
+    		}
+    		if(opcion.equals("SI")) {
+    			// Dar el IG de renaa_gm y recibir pan sin tacc
+    			if(playerHasItem("renaa_gm", 1)) {
+    				removePlayerItem("renaa_gm", 1);
+    				givePlayerItem("pan_sin_tacc", "Pan sin TACC", "pan sin tacc.png", 1, 10);
+    				GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    			}
+    		}
+    		if(opcion.equals("Ok")) {
+    			// Ya recibi� el pan sin tacc
+    			npc.Trigger = 4;
+    		}
+    		if(opcion.equals("NO")) {
+    			// No le da el IG
+    			currentLine = 14;
+    		}
+    		if(opcion.equals("Dale")) {
+    			// Recibe el chocolate dubai (cuando gana a Los Vagos)
+    			givePlayerItem("chocolate_dubai", "Chocolate Dubai", "chocolate dubai.png", 1, 10);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		if (opcion.equals("Salir")) System.out.println("Usuario dijo que no");
     		break;
     		
     	case "Gera":
     		if(opcion.equals("Aceptar")) {
+    			// Dar libro de automotor
+    			givePlayerItem("libro_automotor", "Libro de Automotor", "libro_Automotor.png", 1, 1);
     			npc.Trigger = 1;
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		break;
     		
     	case "Findlay":
     		if(opcion.equals("Agarrar lapicera")) {
-    			// Darle lapciera al jugador
+                // Darle lapicera al jugador (debe tener 8 marcadores)
+                if(countPlayerItem("marcador_findlay") >= 8) {
+                    gameWindow.gamePanel.givePlayerItem("lapicera", "Lapicera", "lapicera.png", 1, 1);
+                    npc.Trigger = 2; // marcar como tomado
+                    GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+                }
     		}
-    		if(opcion.equals("Qué haces en un tacho?")) {
+    		if(opcion.equals("Qu� haces en un tacho?")) {
     			npc.Trigger = 1;
     			triggerNPC("Lavega", 1);
     		}
@@ -1000,30 +1115,46 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Lavega":
     		if(opcion.equals("Agarrar marcador")) {
-    			// Darle marcador al jugador
-    			npc.Trigger = 2;
+                // Darle marcador al jugador
+                gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador", "marcador_Rojo.png", 1, 10);
+                npc.Trigger = 2;
+                GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		break;
     		
     	case "Ulises":
     		if(opcion.equals("Agarrar")) {
-    			// Darle Zancos al jugador
-    			npc.Trigger = 1;
+                // Darle Zancos al jugador
+                gameWindow.gamePanel.givePlayerItem("zancos", "Zancos", "zancos.png", 1, 1);
+                npc.Trigger = 1;
+                GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		break;
     		
     	case "Martin":
     		if(opcion.equals("Me lo das?")) {
-    			npc.Trigger = 1;
+    			// Verificar si tiene al menos 7 marcadores
+    			if(countPlayerItem("marcador_findlay") >= 7) {
+    				npc.Trigger = 2; // Tiene los 7, puede pasar a la pelea
+    			} else {
+    				npc.Trigger = 1; // No tiene todos, mostrar mensaje
+    			}
     		}
     		if(opcion.equals("SI")) {
     			// Pelear con martin
+    			gameWindow.startRitmo("Martin", 10, 180);
+    		}
+    		if(opcion.equals("NO")) {
+    			// No quiere pelear
     		}
     		break;
     		
     	case "Kreimer":
     		if(opcion.equals("Agarrar fusible")) {
-    			// Darle fusible al jugador
+                // Darle fusible al jugador
+                gameWindow.gamePanel.givePlayerItem("fusible", "Fusible", "Fusible.png", 1, 5);
+                npc.Trigger = 2; // Ya le dio el fusible
+                GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		break;
     		

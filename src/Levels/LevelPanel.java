@@ -593,45 +593,58 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	switch(level) {
     	// Añadir Item al inventario del gamepanel
     	case "Melody":
-    		
     		// Desbloquear taller
     		gameWindow.gamePanel.triggerNPC("Zambrana", 1);
     		gameWindow.gamePanel.triggerNPC("Melody", 2);
     		gameWindow.gamePanel.triggerNPC("Kreimer", 1);
     		gameWindow.gamePanel.taller = true;
-    		
     		break;
     	
     	case "Los Vagos":
-    		// trigger al de la cantina para que te de un item al hablar
+    		// trigger al de la cantina para que te de un item al hablar (no dar item directo)
+    		gameWindow.gamePanel.triggerNPC("Cantina", 1);
     		break;
     		
     	case "Gennuso":
     		// Conseguir Item: IG de renaa_gm
+    		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Rita":
     		// Conseguir Item: Procesador
+    		gameWindow.gamePanel.givePlayerItem("procesador", "Procesador", "procesador.png", 1, 1);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Casas":
     		// Conseguir Item: Llave de SUM
+    		gameWindow.gamePanel.givePlayerItem("llave_sum", "Llave del SUM", "llave_SUM.png", 1, 1);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Ledesma":
     		// Conseguir Item: Pastafrola
+    		gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 5);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Pecile":
     		// Conseguir Item: Llave de la reja
+    		gameWindow.gamePanel.givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Signorello":
     		// Conseguir Item: Marcador de findlay
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Azul.png", 1, 10);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Martin":
     		// Conseguir Item: Marcador de findlay
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Verde.png", 1, 10);
+    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     	}
     }
