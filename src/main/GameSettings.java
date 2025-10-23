@@ -363,7 +363,7 @@ public class GameSettings extends JPanel implements KeyListener {
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setForeground(Color.WHITE);
-        btn.setFont(GameWindow.Pixelart.deriveFont(36f));
+        btn.setFont(GameWindow.Pixelart.deriveFont(GW.SF(46f)));
         btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
         btn.addActionListener(listener);
         return btn;

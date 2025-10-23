@@ -31,7 +31,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private int currentTeleportId = -1; // ID del teleport actual
     
     // Posiciones en el Mapa
-    private static int SCALE = 28; // Reducido en 20%
+    private static int SCALE = GW.SX(34);
     
     // Interactuar con NPC
     public boolean interactuando = false;
@@ -53,7 +53,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Zonas desbloqueadas:
     
-    public boolean taller = false;
+    public boolean taller = true;
 
     // Tienda
     
@@ -230,20 +230,20 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             g2d.drawRect(GW.SX(520), GW.SY(200), GW.SX(880), GW.SY(700));
             
             // Escribir Nombre
-            g2d.setFont(GameWindow.Pixelart.deriveFont(45f));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(65f)));
             g2d.drawString("Cantina", GW.SX(560), GW.SY(300));
             
             // Ayuda
-            g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(35f)));
             g2d.drawString("ESC - Cerrar", GW.SX(1120), GW.SY(300));
             
             // Plata
-            g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
             g2d.drawString(monedas + "$", GW.SX(560), GW.SY(870));
             
             // Texto al Comprar
             g2d.setColor(tiendaColor);
-            g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
             g2d.drawString(textoTienda, GW.SX(560), GW.SY(800));
             
             int posY = 500;
@@ -251,7 +251,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             for(String itemCantina : itemsCantina) {
             	
             	g2d.setColor(Color.WHITE);
-            	g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+            	g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
             	if(StockItem[i] == 0) { // No queda Stock del item
             		g2d.setColor(new Color(120,120,120));
             	}
@@ -268,7 +268,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             }
             
             g2d.setColor(Color.WHITE);
-            g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(35f)));
             g2d.drawString(infoItem[OpcionTienda], GW.SX(1100), GW.SY(600));
     		
     	}
@@ -284,19 +284,19 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 g2d.drawRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
                 
                 // Escribir Nombre
-                g2d.setFont(GameWindow.Pixelart.deriveFont(40f));
+                g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(55f)));
                 g2d.drawString(nombreNPC, GW.SX(340), GW.SY(700));
                 
                 // Escribir Texto
-                g2d.setFont(GameWindow.Pixelart.deriveFont(30f));
+                g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
                 drawDialogue(g2d, textoActual, GW.SX(340), GW.SY(750), GW.SX(1200)); // 300px es el ancho máximo del cuadro
                 
                 // Texto Ayuda
-                g2d.setFont(GameWindow.Pixelart.deriveFont(25f));
+                g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(35f)));
                 g2d.drawString(GameSettings.teclaAdelantarTexto + " >>", GW.SX(1350), GW.SY(925));
                 
                 // Dibujar Opciones
-                g2d.setFont(GameWindow.Pixelart.deriveFont(36f));
+                g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(46f)));
                 if (eligiendoOpcion) {
                     for (int i = 0; i < opciones.length; i++) {
                         int x = GW.SX(480) + i * GW.SX(384);
@@ -762,7 +762,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
         // Título
-        g2d.setFont(GameWindow.Pixelart.deriveFont(90f));
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(110f)));
         g2d.setColor(Color.WHITE);
         String titulo = "PAUSA";
         FontMetrics fmTitulo = g2d.getFontMetrics();
@@ -771,7 +771,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         g2d.drawString(titulo, xTitulo, yTitulo);
 
         // Opciones
-        g2d.setFont(GameWindow.Pixelart.deriveFont(55f));
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(65f)));
         FontMetrics fmOpciones = g2d.getFontMetrics();
 
         int espacioEntreOpciones = 90;
@@ -926,6 +926,52 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		}
     		if (opcion.equals("Salir")) System.out.println("Usuario dijo que no");
     		break;
+    		
+    	case "Gera":
+    		if(opcion.equals("Aceptar")) {
+    			npc.Trigger = 1;
+    		}
+    		break;
+    		
+    	case "Findlay":
+    		if(opcion.equals("Agarrar lapicera")) {
+    			// Darle lapciera al jugador
+    		}
+    		if(opcion.equals("Qué haces en un tacho?")) {
+    			npc.Trigger = 1;
+    			triggerNPC("Lavega", 1);
+    		}
+    		break;
+    		
+    	case "Lavega":
+    		if(opcion.equals("Agarrar marcador")) {
+    			// Darle marcador al jugador
+    			npc.Trigger = 2;
+    		}
+    		break;
+    		
+    	case "Ulises":
+    		if(opcion.equals("Agarrar")) {
+    			// Darle Zancos al jugador
+    			npc.Trigger = 1;
+    		}
+    		break;
+    		
+    	case "Martin":
+    		if(opcion.equals("Me lo das?")) {
+    			npc.Trigger = 1;
+    		}
+    		if(opcion.equals("SI")) {
+    			// Pelear con martin
+    		}
+    		break;
+    		
+    	case "Kreimer":
+    		if(opcion.equals("Agarrar fusible")) {
+    			// Darle fusible al jugador
+    		}
+    		break;
+    		
     	}
         
         eligiendoOpcion = false;

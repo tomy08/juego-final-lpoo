@@ -28,7 +28,7 @@ public class MainMenu extends JPanel {
         
         // Título del juego
         g2d.setColor(Color.WHITE);
-        g2d.setFont(GameWindow.Pixelart.deriveFont(120f));
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(145f)));
         FontMetrics titleMetrics = g2d.getFontMetrics();
         String title = "La odisea de Moya";
         int titleX = (width - titleMetrics.stringWidth(title)) / 2;
@@ -36,7 +36,7 @@ public class MainMenu extends JPanel {
         g2d.drawString(title, titleX, titleY);
         
         // Opciones del menú
-        g2d.setFont(GameWindow.Pixelart.deriveFont(60f));
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(75f)));
         FontMetrics menuMetrics = g2d.getFontMetrics();
         
         int menuStartY = height / 2;
@@ -60,7 +60,7 @@ public class MainMenu extends JPanel {
         
         // Instrucciones
         g2d.setColor(Color.GRAY);
-        g2d.setFont(GameWindow.Pixelart.deriveFont(35f));
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
         FontMetrics instructionMetrics = g2d.getFontMetrics();
         String instructions = "Usa las flechas ARRIBA/ABAJO para navegar, ENTER para seleccionar";
         int instructionX = (width - instructionMetrics.stringWidth(instructions)) / 2;

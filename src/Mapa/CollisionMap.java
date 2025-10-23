@@ -7,11 +7,13 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
+import main.GW;
+
 public class CollisionMap {
     private BufferedImage collisionImage;
     private int width;
     private int height;
-    private double scaleFactor = 28.0; 
+    private double scaleFactor = GW.SX(34); 
     public CollisionMap(String imagePath) {
         try {
             File imageFile = new File(imagePath);

@@ -18,4 +18,8 @@ public class GW {
     public static double DSY(double value) {
         return GameWindow.instance.DscaleY(value);
     }
+    
+    public static float SF(float value) {
+    	return GameWindow.instance.scaleFont(value);
+    }
 }

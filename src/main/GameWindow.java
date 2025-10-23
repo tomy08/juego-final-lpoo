@@ -254,6 +254,11 @@ public class GameWindow extends JFrame implements KeyListener {
         return (originalY * (getHeight() / (double) ORIGINAL_HEIGHT));
     }
 	
+	public float scaleFont(float originalF) {
+		float scale = Math.min(getWidth() / (float) ORIGINAL_WIDTH, getHeight() / (float) ORIGINAL_HEIGHT);
+    	return (originalF * scale);
+	}
+	
 	// Mensaje al ganar en Ritmo
 	
 	public void SWM(String message) {

@@ -35,19 +35,60 @@ public class NPC {
 		
 		// Triggers de NPCs
 		
+		// Zambrana
 		if(Tipo.equals("Zambrana") && Trigger == 1) {
 			line = 3;
 		}
+		
+		// Melody
 		if(Tipo.equals("Melody") && Trigger == 1) {
 			line = 3;
 		}
 		if(Tipo.equals("Melody") && Trigger == 2) {
 			line = 8;
 		}
+		
+		// Kreimer
 		if(Tipo.equals("Kreimer") && Trigger == 1) {
 			line = 3;
 		}
+		if(Tipo.equals("Kreimer") && Trigger == 2) {
+			line = 7;
+		}
 		
+		// Gera
+		if(Tipo.equals("Gera") && Trigger == 1) {
+			line = 5;
+		}
+		
+		// Findlay
+		if(Tipo.equals("Findlay") && Trigger == 1) {
+			line = 8;
+		}
+		
+		// Lavega
+		if(Tipo.equals("Lavega") && Trigger == 1) {
+			line = 4;
+		}
+		if(Tipo.equals("Lavega") && Trigger == 2) {
+			line = 6;
+		}
+		
+		// Ulises
+		if(Tipo.equals("Ulises") && Trigger == 1) {
+			line = 6;
+		}
+		
+		// Martin
+		if(Tipo.equals("Martin") && Trigger == 1) { // Despues de hablarle por primera vez
+			line = 6;
+		}
+		if(Tipo.equals("Martin") && Trigger == 2) { // Cuando tenes todos los marcadores
+			line = 8;
+		}
+		if(Tipo.equals("Martin") && Trigger == 3) { // Despues de ganarle 
+			line = 12;
+		}
 		
 		return line;
 	}
