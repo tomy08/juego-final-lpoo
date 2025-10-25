@@ -26,7 +26,7 @@ public class Player {
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
         this.y = startY;
-        this.speed = GW.SQ(7);
+        this.speed = GW.SQ(14);
         this.size = GW.SX(40);
         this.panel = panel;
         this.color = Color.CYAN;

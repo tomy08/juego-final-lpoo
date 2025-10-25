@@ -591,7 +591,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     private void LevelToReward(String level) {
     	switch(level) {
-    	// Añadir Item al inventario del gamepanel
+    	
     	case "Melody":
     		// Desbloquear taller
     		gameWindow.gamePanel.triggerNPC("Zambrana", 1);
@@ -608,6 +608,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Gennuso":
     		// Conseguir Item: IG de renaa_gm
     		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
+    		gameWindow.gamePanel.gennusoBien = false;
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
@@ -626,6 +627,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Ledesma":
     		// Conseguir Item: Pastafrola
     		gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 5);
+    		gameWindow.gamePanel.triggerNPC("Ledesma", 3);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
@@ -637,14 +639,20 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     		
     	case "Signorello":
     		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Azul.png", 1, 10);
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Azul.png", 1, 8);
+    		gameWindow.gamePanel.triggerNPC("Signorello", 2);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Martin":
     		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Verde.png", 1, 10);
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Verde.png", 1, 8);
+    		gameWindow.gamePanel.triggerNPC("Martin", 3);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		break;
+    		
+    	case "Pacheco":
+    		gameWindow.gamePanel.triggerNPC("Pacheco", 1);
     		break;
     	}
     }
@@ -663,7 +671,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     		break;
     		
     	case "Gennuso":
-    		message = "Has conseguido ''IG de renna_gm''";
+    		message = "Has conseguido ''IG de renna_gm''... Gennuso ahora está enojado con vos";
     		break;
     		
     	case "Rita":
@@ -683,11 +691,15 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     		break;
     		
     	case "Signorello":
-    		message = "Has conseguido ''Marcador de Findlay''";
+    		message = "Has conseguido ''Marcador azul''";
     		break;
     		
     	case "Martin":
-    		message = "Has conseguido ''Marcador de Findlay''";
+    		message = "Has conseguido ''Marcador verde''... Martin ahora está enojado con vos";
+    		break;
+    		
+    	case "Pacheco":
+    		message = "Muy probablemente NO aprendiste a jugar a esto... gracias a Pacheco";
     		break;
     	}
     	
@@ -702,7 +714,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
         		gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
-        		Musica.detenerMusica();
+        		Musica.reproducirMusica("resources/Music/Fondo.wav");
                 return;
         	} else if(!lose){
         		pausa = !pausa;

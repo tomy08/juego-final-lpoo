@@ -100,6 +100,54 @@ public class NPC {
 			line = 12;
 		}
 		
+		// Guerra
+		if(Tipo.equals("Guerra") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Guerra") && Trigger == 2) {
+			line = 12;
+		}
+		
+		// Ascensor
+		if(Tipo.equals("Ascensor") && Trigger == 1) {
+			line = 3;
+		}
+		
+		// Ciccaroni
+		if(Tipo.equals("Ciccaroni") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Ciccaroni") && Trigger == 2) {
+			line = 11;
+		}
+		
+		// Signorello
+		if(Tipo.equals("Signorello") && Trigger == 1) {
+			line = 7;
+		}
+		if(Tipo.equals("Signorello") && Trigger == 2) {
+			line = 9;
+		}
+		
+		// Ledesma
+		if(Tipo.equals("Ledesma") && Trigger == 1) {
+			line = 5;
+		}
+		if(Tipo.equals("Ledesma") && Trigger == 2) {
+			line = 7;
+		}
+		if(Tipo.equals("Ledesma") && Trigger == 3) {
+			line = 12;
+		}
+		
+		// Pacheco
+		if(Tipo.equals("Pacheco") && Trigger == 1) {
+			line = 4;
+		}
+		if(Tipo.equals("Pacheco") && Trigger == 2) {
+			line = 7;
+		}
+		
 		return line;
 	}
 	

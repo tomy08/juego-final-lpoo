@@ -2,6 +2,10 @@ package entities;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
+
+import main.GW;
+import main.GameWindow;
+
 import java.awt.Color;
 import java.awt.Font;
 
@@ -145,8 +149,10 @@ public class Inventory {
                 if (!s.isEmpty()) {
                     Image img = s.getItem().getImage();
                     if (img != null) g2d.drawImage(img, x+6, y+6, slotSize-12, slotSize-12, null);
-                    g2d.setFont(new Font("Arial", Font.BOLD, 16));
-                    g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-10);
+                    g2d.setFont(GameWindow.Pixelart.deriveFont((GW.SF(30f))));
+                    if(s.getAmount() > 1) {
+                    	g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-10);
+                    }
                 }
             }
         }
