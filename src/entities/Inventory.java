@@ -17,6 +17,8 @@ public class Inventory {
     private int columns;
     private int rows;
     private int selectedHotbar = 0;
+    private int selectedRow = 0;
+    private int selectedColumn = 0;
 
     public Inventory(int columns, int rows) {
         this.columns = columns;
@@ -124,6 +126,44 @@ public class Inventory {
         return removed;
     }
 
+    // -----------------------
+    // FUNCIONALIDAD DE SELECCIÓN
+    // -----------------------
+    public void selectHotbarSlot(int index) {
+        if (index >= 0 && index < columns) {
+            selectedHotbar = index;
+        }
+    }
+
+    public void changeHotbarSelection(int delta) {
+        selectedHotbar += delta;
+        if (selectedHotbar < 0) selectedHotbar = columns - 1;
+        if (selectedHotbar >= columns) selectedHotbar = 0;
+    }
+
+    public ItemStack getSelectedItem() {
+        return getSlot(selectedHotbar);
+    }
+    
+    public void selectSlot(int row, int col) {
+        if (row >= 0 && row < rows && col >= 0 && col < columns) {
+            selectedRow = row;
+            selectedColumn = col;
+        }
+    }
+
+    public int getSelectedRow() { return selectedRow; }
+    public int getSelectedColumn() { return selectedColumn; }
+
+    public ItemStack getSelectedSlot() {
+        int idx = selectedRow * columns + selectedColumn;
+        return getSlot(idx);
+    }
+
+
+    // -----------------------
+    // DIBUJO DEL INVENTARIO
+    // -----------------------
     public void drawFullInventory(Graphics2D g2d, int panelWidth, int panelHeight) {
         int slotSize = 64;
         int padding = 8;
@@ -140,20 +180,38 @@ public class Inventory {
                 int idx = r * columns + c;
                 int x = startX + c * (slotSize + padding);
                 int y = startY + r * (slotSize + padding);
+
                 g2d.setColor(Color.DARK_GRAY);
                 g2d.fillRect(x, y, slotSize, slotSize);
                 g2d.setColor(Color.WHITE);
                 g2d.drawRect(x, y, slotSize, slotSize);
 
+                // Borde amarillo si está seleccionado (solo hotbar)
+                if (r == selectedRow && c == selectedColumn) {
+                    g2d.setColor(Color.YELLOW);
+                    g2d.drawRect(x-2, y-2, slotSize+4, slotSize+4);
+                }
+
+
                 ItemStack s = slots[idx];
                 if (!s.isEmpty()) {
                     Image img = s.getItem().getImage();
                     if (img != null) g2d.drawImage(img, x+6, y+6, slotSize-12, slotSize-12, null);
+
                     g2d.setFont(GameWindow.Pixelart.deriveFont((GW.SF(30f))));
                     if(s.getAmount() > 1) {
-                    	g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-10);
+                        g2d.drawString(String.valueOf(s.getAmount()), x+6, y+slotSize-10);
                     }
+
+                    // Mostrar “Usar” si es consumible
+                    if (r == selectedRow && c == selectedColumn && s.getItem() != null && s.getItem().isConsumable()) {
+                        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(18f)));
+                        g2d.setColor(Color.GREEN);
+                        g2d.drawString("(Usar)", x, y - 6);
+                    }
+
                 }
+
             }
         }
     }

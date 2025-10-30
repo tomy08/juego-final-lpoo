@@ -35,4 +35,10 @@ public class Item {
     public int hashCode() {
         return id.hashCode();
     }
+    
+    public boolean isConsumable() {
+        String itemId = getId();
+        return itemId.equals("pancho") || itemId.equals("chocolate_dubai") || itemId.equals("jugo_placer");
+    }
+
 }
