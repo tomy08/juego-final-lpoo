@@ -194,6 +194,61 @@ public class NPC {
 			line = 8;
 		}
 		
+		// Casas
+		if(Tipo.equals("Casas") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Casas") && Trigger == 2) {
+			line = 8;
+		}
+		if(Tipo.equals("Casas") && Trigger == 3) {
+			line = 10;
+		}
+		
+		// Rita
+		if(Tipo.equals("Rita") && Trigger == 1) {
+			line = 7;
+		}
+		
+		// Vagos
+		if(Tipo.equals("Vagos") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Vagos") && Trigger == 2) {
+			line = 10;
+		}
+		
+		// Gramajo
+		if(Tipo.equals("Gramajo") && Trigger == 1) {
+			line = 8;
+		}
+		if(Tipo.equals("Gramajo") && Trigger == 2) {
+			line = 11;
+		}
+		
+		// Gennuso
+		if(Tipo.equals("Gennuso") && Trigger == 1) {
+			line = 12;
+		}
+		
+		// Interino
+		if(Tipo.equals("Interino") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Interino") && Trigger == 2) {
+			line = 9;
+		}
+		
+		// Estufa
+		if(Tipo.equals("Estufa") && Trigger == 1) {
+			line = 3;
+		}
+		
+		// Caja
+		if(Tipo.equals("Caja") && Trigger == 1) {
+			line = 6;
+		}
+		
 		return line;
 	}
 	

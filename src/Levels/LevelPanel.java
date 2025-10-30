@@ -604,24 +604,28 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Los Vagos":
     		// trigger al de la cantina para que te de un item al hablar (no dar item directo)
     		gameWindow.gamePanel.triggerNPC("Cantina", 1);
+    		gameWindow.gamePanel.triggerNPC("Vagos", 2);
     		break;
     		
     	case "Gennuso":
     		// Conseguir Item: IG de renaa_gm
     		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
     		gameWindow.gamePanel.gennusoBien = false;
+    		gameWindow.gamePanel.triggerNPC("Gennuso", 1);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Rita":
     		// Conseguir Item: Procesador
     		gameWindow.gamePanel.givePlayerItem("procesador", "Procesador", "procesador.png", 1, 1);
+    		gameWindow.gamePanel.triggerNPC("Rita", 1);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Casas":
     		// Conseguir Item: Llave de SUM
     		gameWindow.gamePanel.givePlayerItem("llave_sum", "Llave del SUM", "llave_SUM.png", 1, 1);
+    		gameWindow.gamePanel.triggerNPC("Casas", 3);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		

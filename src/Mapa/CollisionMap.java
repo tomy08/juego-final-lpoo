@@ -110,7 +110,7 @@ public class CollisionMap {
         return -1;
     }
     
-    // 🔹 Verifica si el jugador está en una zona de teleport (verifica rectángulo)
+    // Verifica si el jugador está en una zona de teleport (verifica rectángulo)
     public boolean isTeleportZoneRect(int x, int y, int width, int height) {
         // Verificar las 4 esquinas y el centro
         if (isTeleportZone(x, y)) return true;
@@ -122,7 +122,7 @@ public class CollisionMap {
         return false;
     }
     
-    // 🔹 Obtiene el ID del teleport donde está el jugador (verifica rectángulo)
+    // Obtiene el ID del teleport donde está el jugador (verifica rectángulo)
     public int getTeleportIdRect(int x, int y, int width, int height) {
         // Verificar el centro primero (más preciso)
         int id = getTeleportId(x + width/2, y + height/2);
@@ -168,7 +168,7 @@ public class CollisionMap {
                         continue;
                     }
 
-                    // ¡Destino encontrado! Lo devuelve
+                    // Devuelve el destino
                     return new Point((int)(x * scaleFactor), (int)(y * scaleFactor));
                 }
             }
