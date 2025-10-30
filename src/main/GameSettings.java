@@ -362,8 +362,8 @@ public class GameSettings extends JPanel implements KeyListener {
             case "sonido":
                 return new String[] {
                     "VOLUMEN GENERAL: " + volumenGeneral + "% ",
-                    "Música: " + (musicaActivada ? "Activada" : "Desactivada"),
-                    "Efectos: " + (efectosActivados ? "Activados" : "Desactivados")
+                    "MUSICA: " + (musicaActivada ? "ACTIVO" : "DESACTIVO"),
+                    "EFECTOS: " + (efectosActivados ? "ACTIVO" : "DESACTIVO")
                 };
             default:
                 return new String[]{};
@@ -481,3 +481,4 @@ public class GameSettings extends JPanel implements KeyListener {
 
     }
 }
+
