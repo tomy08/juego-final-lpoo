@@ -19,13 +19,13 @@ public class GameSettings extends JPanel implements KeyListener {
     private int contentOffsetY = 0;
     private int scrollSpeed = 20;
 
-    // Sección activa: "teclas", "pantalla", "sonido"
+    // Sección activa: "teclas", "sonido"
     private String seccionActiva = "teclas";
 
     public static Font Pixelart;
 
     // Botones
-    private JButton btnTeclas, btnPantalla, btnSonido;
+    private JButton btnTeclas, btnSonido;
     
     int opcionSeleccionada = 0;
     
@@ -68,13 +68,7 @@ public class GameSettings extends JPanel implements KeyListener {
 
 
     
-    
-    
-    // Pantalla
-    private String[] resoluciones = {"1280x720", "1920x1080", "2560x1440", "3840x2160"};
-    private int resolucionActual = 1;
-    private boolean pantallaCompleta = true;
-    private boolean vsync = false;
+ 
     
     // Sonido
     private int volumenGeneral = 100;
@@ -158,13 +152,7 @@ public class GameSettings extends JPanel implements KeyListener {
             repaint();
         });
 
-        btnPantalla = crearBoton("PANTALLA", e -> {
-            seccionActiva = "pantalla";
-            opcionSeleccionada = 0;
-            esperandoTecla = false;
-            requestFocusInWindow();
-            repaint();
-        });
+
 
         btnSonido = crearBoton("SONIDO", e -> {
             seccionActiva = "sonido";
@@ -175,7 +163,6 @@ public class GameSettings extends JPanel implements KeyListener {
         });
 
         add(btnTeclas);
-        add(btnPantalla);
         add(btnSonido);
     }
     
@@ -199,21 +186,7 @@ public class GameSettings extends JPanel implements KeyListener {
     
     private void modificarOpcion(int direccion) {
         switch (seccionActiva) {
-            case "pantalla":
-                switch (opcionSeleccionada) {
-                    case 0: // Resolución
-                        resolucionActual += direccion;
-                        if (resolucionActual < 0) resolucionActual = resoluciones.length - 1;
-                        if (resolucionActual >= resoluciones.length) resolucionActual = 0;
-                        break;
-                    case 1: // Pantalla completa
-                        pantallaCompleta = !pantallaCompleta;
-                        break;
-                    case 2: // VSync
-                        vsync = !vsync;
-                        break;
-                }
-                break;
+                
             case "sonido":
                 switch (opcionSeleccionada) {
                 case 0: // Volumen general
@@ -386,14 +359,9 @@ public class GameSettings extends JPanel implements KeyListener {
                     "NOTA ARRIBA: " + teclaNotaArriba,
                     "NOTA DERECHA: " + teclaNotaDerecha
                 };
-            case "pantalla":
-                return new String[] {
-                    "Resolución: " + resoluciones[resolucionActual],
-                    "Pantalla completa: " + (pantallaCompleta ? "Activado" : "Desactivado") ,
-                };
             case "sonido":
                 return new String[] {
-                    "Volumen general: " + volumenGeneral + "% ",
+                    "VOLUMEN GENERAL: " + volumenGeneral + "% ",
                     "Música: " + (musicaActivada ? "Activada" : "Desactivada"),
                     "Efectos: " + (efectosActivados ? "Activados" : "Desactivados")
                 };
@@ -403,7 +371,7 @@ public class GameSettings extends JPanel implements KeyListener {
     }
     
     private void cambiarSeccion(int direccion) {
-        String[] secciones = {"teclas", "pantalla", "sonido"};
+        String[] secciones = {"teclas", "sonido"};
         int index = 0;
         for (int i = 0; i < secciones.length; i++) {
             if (seccionActiva.equals(secciones[i])) {
@@ -427,7 +395,6 @@ public class GameSettings extends JPanel implements KeyListener {
         
         // Actualizar color de los botones según la sección activa
         btnTeclas.setForeground(seccionActiva.equals("teclas") ? Color.YELLOW : Color.WHITE);
-        btnPantalla.setForeground(seccionActiva.equals("pantalla") ? Color.YELLOW : Color.WHITE);
         btnSonido.setForeground(seccionActiva.equals("sonido") ? Color.YELLOW : Color.WHITE);
 
         int width = getWidth();
@@ -502,15 +469,15 @@ public class GameSettings extends JPanel implements KeyListener {
         g2.drawString(footer, (width - footerWidth) / 2, (int)(height * 0.95));
 
         // Posicionar botones de forma responsive
-        int btnWidth = (int)(width * 0.18);
+        int btnWidth = (int)(width * 0.22);
         int btnHeight = (int)(height * 0.07);
-        int spacingX = (int)(width * 0.02);
-        int totalWidth = btnWidth * 3 + spacingX * 2;
+        int spacingX = (int)(width * 0.03);
+        int totalWidth = btnWidth * 2 + spacingX;
         int startX = (width - totalWidth) / 2;
         int btnY = (int)(height * 0.15);
 
         btnTeclas.setBounds(startX, btnY, btnWidth, btnHeight);
-        btnPantalla.setBounds(startX + btnWidth + spacingX, btnY, btnWidth, btnHeight);
-        btnSonido.setBounds(startX + (btnWidth + spacingX) * 2, btnY, btnWidth, btnHeight);
+        btnSonido.setBounds(startX + btnWidth + spacingX, btnY, btnWidth, btnHeight);
+
     }
 }
