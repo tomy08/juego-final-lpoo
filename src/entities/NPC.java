@@ -108,9 +108,20 @@ public class NPC {
 			line = 12;
 		}
 		
-		// Ascensor
+		// Ascensores
 		if(Tipo.equals("Ascensor") && Trigger == 1) {
-			line = 3;
+			line = 4;
+		}
+		if(Tipo.equals("ASCENSOR") && Trigger == 1) {
+			line = 5;
+		}
+		
+		// Pecile
+		if(Tipo.equals("Pecile") && Trigger == 1) {
+			line = 4;
+		}
+		if(Tipo.equals("Pecile") && Trigger == 2) {
+			line = 11;
 		}
 		
 		// Ciccaroni
@@ -146,6 +157,41 @@ public class NPC {
 		}
 		if(Tipo.equals("Pacheco") && Trigger == 2) {
 			line = 7;
+		}
+		
+		// Moya
+		if(Tipo.equals("Moya") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Moya") && Trigger == 2) {
+			line = 9;
+		}
+		if(Tipo.equals("Moya") && Trigger == 3) {
+			line = 22;
+		}
+		
+		// Linzalata
+		if(Tipo.equals("Linzalata") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Linzalata") && Trigger == 2) {
+			line = 9;
+		}
+		
+		// Tachos de basura
+		if(Tipo.equals("TAcho") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("TACho") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("TACHO") && Trigger == 1) {
+			line = 3;
+		}
+		
+		// Biblioteca
+		if(Tipo.equals("Biblioteca") && Trigger == 1) {
+			line = 8;
 		}
 		
 		return line;

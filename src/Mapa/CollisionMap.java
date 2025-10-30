@@ -144,33 +144,70 @@ public class CollisionMap {
         return -1;
     }
     
-    // 🔹 Encuentra la posición correspondiente del teleport en el otro mapa según el ID
-    public Point findTeleportDestination(int teleportId) {
+    // Encuentra la posición correspondiente del teleport en el otro mapa según el ID
+    public Point findTeleportDestination(int teleportId, int currentX, int currentY, boolean ignoreExclusion) {
         if (collisionImage == null) return null;
-        
-        // Buscar el píxel rojo con el mismo ID en el mapa
+
+        int mapCurrentX = (int)(currentX / scaleFactor);
+        int mapCurrentY = (int)(currentY / scaleFactor);
+        int exclusionRadius = 10;
+
         for (int y = 0; y < collisionImage.getHeight(); y++) {
             for (int x = 0; x < collisionImage.getWidth(); x++) {
                 int rgb = collisionImage.getRGB(x, y);
                 Color color = new Color(rgb, true);
+                
                 if (isRedPixel(color) && color.getRed() == teleportId) {
-                    // Devolver la posición escalada
+                    if (ignoreExclusion && !isTeleportChangeFloor(color)) {
+                        continue;
+                    }
+                    
+                    if (!ignoreExclusion &&
+                        Math.abs(x - mapCurrentX) <= exclusionRadius &&
+                        Math.abs(y - mapCurrentY) <= exclusionRadius) {
+                        continue;
+                    }
+
+                    // ¡Destino encontrado! Lo devuelve
                     return new Point((int)(x * scaleFactor), (int)(y * scaleFactor));
                 }
             }
         }
-        
-        return null; // No se encontró teleport con ese ID
+
+        return null;
+    }
+
+    public Point findTeleportDestination(int teleportId, int currentX, int currentY) {
+        return findTeleportDestination(teleportId, currentX, currentY, false);
     }
     
-    // 🔹 Verifica si un color es rojo (teleport)
-    private boolean isRedPixel(Color color) {
-        // Un píxel es considerado rojo si:
-        // - Red > 200
-        // - Green < 100
-        // - Blue < 100
-        return color.getRed() > 200 && color.getGreen() < 100 && color.getBlue() < 100;
+    private boolean isTeleportSameFloor(Color color) {
+        return color.getRed() > 200 && color.getGreen() < 30 && color.getBlue() < 30;
     }
+
+    public boolean isTeleportChangeFloor(Color color) {
+        return color.getRed() > 200 && (color.getGreen() >= 30 && color.getGreen() < 200 || color.getBlue() >= 30 && color.getBlue() < 200);
+    }
+    
+    private boolean isRedPixel(Color color) {
+        return isTeleportSameFloor(color) || isTeleportChangeFloor(color);
+    }
+    
+    public Color getPixelColor(int x, int y) {
+        if (collisionImage == null) return Color.BLACK;
+
+        int mapX = (int)(x / scaleFactor);
+        int mapY = (int)(y / scaleFactor);
+
+        if (mapX < 0 || mapX >= collisionImage.getWidth() ||
+            mapY < 0 || mapY >= collisionImage.getHeight()) {
+            return Color.BLACK;
+        }
+
+        int rgb = collisionImage.getRGB(mapX, mapY);
+        return new Color(rgb, true);
+    }
+
 
     public boolean hasCollisionRect(int x, int y, int width, int height) {
         if (hasCollision(x, y)) return true;
