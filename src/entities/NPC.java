@@ -63,7 +63,7 @@ public class NPC {
 			line = 3;
 		}
 		if(Tipo.equals("Kreimer") && Trigger == 2) {
-			line = 7;
+			line = 11;
 		}
 		
 		// Gera
@@ -108,9 +108,20 @@ public class NPC {
 			line = 12;
 		}
 		
-		// Ascensor
+		// Ascensores
 		if(Tipo.equals("Ascensor") && Trigger == 1) {
-			line = 3;
+			line = 4;
+		}
+		if(Tipo.equals("ASCENSOR") && Trigger == 1) {
+			line = 5;
+		}
+		
+		// Pecile
+		if(Tipo.equals("Pecile") && Trigger == 1) {
+			line = 4;
+		}
+		if(Tipo.equals("Pecile") && Trigger == 2) {
+			line = 11;
 		}
 		
 		// Ciccaroni
@@ -146,6 +157,96 @@ public class NPC {
 		}
 		if(Tipo.equals("Pacheco") && Trigger == 2) {
 			line = 7;
+		}
+		
+		// Moya
+		if(Tipo.equals("Moya") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Moya") && Trigger == 2) {
+			line = 9;
+		}
+		if(Tipo.equals("Moya") && Trigger == 3) {
+			line = 22;
+		}
+		
+		// Linzalata
+		if(Tipo.equals("Linzalata") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Linzalata") && Trigger == 2) {
+			line = 9;
+		}
+		
+		// Tachos de basura
+		if(Tipo.equals("TAcho") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("TACho") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("TACHO") && Trigger == 1) {
+			line = 3;
+		}
+		
+		// Biblioteca
+		if(Tipo.equals("Biblioteca") && Trigger == 1) {
+			line = 8;
+		}
+		
+		// Casas
+		if(Tipo.equals("Casas") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Casas") && Trigger == 2) {
+			line = 8;
+		}
+		if(Tipo.equals("Casas") && Trigger == 3) {
+			line = 10;
+		}
+		
+		// Rita
+		if(Tipo.equals("Rita") && Trigger == 1) {
+			line = 7;
+		}
+		
+		// Vagos
+		if(Tipo.equals("Vagos") && Trigger == 1) {
+			line = 3;
+		}
+		if(Tipo.equals("Vagos") && Trigger == 2) {
+			line = 10;
+		}
+		
+		// Gramajo
+		if(Tipo.equals("Gramajo") && Trigger == 1) {
+			line = 8;
+		}
+		if(Tipo.equals("Gramajo") && Trigger == 2) {
+			line = 11;
+		}
+		
+		// Gennuso
+		if(Tipo.equals("Gennuso") && Trigger == 1) {
+			line = 12;
+		}
+		
+		// Interino
+		if(Tipo.equals("Interino") && Trigger == 1) {
+			line = 6;
+		}
+		if(Tipo.equals("Interino") && Trigger == 2) {
+			line = 9;
+		}
+		
+		// Estufa
+		if(Tipo.equals("Estufa") && Trigger == 1) {
+			line = 3;
+		}
+		
+		// Caja
+		if(Tipo.equals("Caja") && Trigger == 1) {
+			line = 6;
 		}
 		
 		return line;

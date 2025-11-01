@@ -1,12 +1,15 @@
 package main;
 import javax.swing.*;
 
+import Levels.LevelPanel;
 import Mapa.CollisionMap;
 import Sonidos.Musica;
 import entities.NPC;
 import entities.Player;
 import entities.NPCManager;
 import entities.Item;
+import entities.Inventory;
+import entities.ItemStack;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GamePanel extends JPanel implements GameThread.Updatable {
     
@@ -62,6 +66,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Zonas desbloqueadas:
     
     public boolean taller = true;
+    public boolean ascensorTaller = false;
 
     // Tienda
     
@@ -102,18 +107,20 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private boolean paused = false;
     private int opcionPausa = 0;
-    private String[] opcionesPausa = {"CONTINUAR","SETTINGS", "VOLVER AL MENU"};
+    private String[] opcionesPausa = {"CONTINUAR","CONFIGURACION", "VOLVER AL MENU"};
 
     // Inventario
     private boolean inventoryOpen = false;
     
     // Render
-    ArrayList<Object> renderList = new ArrayList<>();
+    private final CopyOnWriteArrayList<Object> renderList = new CopyOnWriteArrayList<>();
 
+    // Musica
+    public boolean musicaParada = false;
     
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
-        setBackground(Color.DARK_GRAY);
+        setBackground(Color.BLACK);
         setFocusable(true);
         
         Musica.reproducirMusica("resources/Music/Fondo.wav");
@@ -123,13 +130,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         plantaAltaMap = new CollisionMap("resources/Collision_Maps/PLANTAALTA.png");
         plantaBajaMap = new CollisionMap("resources/Collision_Maps/PLANTABAJA.png");
         
+        // Cargar teclas
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador
-        player = new Player(130 * SCALE, 159 * SCALE, this);
+        player = new Player(282 * SCALE, 43 * SCALE, this);
+        
+        // Precargar 2do mapa
+        CargarZona(1);
+        
+        // Cargar mapa de inicio
         CargarZona(0);
-        
-        
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -152,7 +163,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         
     }
     
@@ -208,7 +218,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                  else if (o instanceof NPC n) n.drawNPC(g2d);
              }
         }
-       
 
         for(NPC npc : NPCs) {
              npc.drawInteractive(g2d, GameSettings.teclaInteractuar);
@@ -325,7 +334,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 
                 // Escribir Nombre
                 g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(55f)));
-                g2d.drawString(nombreNPC, GW.SX(340), GW.SY(700));
+                g2d.drawString(nombreNPC.toUpperCase(), GW.SX(340), GW.SY(700));
                 
                 // Escribir Texto
                 g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
@@ -376,7 +385,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         // Actualizar movimiento del jugador basado en teclas presionadas
         boolean moving = false;
-        double deltaX = 0, deltaY = 0;
+        double deltaX = 0, deltaY = 0;        
         
         if(!interactuando && !EnTienda) {
                 if (pressedKeys.contains(GameSettings.KEY_UP)) {
@@ -434,10 +443,21 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 }
         }
         
-        // No está permitido taller en planta baja si no se desbloquea
-        if (!taller && !enPlantaAlta) {
-            if (player.getX() > 168 * SCALE) {  
+        // Zonas a desbloquear plantaBaja
+        if (!enPlantaAlta) {
+        	// Taller
+            if (!taller && player.getX() > 168 * SCALE) {  
                 player.setX(168 * SCALE);
+            }
+            
+            // Laboratorio
+            if (!playerHasItem("llave_laboratorio", 1) && player.getX() < 22 * SCALE && player.getY() > 240 * SCALE) {
+            	player.setX(22 * SCALE);
+            }
+            
+            // Ascensor taller
+            if (!ascensorTaller && player.getX() >= 219 * SCALE && player.getX() < 225 * SCALE && player.getY() < 204 * SCALE) {
+            	player.setY(204 * SCALE);
             }
         }
         
@@ -597,14 +617,66 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             repaint();
             return;
         }
+        
+        // Moverse y usar el inventario
+        if (inventoryOpen && player != null && player.inventory != null) {
+            Inventory inv = player.inventory;
+            switch(keyCode) {
+                case KeyEvent.VK_UP:
+                    inv.selectSlot((inv.getSelectedRow() - 1 + inv.getRows()) % inv.getRows(), inv.getSelectedColumn());
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    inv.selectSlot((inv.getSelectedRow() + 1) % inv.getRows(), inv.getSelectedColumn());
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_LEFT:
+                    inv.selectSlot(inv.getSelectedRow(), (inv.getSelectedColumn() - 1 + inv.getColumns()) % inv.getColumns());
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    inv.selectSlot(inv.getSelectedRow(), (inv.getSelectedColumn() + 1) % inv.getColumns());
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                    repaint();
+                    break;
+                case KeyEvent.VK_ENTER:
+                    ItemStack selected = inv.getSelectedSlot();
+                    if (selected != null && !selected.isEmpty() && selected.getItem().isConsumable()) {
+                        System.out.println("Usaste " + selected.getItem().getName());
+                        
+                        switch(selected.getItem().getId()) {
+                        case "pancho":
+                        	LevelPanel.Max_vida += 10;
+                        	System.out.print(LevelPanel.Max_vida);
+                        	break;
+                        	
+                        case "jugo_placer":
+                        	LevelPanel.multiplicador_puntos += 0.1;
+                        	System.out.print(LevelPanel.multiplicador_puntos);
+                        	break;
+                        	
+                        case "chocolate_dubai":
+                        	LevelPanel.plusSuma = 1;
+                        	System.out.print(LevelPanel.plusSuma);
+                        	break;
+                        }
+                        
+                        // Resta 1 unidad del stack
+                        selected.remove(1);
+                        
+                        // Sonido opcional
+                        GameWindow.reproducirSonido("resources/sounds/use_item.wav");
+                        
+                        // Redibuja el inventario
+                        repaint();
+                    }
+                    break;
 
-        // Selección de hotbar con teclas 1-9
-        if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
-            int num = keyCode - KeyEvent.VK_1; // 0-based
-            if (player != null && player.inventory != null) {
-                GameWindow.reproducirSonido("resources/sounds/menu.wav");
-                repaint();
             }
+            return; // Evita que otras teclas interfieran mientras el inventario está abierto
         }
 
         // Tecla E para teleport
@@ -720,7 +792,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         currentLine = npc.npcLine();
         nombreNPC = npc.Tipo;
         
-        // Cambios en otros NPCs
+        // ------ Cambios en otros NPCs
+        
+        // Si hablas con zambrana por primera vez active a Melody
         if(nombreNPC.equals("Zambrana") && triggeredNPC("Melody") == 0) {
         	triggerNPC("Melody", 1);
         }
@@ -734,12 +808,19 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         	}
         }
         
+        // Si ya le ganaste a martin y le traes un cachafaz
         if(nombreNPC.equals("Martin") && npc.Trigger == 3) {
         	if(playerHasItem("cachafaz", 1)) {
         		currentLine = 14;
         	}
         }
         
+     // Si ya le ganaste a martin y le traes un cachafaz
+        if(nombreNPC.equals("Interino") && npc.Trigger == 0) {
+        	npc.Trigger = 1;
+        }
+        
+        // Si hablaste con ciccaroni y tenes la pastafrola
         if(nombreNPC.equals("Ciccaroni") && npc.Trigger == 1) {
         	if(playerHasItem("pastafrola", 1)) { // Tiene pastafrola para darle
         		currentLine = 8; // Recibe pastafrola
@@ -747,6 +828,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         	}
         }
         
+        // Si hablas con seba
         if(nombreNPC.equals("Signorello")) {
         	npc.Trigger = 1;
         }
@@ -754,6 +836,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Findlay: verificar si tiene 8 marcadores
         if(nombreNPC.equals("Findlay") && npc.Trigger == 1 && countPlayerItem("marcador_findlay") >= 8) {
         	currentLine = 10; // Listo amigo gracias
+        }
+        
+        // Si tenes el tornillo se lo das a la de lo biblioteca
+        if(nombreNPC.equals("Biblioteca") && playerHasItem("tornillo", 1)) {
+        	currentLine = 10; 
         }
         
         loadCurrentLine(npc);
@@ -830,9 +917,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         } else {
         	if(!EnTienda) {
         		System.out.println("Obtuviste: " + amount + "x " + displayName);
-                if (gameWindow != null) gameWindow.SWM("Has conseguido: " + displayName);
+                //ShowWinMessage("Has conseguido: " + displayName);
         	}
             
+        }
+        
+        if(playerHasItem("lapicera", 1) && playerHasItem("vinilo", 1) && playerHasItem("fusible", 1) && playerHasItem("procesador", 1)) {
+        	triggerNPC("Moya", 1);
         }
         return leftover;
     }
@@ -867,44 +958,76 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         return player.inventory.removeItem(itemId, amount);
     }
     
-    /**
-     * Realiza el teleport entre PLANTA_ALTA y PLANTA_BAJA
-     */
     private void realizarTeleport() {
         if (currentTeleportId == -1) {
-            System.err.println("⚠ No se puede teleportar: ID de teleport inválido");
+            System.err.println("⚠ No se puede teleportar: ID inválido");
             return;
         }
-        
-        // Reproducir sonido de teleport
+        if (!player.canTeleport()) return;
+
         GameWindow.reproducirSonido("resources/sounds/menu.wav");
 
-        // Cargar mapa destino
-        if(enPlantaAlta) {
-        	CargarZona(1);
-        } else {
-        	CargarZona(0);
+        // Determinar si hay cambio de piso
+        Color tpColor = collisionMap.getPixelColor((int) player.getX(), (int) player.getY());
+        boolean cambiaDePiso = collisionMap.isTeleportChangeFloor(tpColor);
+
+        if (cambiaDePiso) {
+            if (enPlantaAlta) {
+                CargarZona(1); // carga planta baja
+                enPlantaAlta = false;
+            } else {
+                CargarZona(0); // carga planta alta
+                enPlantaAlta = true;
+            }
         }
-        
-        // Buscar la posición de destino en el nuevo mapa con el mismo ID
-        Point destino = collisionMap.findTeleportDestination(currentTeleportId);
-        
+
+        boolean ignoreExclusion = cambiaDePiso; // si cambió de piso, ignoramos exclusión
+        CollisionMap destinoMap = collisionMap;
+
+        // Buscar destino
+        Point destino = destinoMap.findTeleportDestination(currentTeleportId,
+                                                          (int) player.getX(),
+                                                          (int) player.getY(),
+                                                          ignoreExclusion);
         if (destino != null) {
+        	
+        	if(enPlantaAlta) { // LLaves planta Alta
+        		
+        		if(currentTeleportId == 235 && !playerHasItem("llave_sum", 1)) { // Si no tiene llave del SUM
+            		ShowWinMessage("Necesitas llave del SUM para pasar.");
+            		return;
+            	}
+        		
+        	} else { // Llaves planta baja
+        		
+        		if(currentTeleportId == 245 && !playerHasItem("llave_reja", 1)) { // Si no tiene llave de la reja
+            		ShowWinMessage("Necesitas llave de la reja para pasar.");
+            		return;
+            	}
+        		
+        	}
+        	
+        	
+        	if(currentTeleportId == 245) {
+        		
+        		musicaParada = !musicaParada;
+        		if(musicaParada) {
+        			Musica.detenerMusica();
+        		} else {
+        			Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		}
+        		
+        	}
+        	
             player.setX(destino.x);
             player.setY(destino.y);
-            System.out.println("✓ Teleport realizado (ID: " + currentTeleportId + ") a: " + destino.x + ", " + destino.y);
+            System.out.println("Teleport realizado (ID: " + currentTeleportId + ") a: " + destino.x + ", " + destino.y);
         } else {
-            System.err.println("⚠ No se encontró destino de teleport con ID " + currentTeleportId + " en el nuevo mapa");
-            // Revertir el cambio de mapa si no hay destino
-            enPlantaAlta = !enPlantaAlta;
-            collisionMap = enPlantaAlta ? plantaAltaMap : plantaBajaMap;
-            player.setCollisionMap(collisionMap);
+            System.err.println("No se encontró destino de teleport con ID " + currentTeleportId);
         }
-        
-        // Actualizar la cámara
+
         player.update();
-        
-        // Forzar repaint
+        player.setTeleportCooldown();
         repaint();
     }
     
@@ -962,6 +1085,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Cargar zona y npcs
     private void CargarZona(int zona) { // 0 = Planta Alta, 1 = Planta Baja, 2 = Ascensor secreto niejejej
     	switch(zona) {
+    	
     	case 0: // PLANTA ALTA
     		
     		// Mapa
@@ -977,11 +1101,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             renderList.add(player);
             
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 130 * SCALE, 156 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 130 * SCALE, 135 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 14 * SCALE, 62 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Moya", 123 * SCALE, 128 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gera", 43 * SCALE, 20 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 282 * SCALE, 40 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 282 * SCALE, 17 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 13 * SCALE, 11 * SCALE, GW.SX(50), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Moya", 277 * SCALE, 10 * SCALE, GW.SX(45), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gera", 99 * SCALE, 14 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("ASCENSOR", 172 * SCALE, 97 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ascensor", 170 * SCALE, 33 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Estufa", 258 * SCALE, 150 * SCALE, GW.SX(60), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Caja", 22 * SCALE, 104 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Tacho", 128 * SCALE, 165 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TAcho", 260 * SCALE, 130 * SCALE, GW.SX(40), this));
             
             for (NPC npc : NPCs) {
                 renderList.add(npc);
@@ -1007,38 +1137,30 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             NPCs.add(NPCManager.getOrCreateNPC("Melody", 49 * SCALE, 105 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 72 * SCALE, 237 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Signorello", 75 * SCALE, 110 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 56 * SCALE, 109 * SCALE, GW.SX(60), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 56 * SCALE, 109 * SCALE, GW.SX(110), this));
             NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 17 * SCALE, 238 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Guerra", 15 * SCALE, 230 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 85 * SCALE, 96 * SCALE, GW.SX(90), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 84 * SCALE, 97 * SCALE, GW.SX(45), this));
             NPCs.add(NPCManager.getOrCreateNPC("Rita", 14 * SCALE, 245 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 219 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 115 * SCALE, 207 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Martin", 123 * SCALE, 196 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Casas", 209 * SCALE, 238 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 179 * SCALE, 196 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 179 * SCALE, 196 * SCALE, GW.SX(46), this));
             NPCs.add(NPCManager.getOrCreateNPC("Ulises", 195 * SCALE, 173 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 206 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 206 * SCALE, GW.SX(45), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Interino", 218 * SCALE, 203 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACho", 58 * SCALE, 215 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHo", 70 * SCALE, 101 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHO", 190 * SCALE, 195 * SCALE, GW.SX(40), this));
+            
+            NPCs.add(NPCManager.getOrCreateNPC("Ricky", 46 * SCALE, 36 * SCALE, GW.SX(200), this));
             
             for (NPC npc : NPCs) {
                 renderList.add(npc);
             }
-    		break;
-    		
-    	case 2: // ASCENSOR SECRETO
-    		
-    		// NPCs
-            NPCs.clear();
-    		renderList.clear();
-            renderList.add(player);
             
-            // Generar NPCs
-    		NPCs.add(NPCManager.getOrCreateNPC("Ricky", 34 * SCALE, 47 * SCALE, GW.SX(50), this));
-    		for (NPC npc : NPCs) {
-                renderList.add(npc);
-            }
-    		
     		break;
     		
     	default:
@@ -1060,24 +1182,78 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		break;
     		
     	case "Moya":
+    		if(opcion.equals("Dar objetos")) {
+    			Musica.reproducirMusica("resources/Music/juzgar.wav");
+    			if(martinBien && gennusoBien) { // Final Bueno
+    				currentLine = 15;
+    				npc.Trigger = 3;
+    				triggerNPC("Linzalata", 1);
+    			} else { // Final neutral
+    				currentLine = 6;
+    				npc.Trigger = 2;
+    			}
+    		}
     		if (opcion.equals("SI")) {
             	gameWindow.startRitmo("Moya", 12, 153);
             }
-            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+            if (opcion.equals("NO")) {
+            	npc.Trigger = 2;
+            }
+            if(opcion.equals("Volver")) {
+            	currentLine = -1; // Dejar de hablar con moya
+            }
     		break;
     		
     	case "Linzalata":
     		if (opcion.equals("SI")) {
             	gameWindow.startRitmo("Linzalata", 13, 222);
             }
-            if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+            if (opcion.equals("Ya vengo peleando así")) {
+            	npc.Trigger = 2;
+            };
     		break;
     		
     	case "Ricky":
     		if (opcion.equals("SI")) {
-            	gameWindow.startRitmo("Moya", 13, 170);
+            	gameWindow.startRitmo("Ricky", 13, 170);
             }
             if (opcion.equals("NO")) System.out.println("Usuario dijo que no");
+    		break;
+    		
+    	case "Biblioteca":
+    		if(opcion.equals("Agarrar vinilo")) {
+    			givePlayerItem("vinilo", "Vinilo de La Renga", "vinilo_LaRenga.png", 1, 1);
+    		}
+    		if(opcion.equals("Dar tornillo")) {
+    			removePlayerItem("tornillo", 1);
+    		}
+    		if(opcion.equals("Ok")) {
+    			npc.Trigger = 1;
+    			triggerNPC("Casas", 1);
+    		}
+    		break;
+    		
+    	case "Casas":
+    		if(opcion.equals("SI")) {
+    			gameWindow.startRitmo("Casas", 10, 162);
+    		}
+    		if(opcion.equals("Las necesito ahora")) {
+    			npc.Trigger = 2;
+    		}
+    		break;
+    		
+    	case "Interino":
+    		if(opcion.equals("Dar chocolate")) {
+    			if(playerHasItem("chocolate_dubai", 1)) { // Tiene el chocolate
+    				removePlayerItem("chocolate_dubai", 1);
+    				ascensorTaller = true;
+    				npc.Trigger = 2;
+    			} else { // No tiene el chocolate
+    				currentLine = -1;
+    				ShowWinMessage("No tenés ningún chocolate para dar");
+    				return;
+    			}
+    		}
     		break;
     		
     	case "Cantina":
@@ -1088,6 +1264,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		if(opcion.equals("Hablar")) {
     			if(npc.Trigger == 0) { // Default
             		currentLine = 2; // 1 menos porque despues currentLine se suma
+            		triggerNPC("Vagos", 1);
             	} else if(npc.Trigger == 1) { // Recompensa por echar a los vagos
             		currentLine = 5;
             		triggerNPC("Cantina", 2);
@@ -1178,7 +1355,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		// SI Para pelear
     		if(opcion.equals("SI")) {
     			// Pelear con martin
-    			gameWindow.startRitmo("Martin", 10, 180);
+    			gameWindow.startRitmo("Martin", 10, 130);
     		}
     		// Si para darle cachafaz
     		if(opcion.equals("Si")) {
@@ -1205,6 +1382,27 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		}
     		break;
     		
+    	case "ASCENSOR":
+    		if(opcion.equals("SI")) {
+                // Darle fusible al jugador
+    			if(playerHasItem("fusible", 3)) {
+    				ShowWinMessage("Escuchas un ascensor abriéndose en el piso de abajo");
+    				npc.Trigger = 1;
+    				triggerNPC("pecile", 1);
+    				return;
+    			} else {
+    				ShowWinMessage("no tenes los fusibles suficientes.");
+    				return;
+    			}
+    		}
+    		break;
+    		
+    	case "Pecile":
+    		if(opcion.equals("SI")) {
+    			gameWindow.startRitmo("Pecile", 11, 200);
+    		}
+    		break;
+    		
     	case "Ciccaroni":
     		if(opcion.equals("Un fusible")) {
     			npc.Trigger = 1;
@@ -1222,9 +1420,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		}
     		if(opcion.equals("Dar Instagram")) {
     			if(playerHasItem("renaa_gm", 1)) {
+    				
     				removePlayerItem("renaa_gm", 1);
     				givePlayerItem("marcador_findlay", "Marcador", "marcador_Azul.png", 1, 1);
+    				
     				ShowWinMessage("Conseguiste el Marcador azul");
+    				npc.Trigger = 2;
     				return;
     			} else {
     				ShowWinMessage("No tenes ningún Instagram para dar.");
@@ -1235,7 +1436,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Ledesma":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Ledesma", 10, -1);
+    			gameWindow.startRitmo("Ledesma", 10, 102);
     		}
     		if(opcion.equals("Dar boletín")) {
     			if(playerHasItem("boletin", 1)) {
@@ -1252,6 +1453,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		}
     		break;
     		
+    	case "Gramajo":
+    		if(opcion.equals("Dar libro")) {
+    			if(playerHasItem("libro_automotor", 1)) {
+    				removePlayerItem("libro_automotor", 1);
+    				npc.Trigger = 1;
+    			} else {
+    				ShowWinMessage("No tenes ningún libro para dar");
+    				return;
+    			}
+    		}
+    		if(opcion.equals("Agarrar llave")) {
+    			givePlayerItem("llave_laboratorio", "llave del laboratorio", "llave_Laboratorio.png", 1, 1);
+    			npc.Trigger = 2;
+    		}
+    		break;
+    		
     	case "Pacheco":
     		if(opcion.equals("SI")) {
     			gameWindow.startRitmo("Pacheco", 5, -1);
@@ -1259,6 +1476,27 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		if(opcion.equals("Agarrar boletin")) {
     			givePlayerItem("boletin", "Boletin Pacheco", "boletin_Pacheco.png", 1, 1);
     			npc.Trigger = 2;
+    		}
+    		break;
+    		
+    	case "Gennuso":
+    		if(opcion.equals("SI")) {
+    			gameWindow.startRitmo("Gennuso", 5, -1);
+    		}
+    		if(opcion.equals("Nada")) {
+    			currentLine = -1;
+    		}
+    		break;
+    		
+    	case "Rita":
+    		if(opcion.equals("SI")) {
+    			gameWindow.startRitmo("Rita", 5, -1);
+    		}
+    		break;
+    		
+    	case "Vagos":
+    		if(opcion.equals("SI")) {
+    			gameWindow.startRitmo("Vagos", 5, -1);
     		}
     		break;
     		
@@ -1277,6 +1515,52 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     			givePlayerItem("marcador_findlay", "Marcador", "marcador_Violeta.png", 1, 1);
     			npc.Trigger = 2;
     		}
+    		break;
+    		
+    	case "TAcho":
+    		if(opcion.equals("SI")) {
+    			npc.Trigger = 1;
+    			givePlayerItem("marcador", "Marcador amarillo", "marcador_Amarillo.png", 1, 1);
+    		}
+    		break;
+    		
+    	case "TACho":
+    		if(opcion.equals("SI")) {
+    			npc.Trigger = 1;
+    			givePlayerItem("marcador", "Marcador naranja", "marcador_Naranja.png", 1, 1);
+    		}
+    		break;
+    		
+    	case "TACHO":
+    		if(opcion.equals("SI")) {
+    			npc.Trigger = 1;
+    			givePlayerItem("marcador", "Marcador rosa", "marcador_Rosa.png", 1, 1);
+    		}
+    		break;
+    		
+    	case "Estufa":
+    		if(opcion.equals("Agarrar marcador")) {
+    			if(playerHasItem("zancos", 1)) {
+    				npc.Trigger = 1;
+        			givePlayerItem("marcador", "Marcador celeste", "marcador_Celeste.png", 1, 1);
+        			ShowWinMessage("Conseguiste el Marcador celeste");
+        			return;
+    			} else {
+    				ShowWinMessage("Está muy alto para alcanzarlo");
+    				return;
+    			}
+    		}
+    		break;
+    		
+    	case "Caja":
+    		if(opcion.equals("Agarrar tornillo")) {
+    			npc.Trigger = 1;
+    			givePlayerItem("tornillo", "tornillo especifico", "tornillo especifico.png", 1, 1);
+    			ShowWinMessage("Conseguiste el tornillo convenientemente especifico... y también muchas dudas existenciales");
+    			return;
+    		}
+    		break;
+    		
     		
     	}
         

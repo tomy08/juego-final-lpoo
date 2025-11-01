@@ -56,7 +56,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int maxCombo = 0;
     
     // Vida
-    private int Max_vida = 70;
+    public static int Max_vida = 70;
+    public static double multiplicador_puntos = 1;
+    public static int plusSuma = 0;
     private int vida = Max_vida/2;
     private int barraAltoMax = GW.SX(650);
     
@@ -81,7 +83,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int bpm;
     
     // Pausa
-    private String[] pauseOptions = {"Continuar", "Reiniciar", "Settings", "Salir"};
+    private String[] pauseOptions = {"Continuar", "Reiniciar", "Configuracion", "Salir"};
     private int selectedPauseOption = 0;
 
     // Perder
@@ -362,13 +364,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.drawString(porcentajeFinal+"%", GW.SX(600), GW.SY(700));
     	
     	// Max Combo
-    	int totalHits = sigmaCount + auraCount + bueCount + peteCount + missCount;
     	g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(40f)));
-    	if(maxCombo == totalHits) {
+    	if(missCount == 0 && peteCount == 0) {
     		g2d.setColor(Color.YELLOW);
     	}
     	g2d.drawString("Max Combo: " + maxCombo, GW.SX(600), GW.SY(750));
     	
+    	int totalHits = sigmaCount + auraCount + bueCount + peteCount + missCount;
     	// Estadísticas
     	g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
     	g2d.setColor(new Color(200,0,255));
@@ -389,7 +391,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	// Monedas Conseguidas:
     	g2d.setColor(Color.WHITE);
     	g2d.drawString("Conseguiste:", GW.SX(250), GW.SY(500));
-    	g2d.drawString((int) (puntaje * getAccuracyPercentage() / 400) + "$", GW.SX(250), GW.SY(550));
+    	g2d.drawString((int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos) + "$", GW.SX(250), GW.SY(550));
     	
     	// Ayuda
     	g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(50f)));
@@ -525,21 +527,21 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "SIGMA";
                         puntaje += 200;
                         combo++;
-                        SumaV = 3;
+                        SumaV = 3 + plusSuma;
                         
                     } else if (Math.abs(a.y - hitY) <= WindowAura) {
                     	auraCount++;
                         lastHitText = "Aura";
                         puntaje += 100;
                         combo++;
-                        SumaV = 1;
+                        SumaV = 1 + plusSuma;
                         
                     } else if (Math.abs(a.y - hitY) <= WindowBue) {
                     	bueCount++;
                         lastHitText = "Bue";
                         puntaje += 50;
                         combo++;
-                        SumaV = 0;
+                        SumaV = 0 + plusSuma;
                     } else {
                     	peteCount++;
                         lastHitText = "Pete";
@@ -585,7 +587,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void Ganar() {
     	win = true;
     	LevelToReward(level);
-    	gameWindow.gamePanel.monedas += (int) (puntaje * getAccuracyPercentage() / 200);
+    	gameWindow.gamePanel.monedas += (int) (int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos);
     }
     
     
@@ -603,24 +605,28 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Los Vagos":
     		// trigger al de la cantina para que te de un item al hablar (no dar item directo)
     		gameWindow.gamePanel.triggerNPC("Cantina", 1);
+    		gameWindow.gamePanel.triggerNPC("Vagos", 2);
     		break;
     		
     	case "Gennuso":
     		// Conseguir Item: IG de renaa_gm
     		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
     		gameWindow.gamePanel.gennusoBien = false;
+    		gameWindow.gamePanel.triggerNPC("Gennuso", 1);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Rita":
     		// Conseguir Item: Procesador
     		gameWindow.gamePanel.givePlayerItem("procesador", "Procesador", "procesador.png", 1, 1);
+    		gameWindow.gamePanel.triggerNPC("Rita", 1);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Casas":
     		// Conseguir Item: Llave de SUM
     		gameWindow.gamePanel.givePlayerItem("llave_sum", "Llave del SUM", "llave_SUM.png", 1, 1);
+    		gameWindow.gamePanel.triggerNPC("Casas", 3);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
@@ -634,6 +640,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Pecile":
     		// Conseguir Item: Llave de la reja
     		gameWindow.gamePanel.givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
+    		gameWindow.gamePanel.triggerNPC("Pecile", 2);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
@@ -714,7 +721,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
         		gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
-        		Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		if(!gameWindow.gamePanel.musicaParada) {
+        			Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		}
                 return;
         	} else if(!lose){
         		pausa = !pausa;

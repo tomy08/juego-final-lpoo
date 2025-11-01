@@ -19,6 +19,7 @@ public class Player {
     public Image image;
     public boolean facingLeft = false;
     public Inventory inventory;
+    private boolean teleportCooldown = false;
     
     private long lastSound = 0;
     private int delaySound = 350;
@@ -41,6 +42,17 @@ public class Player {
     public void setCollisionMap(CollisionMap collisionMap) {
         this.collisionMap = collisionMap;
     }
+
+    public boolean canTeleport() { return !teleportCooldown; }
+
+    public void setTeleportCooldown() {
+        teleportCooldown = true;
+        new java.util.Timer().schedule(new java.util.TimerTask() {
+            @Override
+            public void run() { teleportCooldown = false; }
+        }, 400); // 400ms sin volver a teletransportar
+    }
+
     
     public void move(double deltaX, double deltaY, int screenWidth, int screenHeight) {
         // Calcular nueva posición
