@@ -58,6 +58,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     // Vida
     public static int Max_vida = 70;
     public static double multiplicador_puntos = 1;
+    public static int plusSuma = 0;
     private int vida = Max_vida/2;
     private int barraAltoMax = GW.SX(650);
     
@@ -526,21 +527,21 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                         lastHitText = "SIGMA";
                         puntaje += 200;
                         combo++;
-                        SumaV = 3;
+                        SumaV = 3 + plusSuma;
                         
                     } else if (Math.abs(a.y - hitY) <= WindowAura) {
                     	auraCount++;
                         lastHitText = "Aura";
                         puntaje += 100;
                         combo++;
-                        SumaV = 1;
+                        SumaV = 1 + plusSuma;
                         
                     } else if (Math.abs(a.y - hitY) <= WindowBue) {
                     	bueCount++;
                         lastHitText = "Bue";
                         puntaje += 50;
                         combo++;
-                        SumaV = 0;
+                        SumaV = 0 + plusSuma;
                     } else {
                     	peteCount++;
                         lastHitText = "Pete";
@@ -720,7 +721,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         	if(win) {
         		gameWindow.startGame(); // volver al RPG
         		gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
-        		Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		if(!gameWindow.gamePanel.musicaParada) {
+        			Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		}
                 return;
         	} else if(!lose){
         		pausa = !pausa;

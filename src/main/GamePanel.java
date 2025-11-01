@@ -1,6 +1,7 @@
 package main;
 import javax.swing.*;
 
+import Levels.LevelPanel;
 import Mapa.CollisionMap;
 import Sonidos.Musica;
 import entities.NPC;
@@ -114,6 +115,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Render
     private final CopyOnWriteArrayList<Object> renderList = new CopyOnWriteArrayList<>();
 
+    // Musica
+    public boolean musicaParada = false;
     
     public GamePanel(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
@@ -456,12 +459,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             if (!ascensorTaller && player.getX() >= 219 * SCALE && player.getX() < 225 * SCALE && player.getY() < 204 * SCALE) {
             	player.setY(204 * SCALE);
             }
-        } else { // Zonas a desbloquear plantaAlta
-        	
-        	// SUM
-        	if (!playerHasItem("llave_sum", 1) && player.getX() >= 88 * SCALE && player.getX() < 93 * SCALE && player.getY() < 78 * SCALE) {
-            	player.setY(78 * SCALE);
-            }
         }
         
         // Interactuar con NPCs
@@ -652,15 +649,18 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                         
                         switch(selected.getItem().getId()) {
                         case "pancho":
-                        	
+                        	LevelPanel.Max_vida += 10;
+                        	System.out.print(LevelPanel.Max_vida);
                         	break;
                         	
                         case "jugo_placer":
-                        	
+                        	LevelPanel.multiplicador_puntos += 0.1;
+                        	System.out.print(LevelPanel.multiplicador_puntos);
                         	break;
                         	
                         case "chocolate_dubai":
-                        	
+                        	LevelPanel.plusSuma = 1;
+                        	System.out.print(LevelPanel.plusSuma);
                         	break;
                         }
                         
@@ -990,11 +990,40 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                                                           (int) player.getY(),
                                                           ignoreExclusion);
         if (destino != null) {
+        	
+        	if(enPlantaAlta) { // LLaves planta Alta
+        		
+        		if(currentTeleportId == 235 && !playerHasItem("llave_sum", 1)) { // Si no tiene llave del SUM
+            		ShowWinMessage("Necesitas llave del SUM para pasar.");
+            		return;
+            	}
+        		
+        	} else { // Llaves planta baja
+        		
+        		if(currentTeleportId == 245 && !playerHasItem("llave_reja", 1)) { // Si no tiene llave de la reja
+            		ShowWinMessage("Necesitas llave de la reja para pasar.");
+            		return;
+            	}
+        		
+        	}
+        	
+        	
+        	if(currentTeleportId == 245) {
+        		
+        		musicaParada = !musicaParada;
+        		if(musicaParada) {
+        			Musica.detenerMusica();
+        		} else {
+        			Musica.reproducirMusica("resources/Music/Fondo.wav");
+        		}
+        		
+        	}
+        	
             player.setX(destino.x);
             player.setY(destino.y);
-            System.out.println("✓ Teleport realizado (ID: " + currentTeleportId + ") a: " + destino.x + ", " + destino.y);
+            System.out.println("Teleport realizado (ID: " + currentTeleportId + ") a: " + destino.x + ", " + destino.y);
         } else {
-            System.err.println("⚠ No se encontró destino de teleport con ID " + currentTeleportId);
+            System.err.println("No se encontró destino de teleport con ID " + currentTeleportId);
         }
 
         player.update();
@@ -1056,6 +1085,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Cargar zona y npcs
     private void CargarZona(int zona) { // 0 = Planta Alta, 1 = Planta Baja, 2 = Ascensor secreto niejejej
     	switch(zona) {
+    	
     	case 0: // PLANTA ALTA
     		
     		// Mapa
@@ -1125,24 +1155,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             NPCs.add(NPCManager.getOrCreateNPC("TACHo", 70 * SCALE, 101 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("TACHO", 190 * SCALE, 195 * SCALE, GW.SX(40), this));
             
+            NPCs.add(NPCManager.getOrCreateNPC("Ricky", 46 * SCALE, 36 * SCALE, GW.SX(200), this));
+            
             for (NPC npc : NPCs) {
                 renderList.add(npc);
             }
-    		break;
-    		
-    	case 2: // ASCENSOR SECRETO
-    		
-    		// NPCs
-            NPCs.clear();
-    		renderList.clear();
-            renderList.add(player);
             
-            // Generar NPCs
-    		NPCs.add(NPCManager.getOrCreateNPC("Ricky", 34 * SCALE, 47 * SCALE, GW.SX(50), this));
-    		for (NPC npc : NPCs) {
-                renderList.add(npc);
-            }
-    		
     		break;
     		
     	default:
@@ -1165,6 +1183,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Moya":
     		if(opcion.equals("Dar objetos")) {
+    			Musica.reproducirMusica("resources/Music/juzgar.wav");
     			if(martinBien && gennusoBien) { // Final Bueno
     				currentLine = 15;
     				npc.Trigger = 3;

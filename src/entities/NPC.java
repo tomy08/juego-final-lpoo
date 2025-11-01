@@ -63,7 +63,7 @@ public class NPC {
 			line = 3;
 		}
 		if(Tipo.equals("Kreimer") && Trigger == 2) {
-			line = 7;
+			line = 11;
 		}
 		
 		// Gera

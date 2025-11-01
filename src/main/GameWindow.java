@@ -151,8 +151,11 @@ public class GameWindow extends JFrame implements KeyListener {
         revalidate();
         repaint();
         requestFocus();
-        Musica.reproducirMusica("resources/Music/Fondo.wav");
-        Musica.enableLoop();
+        if(!gamePanel.musicaParada) {
+			Musica.reproducirMusica("resources/Music/Fondo.wav");
+			Musica.enableLoop();
+		}
+        
 
         startGameThread(gamePanel);
     }
