@@ -25,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private GameWindow gameWindow;
-    private Player player;
+    public Player player; // Cambiado a public para acceso desde GameSaveManager
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
@@ -60,7 +60,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Final bueno
     
-    private boolean martinBien = false;
+    public boolean martinBien = false;
     public boolean gennusoBien = true;
     
     // Zonas desbloqueadas:
@@ -107,7 +107,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private boolean paused = false;
     private int opcionPausa = 0;
-    private String[] opcionesPausa = {"CONTINUAR","CONFIGURACION", "VOLVER AL MENU"};
+    private String[] opcionesPausa = {"CONTINUAR", "GUARDAR PARTIDA", "CONFIGURACION", "VOLVER AL MENU"};
 
     // Inventario
     private boolean inventoryOpen = false;
@@ -597,11 +597,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             } else if (keyCode == KeyEvent.VK_ENTER) {
                 if (opcionPausa == 0) { // Continuar
                     paused = false;
-                } else if (opcionPausa == 1) { // Ir al menú de configuración
+                } else if (opcionPausa == 1) { // Guardar partida
+                    boolean guardadoExitoso = GameSaveManager.guardarPartida(this, player);
+                    if (guardadoExitoso) {
+                        ShowWinMessage("Partida guardada exitosamente");
+                    } else {
+                        ShowWinMessage("Error al guardar la partida");
+                    }
+                    paused = false;
+                } else if (opcionPausa == 2) { // Ir al menú de configuración
                     gameWindow.settingsGame();
-                }
-
-                else if (opcionPausa == 2) { // Volver al menú
+                } else if (opcionPausa == 3) { // Volver al menú
                     gameWindow.backToMenu();
                 }
                 GameWindow.reproducirSonido("resources/sounds/confirm.wav");
@@ -1568,6 +1574,72 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         opciones = null;
         currentLine++;
         loadCurrentLine(currentNPC);
+    }
+    
+    // ===== MÉTODOS PARA SISTEMA DE GUARDADO =====
+    
+    /**
+     * Obtiene el stock actual de la tienda
+     */
+    public int[] getStockTienda() {
+        return StockItem;
+    }
+    
+    /**
+     * Establece el stock de la tienda
+     */
+    public void setStockTienda(int[] stock) {
+        if (stock != null && stock.length == StockItem.length) {
+            this.StockItem = stock;
+        }
+    }
+    
+    /**
+     * Crea un Item con su imagen cargada (para sistema de carga)
+     */
+    public static Item createItemWithImage(String id, String displayName, int maxStack) {
+        // Mapeo de IDs a nombres de archivos de sprites
+        String spriteFilename = getSpriteName(id);
+        
+        java.awt.Image img = null;
+        if (spriteFilename != null) {
+            try {
+                img = new javax.swing.ImageIcon("resources/Sprites/Items/" + spriteFilename).getImage();
+            } catch (Exception e) {
+                System.err.println("No se pudo cargar la imagen del item: " + spriteFilename);
+            }
+        }
+        
+        return new Item(id, displayName, img, maxStack);
+    }
+    
+    /**
+     * Obtiene el nombre del archivo de sprite según el ID del item
+     */
+    private static String getSpriteName(String id) {
+        // Mapeo de todos los items del juego
+        switch (id) {
+            case "pancho": return "pancho.png";
+            case "jugo_placer": return "jugo placer.png";
+            case "cachafaz": return "cachafaz.png";
+            case "vinilo": return "vinilo_LaRenga.png";
+            case "pan_sin_tacc": return "pan sin tacc.png";
+            case "chocolate_dubai": return "chocolate dubai.png";
+            case "libro_automotor": return "libro_Automotor.png";
+            case "lapicera": return "lapicera.png";
+            case "marcador_findlay": return "marcador_Rojo.png"; // o puede variar
+            case "zancos": return "zancos.png";
+            case "fusible": return "Fusible.png";
+            case "resumen": return "resumen_Prueba.png";
+            case "llave_laboratorio": return "llave_Laboratorio.png";
+            case "boletin": return "boletin_Pacheco.png";
+            case "marcador": return "marcador_Amarillo.png"; // Varios colores
+            case "llave_sum": return "llave_SUM.png";
+            case "llave_reja": return "llave_Reja.png";
+            case "instagram": return "instagram.png";
+            case "tornillo": return "tornillo especifico.png";
+            default: return null;
+        }
     }
 
 }

@@ -160,6 +160,39 @@ public class GameWindow extends JFrame implements KeyListener {
         startGameThread(gamePanel);
     }
     
+    /**
+     * Continúa una partida guardada
+     */
+    public void continueGame() {
+        currentState = GameState.PLAYING;
+        getContentPane().removeAll();
+        getContentPane().add(gamePanel);
+        revalidate();
+        repaint();
+        requestFocus();
+        
+        // Cargar los datos guardados
+        boolean cargaExitosa = GameSaveManager.cargarPartida(gamePanel, gamePanel.player);
+        
+        if (cargaExitosa) {
+            if(!gamePanel.musicaParada) {
+                Musica.reproducirMusica("resources/Music/Fondo.wav");
+                Musica.enableLoop();
+            }
+            startGameThread(gamePanel);
+            JOptionPane.showMessageDialog(this, 
+                "Partida cargada exitosamente", 
+                "Continuar", 
+                JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, 
+                "Error al cargar la partida. Se iniciará una nueva partida.", 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            startGame();
+        }
+    }
+    
     public void startRitmo(String levelName, int speed, int bpm) {
         currentState = GameState.RITMO;
         getContentPane().removeAll();

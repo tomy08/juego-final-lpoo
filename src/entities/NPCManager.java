@@ -27,4 +27,18 @@ public class NPCManager {
         }
         return null;
     }
+    
+    /**
+     * Obtiene todos los NPCs (para sistema de guardado)
+     */
+    public static ArrayList<NPC> getAllNPCs() {
+        return npcs;
+    }
+    
+    /**
+     * Limpia todos los NPCs (para sistema de carga)
+     */
+    public static void clearAllNPCs() {
+        npcs.clear();
+    }
 }

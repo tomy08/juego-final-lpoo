@@ -6,7 +6,8 @@ import java.awt.event.KeyEvent;
 public class MainMenu extends JPanel {
     private GameWindow gameWindow;
     private int selectedOption = 0;
-    private String[] menuOptions = {"JUGAR","CONFIGURACION", "SALIR" };
+    private String[] menuOptions;
+    private boolean hayPartidaGuardada = false;
   
     
     public MainMenu(GameWindow gameWindow) {
@@ -15,6 +16,16 @@ public class MainMenu extends JPanel {
         GameWindow.cargar_font();
         setFocusable(true);
         requestFocusInWindow();
+        
+        // Verificar si existe una partida guardada
+        hayPartidaGuardada = GameSaveManager.existePartidaGuardada();
+        
+        // Configurar opciones del menú según si hay partida guardada
+        if (hayPartidaGuardada) {
+            menuOptions = new String[]{"CONTINUAR", "NUEVA PARTIDA", "CONFIGURACION", "SALIR"};
+        } else {
+            menuOptions = new String[]{"JUGAR", "CONFIGURACION", "SALIR"};
+        }
     }
     
     @Override
@@ -88,17 +99,46 @@ public class MainMenu extends JPanel {
     }
     
     private void selectOption() {
-        switch (selectedOption) {
-            case 0: // PLAY
-                gameWindow.startGame();
-                break;
-            case 1: // SETTINGS
-                gameWindow.settingsGame();
-                break;
-                
-            case 2: // EXIT
-                gameWindow.exitGame();
-                break;
+        if (hayPartidaGuardada) {
+            // Menú con partida guardada: CONTINUAR, NUEVA PARTIDA, CONFIGURACION, SALIR
+            switch (selectedOption) {
+                case 0: // CONTINUAR
+                    gameWindow.continueGame();
+                    break;
+                case 1: // NUEVA PARTIDA
+                    // Preguntar si quiere sobrescribir
+                    int respuesta = JOptionPane.showConfirmDialog(
+                        this,
+                        "¿Estás seguro? Esto sobrescribirá tu partida guardada.",
+                        "Nueva Partida",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                    );
+                    if (respuesta == JOptionPane.YES_OPTION) {
+                        GameSaveManager.eliminarPartida();
+                        gameWindow.startGame();
+                    }
+                    break;
+                case 2: // SETTINGS
+                    gameWindow.settingsGame();
+                    break;
+                case 3: // EXIT
+                    gameWindow.exitGame();
+                    break;
+            }
+        } else {
+            // Menú sin partida guardada: JUGAR, CONFIGURACION, SALIR
+            switch (selectedOption) {
+                case 0: // PLAY
+                    gameWindow.startGame();
+                    break;
+                case 1: // SETTINGS
+                    gameWindow.settingsGame();
+                    break;
+                case 2: // EXIT
+                    gameWindow.exitGame();
+                    break;
+            }
         }
     }
 }

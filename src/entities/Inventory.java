@@ -36,6 +36,15 @@ public class Inventory {
         if (idx < 0 || idx >= slots.length) return null;
         return slots[idx];
     }
+    
+    /**
+     * Establece un slot directamente (para sistema de carga)
+     */
+    public void setSlot(int idx, ItemStack stack) {
+        if (idx >= 0 && idx < slots.length) {
+            slots[idx] = stack;
+        }
+    }
 
     /**
      * Intenta agregar una cantidad de un item al inventario. Devuelve la cantidad que no se pudo insertar.
@@ -158,6 +167,17 @@ public class Inventory {
     public ItemStack getSelectedSlot() {
         int idx = selectedRow * columns + selectedColumn;
         return getSlot(idx);
+    }
+    
+    /**
+     * Establece la selección del hotbar (para sistema de carga)
+     */
+    public void selectHotbar(int index) {
+        if (index >= 0 && index < columns) {
+            this.selectedHotbar = index;
+            this.selectedColumn = index;
+            this.selectedRow = 0;
+        }
     }
 
 
