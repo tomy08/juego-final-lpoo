@@ -66,7 +66,7 @@ public class MainMenu extends JPanel {
         FontMetrics menuMetrics = g2d.getFontMetrics();
         
         int menuStartY = height / 2;
-        int menuSpacing = height / 15;
+        int menuSpacing = height / 13;
         
         for (int i = 0; i < menuOptions.length; i++) {
             String option = menuOptions[i];

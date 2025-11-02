@@ -134,6 +134,7 @@ public class GameWindow extends JFrame implements KeyListener {
     public void start() {
         setVisible(true);
     }
+   
     
     public void showMainMenu() {
         currentState = GameState.MAIN_MENU;
@@ -146,20 +147,33 @@ public class GameWindow extends JFrame implements KeyListener {
     }
     
     public void startGame() {
+        // Mostrar la pantalla de historia antes de iniciar el juego
+        currentState = GameState.STORY; // agregá STORY al enum GameState si no existe
+        getContentPane().removeAll();
+
+        StoryScreen storyScreen = new StoryScreen(this);
+        getContentPane().add(storyScreen);
+        revalidate();
+        repaint();
+        storyScreen.requestFocus();
+    }
+
+    public void startRealGame() {
         currentState = GameState.PLAYING;
         getContentPane().removeAll();
         getContentPane().add(gamePanel);
         revalidate();
         repaint();
         requestFocus();
-        if(!gamePanel.musicaParada) {
-			Musica.reproducirMusica("resources/Music/Fondo.wav");
-			Musica.enableLoop();
-		}
-        
+
+        if (!gamePanel.musicaParada) {
+            Musica.reproducirMusica("resources/Music/Fondo.wav");
+            Musica.enableLoop();
+        }
 
         startGameThread(gamePanel);
     }
+
     
     /**
      * Continúa una partida guardada
