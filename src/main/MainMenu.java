@@ -19,14 +19,23 @@ public class MainMenu extends JPanel {
         
         // Verificar si existe una partida guardada
         hayPartidaGuardada = GameSaveManager.existePartidaGuardada();
-        
-        // Configurar opciones del menú según si hay partida guardada
+
+        actualizarOpciones();
+    }
+    
+    public void actualizarOpciones() {
+        hayPartidaGuardada = GameSaveManager.existePartidaGuardada();
+
         if (hayPartidaGuardada) {
             menuOptions = new String[]{"CONTINUAR", "NUEVA PARTIDA", "CONFIGURACION", "SALIR"};
         } else {
             menuOptions = new String[]{"JUGAR", "CONFIGURACION", "SALIR"};
         }
+
+        selectedOption = 0; // resetear selección
+        repaint();
     }
+
     
     @Override
     protected void paintComponent(Graphics g) {

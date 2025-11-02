@@ -138,6 +138,7 @@ public class GameWindow extends JFrame implements KeyListener {
     public void showMainMenu() {
         currentState = GameState.MAIN_MENU;
         getContentPane().removeAll();
+        mainMenu.actualizarOpciones();
         getContentPane().add(mainMenu);
         revalidate();
         repaint();
@@ -173,6 +174,14 @@ public class GameWindow extends JFrame implements KeyListener {
         
         // Cargar los datos guardados
         boolean cargaExitosa = GameSaveManager.cargarPartida(gamePanel, gamePanel.player);
+        System.out.println("Se cargó: " + gamePanel.enPlantaAlta);
+        
+        // Cargar mapa de inicio
+        if(gamePanel.enPlantaAlta) {
+        	gamePanel.CargarZona(0);
+        } else {
+        	gamePanel.CargarZona(1);
+        }
         
         if (cargaExitosa) {
             if(!gamePanel.musicaParada) {
@@ -180,15 +189,9 @@ public class GameWindow extends JFrame implements KeyListener {
                 Musica.enableLoop();
             }
             startGameThread(gamePanel);
-            JOptionPane.showMessageDialog(this, 
-                "Partida cargada exitosamente", 
-                "Continuar", 
-                JOptionPane.INFORMATION_MESSAGE);
+            System.out.println("Partida cargada exitosamente");
         } else {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar la partida. Se iniciará una nueva partida.", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+        	System.out.println("Error al cargar la partida");
             startGame();
         }
     }
@@ -308,9 +311,28 @@ public class GameWindow extends JFrame implements KeyListener {
     public void backToMenu() {
         if (gameThread != null) {
             gameThread.stopGame();
+            gameThread = null;
         }
+
+        Musica.detenerMusica();
+
+        // Limpiar NPCs estáticos
+        entities.NPCManager.clearAllNPCs();
+
+        // Remover y limpiar el contenido
+        getContentPane().removeAll();
+        repaint();
+        revalidate();
+
+        // Crear un GamePanel nuevo y limpio
+        gamePanel = new GamePanel(this);
+
+        // Mostrar menú principal
         showMainMenu();
     }
+
+
+
     
     @Override
     public void keyPressed(KeyEvent e) {

@@ -41,6 +41,7 @@ public class GameSaveManager {
             // === 2. DATOS DEL JUGADOR ===
             dos.writeDouble(player.getX());
             dos.writeDouble(player.getY());
+            dos.writeBoolean(gamePanel.enPlantaAlta);
             
             // === 3. INVENTARIO ===
             guardarInventario(dos, player);
@@ -98,6 +99,7 @@ public class GameSaveManager {
             double playerY = dis.readDouble();
             player.setX(playerX);
             player.setY(playerY);
+            gamePanel.enPlantaAlta = dis.readBoolean();
             
             // === 3. INVENTARIO ===
             cargarInventario(dis, player);

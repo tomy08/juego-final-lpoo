@@ -25,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private GameWindow gameWindow;
-    public Player player; // Cambiado a public para acceso desde GameSaveManager
+    public Player player;
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
@@ -33,7 +33,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     // Sistema de Teleport
     private CollisionMap plantaAltaMap;
     private CollisionMap plantaBajaMap;
-    private boolean enPlantaAlta = true; // true = PLANTA_ALTA, false = PLANTA_BAJA
+    public boolean enPlantaAlta = true; // true = PLANTA_ALTA, false = PLANTA_BAJA
     private boolean estaEnZonaTeleport = false;
     private int currentTeleportId = -1; // ID del teleport actual
     
@@ -65,13 +65,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Zonas desbloqueadas:
     
-    public boolean taller = true;
+    public boolean taller = false;
     public boolean ascensorTaller = false;
 
     // Tienda
     
-    public int monedas = 1000000;
-    private boolean EnTienda = true;
+    public int monedas = 0;
+    private boolean EnTienda = false;
     private String[] itemsCantina = {
     		"Pancho",
     		"Jugo Placer",
@@ -136,10 +136,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Inicializar jugador
         player = new Player(282 * SCALE, 43 * SCALE, this);
         
-        // Precargar 2do mapa
+        // Precargar ambos mapas
         CargarZona(1);
-        
-        // Cargar mapa de inicio
         CargarZona(0);
         
         // Cargar Dialogos de los NPC
@@ -1014,7 +1012,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         	}
         	
         	
-        	if(currentTeleportId == 245) {
+        	if(currentTeleportId == 245 && !enPlantaAlta) { // Parar musica con el tp de ricky
         		
         		musicaParada = !musicaParada;
         		if(musicaParada) {
@@ -1089,7 +1087,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     }
     
     // Cargar zona y npcs
-    private void CargarZona(int zona) { // 0 = Planta Alta, 1 = Planta Baja, 2 = Ascensor secreto niejejej
+    public void CargarZona(int zona) { // 0 = Planta Alta, 1 = Planta Baja, 2 = Ascensor secreto niejejej
     	switch(zona) {
     	
     	case 0: // PLANTA ALTA
