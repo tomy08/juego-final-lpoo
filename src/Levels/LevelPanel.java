@@ -37,6 +37,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private Image[] rankImages = new Image[6];
     
     // Fonts
+    private final Font timeFont = GameWindow.Pixelart.deriveFont(GW.SF(65f));
     private final Font scoreFont = GameWindow.Pixelart.deriveFont(GW.SF(55f));
     private final Font comboFont = GameWindow.Pixelart.deriveFont(GW.SF(50f));
     private final Font statsFont = GameWindow.Pixelart.deriveFont(GW.SF(40f));
@@ -56,7 +57,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private int maxCombo = 0;
     
     // Vida
-    public static int Max_vida = 70;
+    public static int Max_vida = 50;
     public static double multiplicador_puntos = 1;
     public static int plusSuma = 0;
     private int vida = Max_vida/2;
@@ -81,6 +82,11 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private String level;
     private int speed;
     private int bpm;
+    
+    // Tiempo
+    private double msTotalTime;
+    private int minutos = 0;
+    private int segundos;
     
     // Pausa
     private String[] pauseOptions = {"Continuar", "Reiniciar", "Configuracion", "Salir"};
@@ -115,9 +121,11 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         Musica.disableLoop();
         Musica.reproducirMusica("resources/Music/"+levelName+".wav");
         
-        List<arrow> loadedArrows = ChartLoader.loadChart(new File("resources/Levels/level"+levelName+".txt"), gw, true, GW.SY(speed), bpm);
-        this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
+        File file = new File("resources/Levels/level"+levelName+".txt");
         
+        // Cargar notas
+        List<arrow> loadedArrows = ChartLoader.loadChart(file, gw, true, GW.SX(speed), bpm);
+        this.arrows = new java.util.concurrent.CopyOnWriteArrayList<>(loadedArrows);
         for (arrow a : this.arrows) {
         	if(a.Long) {
             	a.color = colors[getColumnFromX((int)a.x)];
@@ -125,6 +133,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	a.image = new ImageIcon("resources/Sprites/Ritmo/Nota"+(getColumnFromX((int)a.x)+1)+".png").getImage();
             }
         }
+        
+        // Tiempo total
+        msTotalTime = ChartLoader.getTotalTime(file, bpm);
+        int totalSeconds = (int) (msTotalTime / 1000);
+        minutos = totalSeconds / 60;
+        segundos = totalSeconds % 60;
     }
 
     public void update() {
@@ -144,6 +158,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         // Perder
         if(vida <= 0) {
             lose = true;
+        }
+        
+        int totalSeconds = (int) (msTotalTime / 1000) - (int) (virtualTimeMs / 1000);
+        minutos = totalSeconds / 60;
+        segundos = totalSeconds % 60;
+        if(segundos <= 0) {
+        	segundos = 0;
         }
         
         // Max Vida
@@ -290,6 +311,11 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         int anchoPuntaje = fm1.stringWidth(textoPuntaje);
         g2d.setColor(Color.WHITE);
         g2d.drawString(textoPuntaje, GW.SX(1880) - anchoPuntaje, GW.SY(100));
+        
+        // Tiempo restante
+        g2d.setFont(timeFont);
+        String tiempoTexto = String.format("%02d:%02d", minutos, segundos);
+        g2d.drawString(tiempoTexto, GW.SX(1650), GW.SY(1020));
         
         int textWidth;
         // Mostrar Combo
@@ -646,14 +672,14 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     		
     	case "Signorello":
     		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Azul.png", 1, 8);
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 8);
     		gameWindow.gamePanel.triggerNPC("Signorello", 2);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
     		
     	case "Martin":
     		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador de Findlay", "marcador_Verde.png", 1, 8);
+    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador verde", "marcador_Verde.png", 1, 8);
     		gameWindow.gamePanel.triggerNPC("Martin", 3);
     		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		break;
@@ -778,18 +804,22 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         if (keyCode == GameSettings.KEY_NLEFT && !columnPressed[0]) {
         	column = 0;
         	columnPressed[0] = true;
+        	GameWindow.reproducirSonido("resources/sounds/hitsound.wav");
         }
         else if (keyCode == GameSettings.KEY_NDOWN && !columnPressed[1]) {
         	column = 1;
         	columnPressed[1] = true;
+        	GameWindow.reproducirSonido("resources/sounds/hitsound.wav");
         }
         else if (keyCode == GameSettings.KEY_NUP && !columnPressed[2]) {
         	column = 2;
         	columnPressed[2] = true;
+        	GameWindow.reproducirSonido("resources/sounds/hitsound.wav");
         }
         else if (keyCode == GameSettings.KEY_NRIGHT && !columnPressed[3]) {
         	column = 3;
         	columnPressed[3] = true;
+        	GameWindow.reproducirSonido("resources/sounds/hitsound.wav");
         }
 
         if (column != -1) {

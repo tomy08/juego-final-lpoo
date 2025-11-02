@@ -6,7 +6,13 @@ import java.awt.event.KeyEvent;
 public class MainMenu extends JPanel {
     private GameWindow gameWindow;
     private int selectedOption = 0;
+    private int selectedSureOption = 0;
+    private boolean estasSeguro = false;
     private String[] menuOptions;
+    private String[] sureOptions = {
+    		"Si",
+    		"No"
+    };
     private boolean hayPartidaGuardada = false;
   
     
@@ -86,10 +92,71 @@ public class MainMenu extends JPanel {
         int instructionX = (width - instructionMetrics.stringWidth(instructions)) / 2;
         int instructionY = height - height / 10;
         g2d.drawString(instructions, instructionX, instructionY);
+        
+        if(estasSeguro) {
+        	
+        	g2d.setColor(Color.BLACK);
+        	g2d.fillRect(GW.SX(520), GW.SY(460), GW.SX(890), GW.SY(300));
+        	
+        	// Dibujar borde
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(4));
+            g2d.drawRect(GW.SX(520), GW.SY(460), GW.SX(890), GW.SY(300));
+            
+            // Textos
+            String texto = "Estás seguro?";
+            int textoX = (width - instructionMetrics.stringWidth(texto)) / 2;
+            g2d.drawString(texto, textoX, GW.SY(520));
+            
+            g2d.setColor(Color.RED);
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(30)));
+            String texto1 = "crear una nueva partida sobreescribirá los datos anteriores";
+            FontMetrics metrics = g2d.getFontMetrics();
+            int texto1X = (width - metrics.stringWidth(texto1)) / 2;
+            g2d.drawString(texto1, texto1X, GW.SY(560));
+            
+            // Opciones
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(60)));
+            int Spacing = GW.SX(460);
+            int startX = GW.SX(685);
+            for(int i = 0; i< sureOptions.length; i++) {
+            	String option = sureOptions[i];
+                int optionX = startX + (i * Spacing);
+                
+                // Resaltar opción seleccionada
+                if (i == selectedSureOption) {
+                    g2d.setColor(Color.YELLOW);
+                    g2d.drawString("> " + option + " <", optionX - 50, GW.SY(720));
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav");
+                } else {
+                    g2d.setColor(Color.WHITE);
+                    g2d.drawString(option, optionX, GW.SY(720));
+                }
+            }
+        }
     }
     
     public void handleKeyPress(int keyCode) {
-        switch (keyCode) {
+    	
+    	if(estasSeguro) {
+    		switch(keyCode) {
+    		case KeyEvent.VK_RIGHT:
+    			selectedSureOption = (selectedSureOption - 1 + sureOptions.length) % sureOptions.length;
+                repaint();
+                break;
+                
+    		case KeyEvent.VK_LEFT:
+                selectedSureOption = (selectedSureOption + 1) % sureOptions.length;
+                repaint();
+                break;
+                
+    		case KeyEvent.VK_ENTER:
+                selectSureOption();
+                break;
+        	}
+    	} else {
+    		switch (keyCode) {
+            
             case KeyEvent.VK_UP:
                 selectedOption = (selectedOption - 1 + menuOptions.length) % menuOptions.length;
                 repaint();
@@ -105,6 +172,9 @@ public class MainMenu extends JPanel {
                 gameWindow.exitGame();
                 break;
         }
+    	}
+    	
+        
     }
     
     private void selectOption() {
@@ -116,17 +186,8 @@ public class MainMenu extends JPanel {
                     break;
                 case 1: // NUEVA PARTIDA
                     // Preguntar si quiere sobrescribir
-                    int respuesta = JOptionPane.showConfirmDialog(
-                        this,
-                        "¿Estás seguro? Esto sobrescribirá tu partida guardada.",
-                        "Nueva Partida",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE
-                    );
-                    if (respuesta == JOptionPane.YES_OPTION) {
-                        GameSaveManager.eliminarPartida();
-                        gameWindow.startGame();
-                    }
+                	estasSeguro = true;
+                	repaint();
                     break;
                 case 2: // SETTINGS
                     gameWindow.settingsGame();
@@ -149,6 +210,22 @@ public class MainMenu extends JPanel {
                     break;
             }
         }
+    }
+    
+    private void selectSureOption() {
+    	switch(selectedSureOption) {
+    	case 0: // Reiniciar datos
+    		estasSeguro = false;
+    		GameSaveManager.eliminarPartida();
+            gameWindow.startGame();
+    		break;
+    		
+    	case 1: // No reiniciar
+    		estasSeguro = false;
+    		selectedSureOption = 0;
+    		repaint();
+    		break;
+    	}
     }
 }
 

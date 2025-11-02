@@ -63,7 +63,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     public boolean martinBien = false;
     public boolean gennusoBien = true;
     
-    // Zonas desbloqueadas:
+    // Zonas para desbloquear:
     
     public boolean taller = false;
     public boolean ascensorTaller = false;
@@ -107,7 +107,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     private boolean paused = false;
     private int opcionPausa = 0;
-    private String[] opcionesPausa = {"CONTINUAR", "GUARDAR PARTIDA", "CONFIGURACION", "VOLVER AL MENU"};
+    private String[] opcionesPausa = {"CONTINUAR", "GUARDAR", "CONFIGURACION", "GUARDAR Y SALIR"};
 
     // Inventario
     private boolean inventoryOpen = false;
@@ -605,8 +605,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                     paused = false;
                 } else if (opcionPausa == 2) { // Ir al menú de configuración
                     gameWindow.settingsGame();
-                } else if (opcionPausa == 3) { // Volver al menú
+                } else if (opcionPausa == 3) { // Volver al menú y guardar
+                	
+                	GameSaveManager.guardarPartida(this, player);
                     gameWindow.backToMenu();
+                    
                 }
                 GameWindow.reproducirSonido("resources/sounds/confirm.wav");
                 repaint();
@@ -838,7 +841,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
         
         // Findlay: verificar si tiene 8 marcadores
-        if(nombreNPC.equals("Findlay") && npc.Trigger == 1 && countPlayerItem("marcador_findlay") >= 8) {
+        if(nombreNPC.equals("Findlay") && npc.Trigger == 1 && countPlayerItem("marcador") >= 8) {
         	currentLine = 10; // Listo amigo gracias
         }
         
@@ -1332,7 +1335,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     	case "Lavega":
     		if(opcion.equals("Agarrar marcador")) {
                 // Darle marcador al jugador
-                givePlayerItem("marcador_findlay", "Marcador", "marcador_Rojo.png", 1, 1);
+                givePlayerItem("marcador_findlay", "Marcador rojo", "marcador_Rojo.png", 1, 1);
                 npc.Trigger = 2;
                 GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
@@ -1426,7 +1429,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     			if(playerHasItem("renaa_gm", 1)) {
     				
     				removePlayerItem("renaa_gm", 1);
-    				givePlayerItem("marcador_findlay", "Marcador", "marcador_Azul.png", 1, 1);
+    				givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 1);
     				
     				ShowWinMessage("Conseguiste el Marcador azul");
     				npc.Trigger = 2;
@@ -1494,13 +1497,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Rita":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Rita", 5, -1);
+    			gameWindow.startRitmo("Rita", 10, 184);
     		}
     		break;
     		
     	case "Vagos":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Vagos", 5, -1);
+    			gameWindow.startRitmo("Vagos", 5, 172);
     		}
     		break;
     		
@@ -1516,7 +1519,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     			}
     		}
     		if(opcion.equals("Agarrar Marcador")) {
-    			givePlayerItem("marcador_findlay", "Marcador", "marcador_Violeta.png", 1, 1);
+    			givePlayerItem("marcador_findlay", "Marcador violeta", "marcador_Violeta.png", 1, 1);
     			npc.Trigger = 2;
     		}
     		break;
@@ -1524,21 +1527,21 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     	case "TAcho":
     		if(opcion.equals("SI")) {
     			npc.Trigger = 1;
-    			givePlayerItem("marcador", "Marcador amarillo", "marcador_Amarillo.png", 1, 1);
+    			givePlayerItem("marcador_findlay", "Marcador amarillo", "marcador_Amarillo.png", 1, 1);
     		}
     		break;
     		
     	case "TACho":
     		if(opcion.equals("SI")) {
     			npc.Trigger = 1;
-    			givePlayerItem("marcador", "Marcador naranja", "marcador_Naranja.png", 1, 1);
+    			givePlayerItem("marcador_findlay", "Marcador naranja", "marcador_Naranja.png", 1, 1);
     		}
     		break;
     		
     	case "TACHO":
     		if(opcion.equals("SI")) {
     			npc.Trigger = 1;
-    			givePlayerItem("marcador", "Marcador rosa", "marcador_Rosa.png", 1, 1);
+    			givePlayerItem("marcador_findlay", "Marcador rosa", "marcador_Rosa.png", 1, 1);
     		}
     		break;
     		
@@ -1546,7 +1549,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		if(opcion.equals("Agarrar marcador")) {
     			if(playerHasItem("zancos", 1)) {
     				npc.Trigger = 1;
-        			givePlayerItem("marcador", "Marcador celeste", "marcador_Celeste.png", 1, 1);
+        			givePlayerItem("marcador_findlay", "Marcador celeste", "marcador_Celeste.png", 1, 1);
         			ShowWinMessage("Conseguiste el Marcador celeste");
         			return;
     			} else {
@@ -1597,7 +1600,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
      */
     public static Item createItemWithImage(String id, String displayName, int maxStack) {
         // Mapeo de IDs a nombres de archivos de sprites
-        String spriteFilename = getSpriteName(id);
+        String spriteFilename = getSpriteName(id, displayName);
         
         java.awt.Image img = null;
         if (spriteFilename != null) {
@@ -1614,10 +1617,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     /**
      * Obtiene el nombre del archivo de sprite según el ID del item
      */
-    private static String getSpriteName(String id) {
+    private static String getSpriteName(String id, String nombre) {
         // Mapeo de todos los items del juego
         switch (id) {
             case "pancho": return "pancho.png";
+            case "procesador": return "procesador.png";
             case "jugo_placer": return "jugo placer.png";
             case "cachafaz": return "cachafaz.png";
             case "vinilo": return "vinilo_LaRenga.png";
@@ -1625,16 +1629,30 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             case "chocolate_dubai": return "chocolate dubai.png";
             case "libro_automotor": return "libro_Automotor.png";
             case "lapicera": return "lapicera.png";
-            case "marcador_findlay": return "marcador_Rojo.png"; // o puede variar
+            
+            case "marcador_findlay": // Marcadores findlay
+            	switch(nombre) {
+            	
+            	case "Marcador rojo": return "marcador_Rojo.png";
+            	case "Marcador rosa": return "marcador_Rosa.png";
+            	case "Marcador amarillo": return "marcador_Amarillo.png";
+            	case "Marcador naranja": return "marcador_Naranja.png";
+            	case "Marcador verde": return "marcador_Verde.png";
+            	case "Marcador violeta": return "marcador_Violeta.png";
+            	case "Marcador azul": return "marcador_Azul.png";
+            	case "Marcador celeste": return "marcador_Celeste.png";
+            	default: return null;
+            	
+            	}
+            	
             case "zancos": return "zancos.png";
             case "fusible": return "Fusible.png";
             case "resumen": return "resumen_Prueba.png";
             case "llave_laboratorio": return "llave_Laboratorio.png";
             case "boletin": return "boletin_Pacheco.png";
-            case "marcador": return "marcador_Amarillo.png"; // Varios colores
             case "llave_sum": return "llave_SUM.png";
             case "llave_reja": return "llave_Reja.png";
-            case "instagram": return "instagram.png";
+            case "instagram": return "@renaa_gm.png";
             case "tornillo": return "tornillo especifico.png";
             default: return null;
         }

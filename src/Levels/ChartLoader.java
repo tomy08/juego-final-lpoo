@@ -20,6 +20,7 @@ public class ChartLoader {
 
             double msPerBeat = 60000.0 / bpm;
             double msPerRow = msPerBeat / BEAT_DIVISION; 
+            
 
             double pixelsPerMs = GW.DSY(0.15) * arrowSpeed;
 
@@ -50,7 +51,33 @@ public class ChartLoader {
         } catch(IOException e) {
             e.printStackTrace();
         }
-
+        
         return arrows;
+    }
+    
+    public static double getTotalTime(File file, int bpm) {
+    	
+    	double msTotalTime = 0;
+    	
+    	try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            int row = 0;
+            final double BEAT_DIVISION = 4.0;
+
+            double msPerBeat = 60000.0 / bpm;
+            double msPerRow = msPerBeat / BEAT_DIVISION; 
+
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if(line.isEmpty()) continue;
+                row++;
+            }
+            
+            msTotalTime = msPerRow * row;
+            
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    	return msTotalTime;
     }
 }
