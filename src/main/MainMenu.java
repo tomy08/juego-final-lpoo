@@ -200,7 +200,7 @@ public class MainMenu extends JPanel {
             // Menú sin partida guardada: JUGAR, CONFIGURACION, SALIR
             switch (selectedOption) {
                 case 0: // PLAY
-                    gameWindow.startGame();
+                    gameWindow.showStory(1);
                     break;
                 case 1: // SETTINGS
                     gameWindow.settingsGame();
@@ -217,7 +217,7 @@ public class MainMenu extends JPanel {
     	case 0: // Reiniciar datos
     		estasSeguro = false;
     		GameSaveManager.eliminarPartida();
-            gameWindow.startGame();
+            gameWindow.showStory(1);
     		break;
     		
     	case 1: // No reiniciar

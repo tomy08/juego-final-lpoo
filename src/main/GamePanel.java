@@ -140,6 +140,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         CargarZona(1);
         CargarZona(0);
         
+        //test
+        givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
+        
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
         InputStream input = getClass().getResourceAsStream("dialogos.properties");

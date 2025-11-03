@@ -742,15 +742,35 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     // Detectar teclas
     public void handleKeyPress(int keyCode) {
+    	
         if (keyCode == KeyEvent.VK_ESCAPE) {
         	
         	if(win) {
-        		gameWindow.startGame(); // volver al RPG
-        		gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
-        		if(!gameWindow.gamePanel.musicaParada) {
-        			Musica.reproducirMusica("resources/Music/Fondo.wav");
-        		}
+        		
+        		switch(level) {
+        		
+        		case "Moya": // Final normal
+        			gameWindow.showStory(2);
+        			break;
+        			
+        		case "Linzalata": // Final bueno
+        			gameWindow.showStory(3);
+        			break;
+        			
+        		case "Ricky": // Final secreto
+        			gameWindow.showStory(4);
+        			break;
+        		
+        		default:
+        		gameWindow.startRealGame(); // volver al RPG
+             	gameWindow.SWM(LevelToMSG(level)); // Mensaje del GamePanel al ganar
+             	if(!gameWindow.gamePanel.musicaParada) {
+             		Musica.reproducirMusica("resources/Music/Fondo.wav");
+             	}
                 return;
+        		}
+        		
+        		
         	} else if(!lose){
         		pausa = !pausa;
         		if(pausa) {
@@ -856,7 +876,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	gameWindow.settingsGame();
             	break;
             case 3: // Salir
-                gameWindow.startGame(); // volver al RPG
+                gameWindow.startRealGame(); // volver al RPG
                 break;
         }
     }
@@ -868,7 +888,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 1: // Salir
-            	gameWindow.startGame();
+            	gameWindow.startRealGame();
             	Musica.detenerMusica();
                 break;
         }

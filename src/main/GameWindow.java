@@ -146,12 +146,13 @@ public class GameWindow extends JFrame implements KeyListener {
         requestFocus();
     }
     
-    public void startGame() {
+    public void showStory(int story) {
         // Mostrar la pantalla de historia antes de iniciar el juego
-        currentState = GameState.STORY; // agregá STORY al enum GameState si no existe
+        currentState = GameState.STORY;
         getContentPane().removeAll();
 
-        StoryScreen storyScreen = new StoryScreen(this);
+        StoryScreen storyScreen = new StoryScreen(this, story);
+        storyScreen.startTyping();
         getContentPane().add(storyScreen);
         revalidate();
         repaint();
@@ -206,7 +207,7 @@ public class GameWindow extends JFrame implements KeyListener {
             System.out.println("Partida cargada exitosamente");
         } else {
         	System.out.println("Error al cargar la partida");
-            startGame();
+            showStory(1);
         }
     }
     
