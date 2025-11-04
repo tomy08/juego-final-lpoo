@@ -12,6 +12,7 @@ public class Musica {
 
     public static void reproducirMusica(String rutaArchivo) {
         try {
+        	if(!GameWindow.musicaActivada) return;
             if (clip != null && clip.isRunning() && rutaArchivo.equals(rutaActual)) return;
             if (clip != null) {
                 clip.stop();
@@ -22,7 +23,7 @@ public class Musica {
             clip = AudioSystem.getClip();
             clip.open(audioInput);
 
-            // ✅ Ahora sí se aplica correctamente el volumen activo
+            
             setVolumen(GameWindow.volumenGlobal);
 
             clip.start();
@@ -47,6 +48,7 @@ public class Musica {
     }
 
     public static void reanudarMusica() {
+    	if(!GameWindow.musicaActivada) return;
         if (clip != null && !clip.isRunning()) {
             clip.start();
             if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);

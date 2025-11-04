@@ -33,9 +33,9 @@ public class MainMenu extends JPanel {
         hayPartidaGuardada = GameSaveManager.existePartidaGuardada();
 
         if (hayPartidaGuardada) {
-            menuOptions = new String[]{"CONTINUAR", "NUEVA PARTIDA", "CONFIGURACION", "SALIR"};
+            menuOptions = new String[]{"CONTINUAR", "NUEVA PARTIDA", "NIVELES",  "CONFIGURACION", "SALIR"};
         } else {
-            menuOptions = new String[]{"JUGAR", "CONFIGURACION", "SALIR"};
+            menuOptions = new String[]{"JUGAR", "NIVELES", "CONFIGURACION", "SALIR"};
         }
 
         selectedOption = 0; // resetear selección
@@ -189,10 +189,13 @@ public class MainMenu extends JPanel {
                 	estasSeguro = true;
                 	repaint();
                     break;
-                case 2: // SETTINGS
+                case 2: // SELECTOR NIVELES
+                	gameWindow.showNiveles();
+                	break;
+                case 3: // SETTINGS
                     gameWindow.settingsGame();
                     break;
-                case 3: // EXIT
+                case 4: // EXIT
                     gameWindow.exitGame();
                     break;
             }
@@ -202,10 +205,13 @@ public class MainMenu extends JPanel {
                 case 0: // PLAY
                     gameWindow.showStory(1);
                     break;
-                case 1: // SETTINGS
+                case 1: // SELECTOR NIVELES
+                	gameWindow.showNiveles();
+                	break;
+                case 2: // SETTINGS
                     gameWindow.settingsGame();
                     break;
-                case 2: // EXIT
+                case 3: // EXIT
                     gameWindow.exitGame();
                     break;
             }

@@ -38,8 +38,6 @@ public class GameSettings extends JPanel implements KeyListener {
     // Configuraciones editables
     // Teclas
     
- 
-    
     public static String teclaArriba = "W";
     public static String teclaAbajo = "S";
     public static String teclaIzquierda = "A";

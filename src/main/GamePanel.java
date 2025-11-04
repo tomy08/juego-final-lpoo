@@ -38,7 +38,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private int currentTeleportId = -1; // ID del teleport actual
     
     // Posiciones en el Mapa
-    private static int SCALE = GW.SX(34);
+    public static int SCALE = GW.SX(34);
     
     // Interactuar con NPC
     public boolean interactuando = false;
@@ -600,6 +600,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                     paused = false;
                 } else if (opcionPausa == 1) { // Guardar partida
                     boolean guardadoExitoso = GameSaveManager.guardarPartida(this, player);
+                    ProfileManager.guardarPerfil();
                     if (guardadoExitoso) {
                         ShowWinMessage("Partida guardada exitosamente");
                     } else {
@@ -611,6 +612,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 } else if (opcionPausa == 3) { // Volver al menú y guardar
                 	
                 	GameSaveManager.guardarPartida(this, player);
+                	ProfileManager.guardarPerfil();
                     gameWindow.backToMenu();
                     
                 }
@@ -867,14 +869,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
 
         if (raw == null) {
             interactuando = false;
-            eligiendoOpcion = false;
-            opciones = null;
-            currentNPC = null;
-            return;
-        }
-        
-        if(currentLine == npc.npcFinalLine() + 1) {
-        	interactuando = false;
             eligiendoOpcion = false;
             opciones = null;
             currentNPC = null;

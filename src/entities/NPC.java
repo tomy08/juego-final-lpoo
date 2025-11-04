@@ -19,7 +19,6 @@ public class NPC {
 	// Distinciones de npc
 	public String Tipo;
 	public int line = 1;
-	public int FinalLine = -1;
 	public int Trigger = 0; // IDs de trigger para poder tener mas varianza
 	
 	public boolean interactive = false;
@@ -250,11 +249,6 @@ public class NPC {
 		}
 		
 		return line;
-	}
-	
-	public int npcFinalLine() {
-		
-		return FinalLine;
 	}
 	
 	public void drawNPC(Graphics2D g2d) {

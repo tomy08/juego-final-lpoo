@@ -59,7 +59,15 @@ public class StoryScreen extends JPanel implements KeyListener {
         	
         case 3: // Final Bueno
         	paragraphs = new String[] {
-        			"..."
+        			"...",
+        			"Y así fué como el alumno pudo aprobar la materia de moya...",
+        			"Esta vez el alumno no se arrepintió de nada, no solo logró aprobar la materia",
+        			"También pudo quedar bien con la mayor parte de sus compañeros.",
+        			"Linzalata por su parte, tuvo que aprobar al alumno con algo de rechazo",
+        			"Por lo que el aprobado pudo decidirse por terminar este año del colegio sin materias previas",
+        			"Preparándose para el año que viene...",
+        			"Ahora solo le queda rendir las otras 8 bajas que tiene.",
+        			"LA ODISEA DE MOYA: FINAL BUENO"
         	};
         	break;
         	
@@ -154,7 +162,10 @@ public class StoryScreen extends JPanel implements KeyListener {
                 	break;
                 	
                 case 3: // Final bueno
-                	
+                	if(currentParagraph == 8) {
+                    	delay = 110;
+                    	NoSkip = true;
+                    }
                 	break;
                 	
                 case 4: // Final secreto
@@ -174,6 +185,7 @@ public class StoryScreen extends JPanel implements KeyListener {
                     	gameWindow.startRealGame();                    	
                     } else { // Volver al menú
                     	GameSaveManager.eliminarPartida();
+                    	GameSaveManager.reiniciarPartida(gameWindow.gamePanel, gameWindow.gamePanel.player);
                     	gameWindow.showMainMenu();
                     }
                 }

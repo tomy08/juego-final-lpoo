@@ -5,6 +5,7 @@ import main.GW;
 import main.GameSettings;
 import main.GameThread;
 import main.GameWindow;
+import main.ProfileManager;
 import main.GameThread.Updatable;
 
 import javax.swing.*;
@@ -25,7 +26,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private final List<arrow> arrowsToRemove = new ArrayList<>();
     
     private boolean[] columnPressed = new boolean[4];
-    
+    public static boolean EnHistoria;
     
     // Tiempo Canción
     private double virtualTimeMs = 0.0;      // tiempo virtual de la canción
@@ -613,7 +614,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private void Ganar() {
     	win = true;
     	LevelToReward(level);
-    	gameWindow.gamePanel.monedas += (int) (int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos);
+    	if(EnHistoria) {
+    		gameWindow.gamePanel.monedas += (int) (int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos);
+    	}
+    	
     }
     
     
@@ -621,71 +625,137 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	switch(level) {
     	
     	case "Melody":
-    		// Desbloquear taller
-    		gameWindow.gamePanel.triggerNPC("Zambrana", 1);
-    		gameWindow.gamePanel.triggerNPC("Melody", 2);
-    		gameWindow.gamePanel.triggerNPC("Kreimer", 1);
-    		gameWindow.gamePanel.taller = true;
+    		if(EnHistoria) {
+    			// Desbloquear taller
+        		gameWindow.gamePanel.triggerNPC("Zambrana", 1);
+        		gameWindow.gamePanel.triggerNPC("Melody", 2);
+        		gameWindow.gamePanel.triggerNPC("Kreimer", 1);
+        		gameWindow.gamePanel.taller = true;
+    		}
+    		
+    		// Desbloquar nivel
+    		ProfileManager.nivel2Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     	
-    	case "Los Vagos":
-    		// trigger al de la cantina para que te de un item al hablar (no dar item directo)
-    		gameWindow.gamePanel.triggerNPC("Cantina", 1);
-    		gameWindow.gamePanel.triggerNPC("Vagos", 2);
+    	case "Vagos":
+    		if(EnHistoria) {
+    			// trigger al de la cantina para que te de un item al hablar (no dar item directo)
+    			gameWindow.gamePanel.triggerNPC("Cantina", 1);
+    			gameWindow.gamePanel.triggerNPC("Vagos", 2);
+    		}
+    		
+    		ProfileManager.nivel4Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Gennuso":
-    		// Conseguir Item: IG de renaa_gm
-    		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
-    		gameWindow.gamePanel.gennusoBien = false;
-    		gameWindow.gamePanel.triggerNPC("Gennuso", 1);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: IG de renaa_gm
+        		gameWindow.gamePanel.givePlayerItem("renaa_gm", "IG de renaa_gm", "@renaa_gm.png", 1, 1);
+        		gameWindow.gamePanel.gennusoBien = false;
+        		gameWindow.gamePanel.triggerNPC("Gennuso", 1);
+        		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel3Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Rita":
-    		// Conseguir Item: Procesador
-    		gameWindow.gamePanel.givePlayerItem("procesador", "Procesador", "procesador.png", 1, 1);
-    		gameWindow.gamePanel.triggerNPC("Rita", 1);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Procesador
+        		gameWindow.gamePanel.givePlayerItem("procesador", "Procesador", "procesador.png", 1, 1);
+        		gameWindow.gamePanel.triggerNPC("Rita", 1);
+        		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel8Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Casas":
-    		// Conseguir Item: Llave de SUM
-    		gameWindow.gamePanel.givePlayerItem("llave_sum", "Llave del SUM", "llave_SUM.png", 1, 1);
-    		gameWindow.gamePanel.triggerNPC("Casas", 3);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Llave de SUM
+    			gameWindow.gamePanel.givePlayerItem("llave_sum", "Llave del SUM", "llave_SUM.png", 1, 1);
+    			gameWindow.gamePanel.triggerNPC("Casas", 3);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel7Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Ledesma":
-    		// Conseguir Item: Pastafrola
-    		gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 5);
-    		gameWindow.gamePanel.triggerNPC("Ledesma", 3);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Pastafrola
+    			gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 5);
+    			gameWindow.gamePanel.triggerNPC("Ledesma", 3);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel6Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Pecile":
-    		// Conseguir Item: Llave de la reja
-    		gameWindow.gamePanel.givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
-    		gameWindow.gamePanel.triggerNPC("Pecile", 2);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Llave de la reja
+    			gameWindow.gamePanel.givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
+    			gameWindow.gamePanel.triggerNPC("Pecile", 2);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel10Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Signorello":
-    		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 8);
-    		gameWindow.gamePanel.triggerNPC("Signorello", 2);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Marcador de findlay
+    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 8);
+    			gameWindow.gamePanel.triggerNPC("Signorello", 2);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel5Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Martin":
-    		// Conseguir Item: Marcador de findlay
-    		gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador verde", "marcador_Verde.png", 1, 8);
-    		gameWindow.gamePanel.triggerNPC("Martin", 3);
-    		GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		if(EnHistoria) {
+    			// Conseguir Item: Marcador de findlay
+    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador verde", "marcador_Verde.png", 1, 8);
+    			gameWindow.gamePanel.triggerNPC("Martin", 3);
+    			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
+    		}
+    		
+    		ProfileManager.nivel9Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     		
     	case "Pacheco":
-    		gameWindow.gamePanel.triggerNPC("Pacheco", 1);
+    		if(EnHistoria) {
+    			gameWindow.gamePanel.triggerNPC("Pacheco", 1);
+    		}
+    		
+    		ProfileManager.nivel1Pasado = true;
+    		ProfileManager.guardarPerfil();
+    		break;
+    		
+    	case "Moya":
+    		ProfileManager.nivel11Pasado = true;
+    		ProfileManager.guardarPerfil();
+    		break;
+    		
+    	case "Linzalata":
+    		ProfileManager.nivel12Pasado = true;
+    		ProfileManager.guardarPerfil();
+    		break;
+    		
+    	case "Ricky":
+    		ProfileManager.nivel13Pasado = true;
+    		ProfileManager.guardarPerfil();
     		break;
     	}
     }
@@ -745,7 +815,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	
         if (keyCode == KeyEvent.VK_ESCAPE) {
         	
+        	
         	if(win) {
+        		
+        		if(!EnHistoria) {
+        			gameWindow.showNiveles();
+        		}
         		
         		switch(level) {
         		
@@ -876,7 +951,11 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	gameWindow.settingsGame();
             	break;
             case 3: // Salir
-                gameWindow.startRealGame(); // volver al RPG
+            	if(EnHistoria) {
+            		gameWindow.startRealGame(); // volver al RPG
+            	} else {
+            		gameWindow.showNiveles();
+            	}
                 break;
         }
     }
@@ -888,8 +967,12 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	gameWindow.startRitmo(level, speed, bpm);
                 break;
             case 1: // Salir
-            	gameWindow.startRealGame();
-            	Musica.detenerMusica();
+            	if(EnHistoria) {
+            		gameWindow.startRealGame();
+            		Musica.detenerMusica();
+            	} else {
+            		gameWindow.showNiveles();
+            	}
                 break;
         }
     }
