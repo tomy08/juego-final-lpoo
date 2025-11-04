@@ -77,6 +77,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		"Jugo Placer",
     		"Cachafaz"
     };
+    private Image[] imagenesCantina = {
+    		new ImageIcon("resources/Sprites/items/pancho.png").getImage(),
+    		new ImageIcon("resources/Sprites/items/jugo placer.png").getImage(),
+    		new ImageIcon("resources/Sprites/items/cachafaz.png").getImage()
+    };
     private int[] precioCantina = {
     	18000,
     	25000,
@@ -295,6 +300,12 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             g2d.setColor(tiendaColor);
             g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(45f)));
             g2d.drawString(textoTienda, GW.SX(560), GW.SY(800));
+            
+            // Imagen del objeto
+            g2d.drawImage(imagenesCantina[OpcionTienda], 
+            		GW.SX(1150), GW.SY(350), 
+                    GW.SX(200), GW.SY(200), 
+                    this);
             
             int posY = 500;
             int i = 0;

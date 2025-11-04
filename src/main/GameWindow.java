@@ -26,7 +26,7 @@ public class GameWindow extends JFrame implements KeyListener {
     public GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
-    private LevelPanel levelPanel;
+    public LevelPanel levelPanel;
     private Niveles niveles;
     public static GameWindow instance;
     public static float volumenGlobal = 1.0f; // 0.0 a 1.0

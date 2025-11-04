@@ -5,6 +5,24 @@ import java.io.*;
 public class ProfileManager {
 
     private static final String PROFILE_FILE = "profile.dat";
+    
+    private static final int NUM_NIVELES = 13;
+    public static final int MAX_TOP_ENTRIES = 5; // Top 5
+        
+    
+    public static double[][] topScoresPorNivel = new double[NUM_NIVELES][MAX_TOP_ENTRIES]; 
+    public static String[][] topNombresPorNivel = new String[NUM_NIVELES][MAX_TOP_ENTRIES]; 
+
+    // Inicializador estático para asegurar que las matrices tengan valores iniciales (0.0 y null)
+    static {
+        // Inicialización por defecto en Java ya lo hace, pero es bueno ser explícito
+        for (int i = 0; i < NUM_NIVELES; i++) {
+            for (int j = 0; j < MAX_TOP_ENTRIES; j++) {
+                topScoresPorNivel[i][j] = 0.0;
+                topNombresPorNivel[i][j] = null;
+            }
+        }
+    }
 
     // === Variables globales ===
     public static boolean nivel1Pasado = false;
@@ -68,6 +86,19 @@ public class ProfileManager {
             dos.writeBoolean(nivel11Pasado);
             dos.writeBoolean(nivel12Pasado);
             dos.writeBoolean(nivel13Pasado);
+            
+            // Top niveles
+            for (int i = 0; i < NUM_NIVELES; i++) {
+                for (int j = 0; j < MAX_TOP_ENTRIES; j++) {
+                    // Guardar porcentaje (double)
+                    dos.writeDouble(topScoresPorNivel[i][j]); 
+                    
+                    // Guardar nombre (String - puede ser null, pero writeUTF lo maneja)
+                    // Si el nombre es null, guardamos una cadena vacía para evitar errores de null
+                    String nombreAGuardar = topNombresPorNivel[i][j] != null ? topNombresPorNivel[i][j] : "";
+                    dos.writeUTF(nombreAGuardar); 
+                }
+            }
 
             System.out.println("Perfil guardado exitosamente en " + PROFILE_FILE);
             return true;
@@ -132,6 +163,19 @@ public class ProfileManager {
             nivel11Pasado = dis.readBoolean();
             nivel12Pasado = dis.readBoolean();
             nivel13Pasado = dis.readBoolean();
+            
+            // Top niveles
+            for (int i = 0; i < NUM_NIVELES; i++) {
+                for (int j = 0; j < MAX_TOP_ENTRIES; j++) {
+                    // Leer porcentaje (double)
+                    topScoresPorNivel[i][j] = dis.readDouble();
+                    
+                    // Leer nombre (String)
+                    String nombreLeido = dis.readUTF();
+                    // Si la cadena leída es vacía, lo convertimos a null para consistencia
+                    topNombresPorNivel[i][j] = nombreLeido.isEmpty() ? null : nombreLeido;
+                }
+            }
 
             // === Actualizar niveles desbloqueados ===
             actualizarDesbloqueos();
@@ -173,5 +217,48 @@ public class ProfileManager {
      */
     public static boolean existePerfil() {
         return new File(PROFILE_FILE).exists();
+    }
+    
+ // Dentro de ProfileManager
+    /**
+     * Agrega una nueva puntuación al nivel y mantiene el Top ordenado y limitado.
+     * (Versión sin clases externas)
+     * @param nivel El índice del nivel (0 a 12 para nivel 1 a 13).
+     * @param porcentaje La puntuación a agregar (ej. 95.5).
+     * @param nombre El nombre del jugador.
+     * @return true si la puntuación entró al Top, false si no fue lo suficientemente alta.
+     */
+    public static boolean agregarNuevoTopScore(int nivel, double porcentaje, String nombre) {
+        if (nivel < 0 || nivel >= NUM_NIVELES) {
+            System.err.println("Nivel inválido: " + nivel);
+            return false;
+        }
+
+        boolean entroAlTop = false;
+
+        // Recorrer el Top para encontrar la posición donde insertar la nueva puntuación
+        for (int i = 0; i < MAX_TOP_ENTRIES; i++) {
+            // La nueva puntuación es mejor que la actual en la posición 'i'
+            if (porcentaje > topScoresPorNivel[nivel][i]) {
+                
+                entroAlTop = true;
+                
+                // 1. Mover los elementos existentes una posición hacia abajo
+                // (Comenzar desde el final para no sobrescribir)
+                for (int j = MAX_TOP_ENTRIES - 1; j > i; j--) {
+                    topScoresPorNivel[nivel][j] = topScoresPorNivel[nivel][j - 1];
+                    topNombresPorNivel[nivel][j] = topNombresPorNivel[nivel][j - 1];
+                }
+
+                // 2. Insertar la nueva puntuación en la posición 'i'
+                topScoresPorNivel[nivel][i] = porcentaje;
+                topNombresPorNivel[nivel][i] = nombre;
+
+                // Salir del bucle, ya encontramos dónde insertarlo
+                break;
+            }
+        }
+        
+        return entroAlTop;
     }
 }

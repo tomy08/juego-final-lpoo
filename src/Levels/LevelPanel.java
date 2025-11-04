@@ -78,9 +78,13 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     // Juego
     private boolean win = false;
+    private boolean esperandoNombre = false; // Nuevo estado: esperando la entrada del jugador
+    private String nombreActual = ""; // El nombre que el jugador está escribiendo
+    private int nivelIndexGanado = -1; // Para guardar el índice del nivel mientras se escribe el nombre
+    private static final int MAX_NOMBRE_CHARS = 10;
     private boolean pausa = false;
     private boolean lose = false;
-    private String level;
+    public String level;
     private int speed;
     private int bpm;
     
@@ -374,6 +378,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     
     private void drawWIN(Graphics2D g2d) {
     	double porcentajeFinal = getAccuracyPercentage();
+        int nivelIndex = getLevelIndex(this.level);
     	
     	// Oscurecer fondo
     	g2d.setColor(new Color(0,0,0,150));
@@ -415,10 +420,91 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	g2d.setColor(Color.WHITE);
     	g2d.drawString("(" + porcentaje(missCount, totalHits) + "%) Misses: " + missCount, GW.SX(1050), GW.SY(700));
     	
-    	// Monedas Conseguidas:
-    	g2d.setColor(Color.WHITE);
-    	g2d.drawString("Conseguiste:", GW.SX(250), GW.SY(500));
-    	g2d.drawString((int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos) + "$", GW.SX(250), GW.SY(550));
+    	
+    	if (nivelIndex != -1 && !EnHistoria) {
+            // TOP SCORERS
+    		
+    		// Titulo
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(60f)));
+            g2d.setColor(Color.YELLOW);
+            g2d.drawString("TOP SCORES", GW.SX(170), GW.SY(400)); // Colocar en otra ubicación
+            
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(35f)));
+            int startY = GW.SY(500);
+            int spacing = GW.SY(50);
+            
+            // Obtener la matriz de Top Scores de ProfileManager
+            double[][] scores = ProfileManager.topScoresPorNivel;
+            String[][] nombres = ProfileManager.topNombresPorNivel;
+            
+            for (int i = 0; i < ProfileManager.MAX_TOP_ENTRIES; i++) {
+                double score = scores[nivelIndex][i];
+                String nombre = nombres[nivelIndex][i];
+                
+                if (score > 0.0) { // Solo dibujar si hay una puntuación válida
+                    String rankText = String.format("%d. %s: %.2f%%", 
+                        (i + 1), 
+                        nombre != null ? nombre : "---", // Mostrar "---" si el nombre es null
+                        score
+                    );
+                    
+                    // Usar color diferente para el primer puesto
+                    g2d.setColor(i == 0 ? Color.CYAN : Color.WHITE); 
+                    g2d.drawString(rankText, GW.SX(170), startY + (i * spacing));
+                } else {
+                    // Dibujar una entrada vacía si no hay score
+                    g2d.setColor(Color.GRAY);
+                    g2d.drawString(String.format("%d. Vacio", (i + 1)), GW.SX(170), startY + (i * spacing));
+                }
+            }
+        } else if(EnHistoria) {
+        	// Monedas Conseguidas:
+        	g2d.setColor(Color.WHITE);
+        	g2d.drawString("Conseguiste:", GW.SX(250), GW.SY(500));
+        	g2d.drawString((int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos) + "$", GW.SX(250), GW.SY(550));
+        }
+    	
+    	if (esperandoNombre) {
+            int centerX = getWidth() / 2;
+            int centerY = getHeight() / 2;
+            int boxWidth = GW.SX(700);
+            int boxHeight = GW.SY(300);
+            int boxX = centerX - boxWidth / 2;
+            int boxY = centerY - boxHeight / 2;
+            
+            // 1. Dibujar el cuadro negro
+            g2d.setColor(new Color(0, 0, 0, 230));
+            g2d.fillRect(boxX, boxY, boxWidth, boxHeight);
+            
+            // 2. Dibujar el borde blanco
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(GW.SX(5)));
+            g2d.drawRect(boxX, boxY, boxWidth, boxHeight);
+            
+            // 3. Dibujar el texto de título
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(60f)));
+            String title = "NUEVO TOP SCORE!";
+            int titleWidth = g2d.getFontMetrics().stringWidth(title);
+            g2d.drawString(title, centerX - titleWidth / 2, boxY + GW.SY(70));
+            
+            // 4. Dibujar el nombre actual (entrada de texto)
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(50f)));
+            String inputPrompt = "NOMBRE: " + nombreActual;
+            int inputWidth = g2d.getFontMetrics().stringWidth(inputPrompt);
+            g2d.drawString(inputPrompt, centerX - inputWidth / 2, boxY + GW.SY(150));
+            
+            // 5. Dibujar el cursor parpadeante (si el nombre no excede el límite)
+            if (nombreActual.length() < MAX_NOMBRE_CHARS && (System.currentTimeMillis() % 1000) < 500) {
+                int cursorX = centerX + inputWidth / 2 + GW.SX(10);
+                g2d.fillRect(cursorX, boxY + GW.SY(115), GW.SX(5), GW.SY(40));
+            }
+            
+            // 6. Instrucción (ENTER)
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(30f)));
+            String hint = "Presiona ENTER para continuar";
+            int hintWidth = g2d.getFontMetrics().stringWidth(hint);
+            g2d.drawString(hint, centerX - hintWidth / 2, boxY + GW.SY(250));
+        }
     	
     	// Ayuda
     	g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(50f)));
@@ -611,13 +697,39 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     }
     
     // Ganar
+ // Dentro de LevelPanel
+
     private void Ganar() {
-    	win = true;
-    	LevelToReward(level);
-    	if(EnHistoria) {
-    		gameWindow.gamePanel.monedas += (int) (int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos);
-    	}
-    	
+        win = true;
+        
+        // --- LÓGICA DE ACTUALIZACIÓN DE TOP SCORE ---
+        if(!EnHistoria) {
+            double porcentajeFinal = getAccuracyPercentage();
+            int nivelIndex = getLevelIndex(this.level);
+            
+            // Verificamos si la puntuación califica para el Top (posición 0-4)
+            if (nivelIndex != -1) {
+                
+                // Llama a agregarNuevoTopScore para ver si entra y ordenar la lista
+                boolean isNewTop = ProfileManager.agregarNuevoTopScore(
+                    nivelIndex, 
+                    porcentajeFinal, 
+                    "ZZZ"
+                );
+                
+                if (isNewTop) {
+                     // Si entró al Top, cambiamos al estado de entrada de nombre
+                     this.esperandoNombre = true;
+                     this.nivelIndexGanado = nivelIndex;
+                     System.out.println("Nuevo Top Score, esperando nombre...");
+                     return; // Detenemos la función aquí, la guardaremos después del input
+                }
+            }
+        }
+        LevelToReward(level);
+        if(EnHistoria) {
+            gameWindow.gamePanel.monedas += (int) ((puntaje * getAccuracyPercentage() / 400) * multiplicador_puntos);
+        }
     }
     
     
@@ -808,19 +920,39 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	
     	return message;
     }
-
+    
+    public int getLevelIndex(String levelName) {
+        return switch (levelName) {
+            case "Pacheco" -> 0;
+            case "Melody" -> 1;
+            case "Gennuso" -> 2;
+            case "Vagos" -> 3;
+            case "Signorello" -> 4;
+            case "Ledesma" -> 5;
+            case "Casas" -> 6;
+            case "Rita" -> 7;
+            case "Martin" -> 8;
+            case "Pecile" -> 9;
+            case "Moya" -> 10;
+            case "Linzalata" -> 11;
+            case "Ricky" -> 12;
+            default -> -1;
+        };
+    }
     
     // Detectar teclas
     public void handleKeyPress(int keyCode) {
     	
         if (keyCode == KeyEvent.VK_ESCAPE) {
         	
+        	if(esperandoNombre) {
+        		return;
+        	}
         	
-        	if(win) {
+        	
+        	if(win && !esperandoNombre) {
         		
-        		if(!EnHistoria) {
-        			gameWindow.showNiveles();
-        		}
+        		if(EnHistoria) {
         		
         		switch(level) {
         		
@@ -843,6 +975,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
              		Musica.reproducirMusica("resources/Music/Fondo.wav");
              	}
                 return;
+        		}
+        		
+        		} else {
+        			gameWindow.showNiveles();
         		}
         		
         		
@@ -893,6 +1029,45 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         			break;
         	}
         	return;
+        }
+        
+        if (win && esperandoNombre) {
+            if (keyCode == KeyEvent.VK_ENTER) {
+                handleNameInputComplete();
+                return;
+            } else if (keyCode == KeyEvent.VK_BACK_SPACE) {
+                // Borrar el último carácter
+                if (!nombreActual.isEmpty()) {
+                    nombreActual = nombreActual.substring(0, nombreActual.length() - 1);
+                    GameWindow.reproducirSonido("resources/sounds/menu.wav"); // Sonido de borrado
+                }
+                return;
+            }
+            
+            // Capturar letras y números
+            String charToAdd = null;
+
+            if (keyCode == KeyEvent.VK_SPACE) {
+                // Caso especial: La barra espaciadora agrega un guion bajo (_)
+                charToAdd = "_";
+            } else {
+                // Capturar otras teclas alfanuméricas
+                // Usamos KeyText() y filtramos solo la primera letra/dígito
+                String keyText = KeyEvent.getKeyText(keyCode).toUpperCase();
+                if (keyText.length() == 1 && (Character.isLetterOrDigit(keyText.charAt(0)))) {
+                     charToAdd = keyText;
+                }
+            }
+            
+            // Aplicar el carácter si es válido y hay espacio
+            if (charToAdd != null) {
+                if (nombreActual.length() < MAX_NOMBRE_CHARS) {
+                    nombreActual += charToAdd;
+                    GameWindow.reproducirSonido("resources/sounds/hitsound.wav"); 
+                }
+            }
+            repaint();
+            return;
         }
         
         int column = -1;
@@ -975,6 +1150,38 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
             	}
                 break;
         }
+    }
+    
+    private void handleNameInputComplete() {
+        if (nivelIndexGanado == -1) {
+            // Error de seguridad, pero si pasa, salimos del estado
+            esperandoNombre = false;
+            return;
+        }
+        
+        String nombreFinal = nombreActual.trim();
+        if (nombreFinal.isEmpty()) {
+            nombreFinal = "Player";
+        }
+        
+        // Reinsertar puntuación con nombre
+        double porcentajeFinal = getAccuracyPercentage();
+        
+        for (int i = 0; i < ProfileManager.MAX_TOP_ENTRIES; i++) {
+            if ("ZZZ".equals(ProfileManager.topNombresPorNivel[nivelIndexGanado][i])) {
+                ProfileManager.topNombresPorNivel[nivelIndexGanado][i] = nombreFinal;
+                break;
+            }
+        }
+        
+        // Guardar estado
+        ProfileManager.guardarPerfil(); 
+        LevelToReward(level);
+        
+        esperandoNombre = false;
+        nivelIndexGanado = -1;
+        nombreActual = "";
+        repaint();
     }
     
 }

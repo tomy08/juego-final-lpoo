@@ -69,6 +69,8 @@ public class Niveles extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+    	int nivelIndex = this.selectedOption;
+    	
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -102,10 +104,55 @@ public class Niveles extends JPanel {
 
             if (i == selectedOption) {
                 g2d.setColor(Color.YELLOW);
-                g2d.drawString("> " + texto + " <", baseX, y);
+                g2d.drawString("  " + texto, baseX, y);
             } else {
                 g2d.setColor(Color.WHITE);
                 g2d.drawString(texto, baseX, y);
+            }
+        }
+        
+        if (nivelesDesbloqueados[nivelIndex]) { 
+            
+            // --- Titulo ---
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(60f)));
+            g2d.setColor(Color.YELLOW);
+            // Ajustamos la posición X para que esté a la derecha
+            g2d.drawString("TOP SCORES", GW.SX(1350), GW.SY(400)); 
+            
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(35f)));
+            int topListStartY = GW.SY(500); // Mover el inicio más arriba para que quepan 5
+            int topListSpacing = GW.SY(50);
+            int topListBaseX = GW.SX(1350); // Posición X para la lista
+            
+            // Obtener la matriz de Top Scores de ProfileManager
+            double[][] scores = ProfileManager.topScoresPorNivel;
+            String[][] nombres = ProfileManager.topNombresPorNivel;
+            
+            // Verificamos que ProfileManager exista y que el índice sea válido
+            if (scores != null && nivelIndex >= 0 && nivelIndex < scores.length) {
+                
+                for (int i = 0; i < ProfileManager.MAX_TOP_ENTRIES; i++) {
+                    double score = scores[nivelIndex][i];
+                    String nombre = nombres[nivelIndex][i];
+                    
+                    int y = topListStartY + (i * topListSpacing);
+                    
+                    if (score > 0.0) { // Solo dibujar si hay una puntuación válida
+                        String rankText = String.format("%d. %s: %.2f%%", 
+                            (i + 1), 
+                            nombre != null ? nombre : "---",
+                            score
+                        );
+                        
+                        // Usar color diferente para el primer puesto
+                        g2d.setColor(i == 0 ? Color.CYAN : Color.WHITE); 
+                        g2d.drawString(rankText, topListBaseX, y);
+                    } else {
+                        // Dibujar una entrada vacía si no hay score
+                        g2d.setColor(Color.GRAY);
+                        g2d.drawString(String.format("%d. Vacio", (i + 1)), topListBaseX, y);
+                    }
+                }
             }
         }
 
