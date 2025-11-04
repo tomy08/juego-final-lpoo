@@ -29,6 +29,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private Set<Integer> pressedKeys;
     private CollisionMap collisionMap; // Sistema de colisiones
+    private Image[] fondo = {
+    		new ImageIcon("resources/Sprites/fondos/FONDOARRIBA.png").getImage(),
+    		new ImageIcon("resources/Sprites/fondos/FONDOABAJO.png").getImage()
+    };
     
     // Sistema de Teleport
     private CollisionMap plantaAltaMap;
@@ -65,8 +69,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Zonas para desbloquear:
     
-    public boolean taller = false;
-    public boolean ascensorTaller = false;
+    public boolean taller = true;
+    public boolean ascensorTaller = true;
 
     // Tienda
     
@@ -139,7 +143,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador
-        player = new Player(282 * SCALE, 43 * SCALE, this);
+        player = new Player(285 * SCALE, 55 * SCALE, this);
         
         // Precargar ambos mapas
         CargarZona(1);
@@ -147,6 +151,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         //test
         givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
+        givePlayerItem("llave_sum", "Llave de la reja", "llave_Reja.png", 1, 1);
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -191,6 +196,22 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                 newW, newH,
                 null);
         }
+        
+        
+        if(enPlantaAlta) {
+        	img = fondo[0];
+        } else {
+        	img = fondo[1];
+        }
+        
+        // Dibujar fondo con diseños
+        int newW = (int) (img.getWidth(null) * SCALE / 3.3);
+        int newH = (int) (img.getHeight(null) * SCALE / 3.3);
+        
+        g2d.drawImage(img,
+            -(int)CameraX, -(int)CameraY,
+            newW, newH,
+            null);
 
         
         
@@ -1116,17 +1137,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             renderList.add(player);
             
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 282 * SCALE, 40 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 282 * SCALE, 17 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 285 * SCALE, 52 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 285 * SCALE, 30 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 13 * SCALE, 11 * SCALE, GW.SX(50), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Moya", 277 * SCALE, 10 * SCALE, GW.SX(45), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Moya", 277 * SCALE, 14 * SCALE, GW.SX(45), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gera", 99 * SCALE, 14 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("ASCENSOR", 172 * SCALE, 97 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ascensor", 170 * SCALE, 33 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Estufa", 258 * SCALE, 150 * SCALE, GW.SX(60), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Caja", 22 * SCALE, 104 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Tacho", 128 * SCALE, 165 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TAcho", 260 * SCALE, 130 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("ASCENSOR", 174 * SCALE, 122 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ascensor", 172 * SCALE, 43 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Estufa", 261 * SCALE, 191 * SCALE, GW.SX(60), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Caja", 23 * SCALE, 133 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Tacho", 128 * SCALE, 208 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TAcho", 268 * SCALE, 164 * SCALE, GW.SX(40), this));
             
             for (NPC npc : NPCs) {
                 renderList.add(npc);

@@ -134,8 +134,8 @@ public class GameSaveManager {
         gamePanel.setStockTienda(new int[] {3, 3, 1});
 
         // === Reiniciar jugador ===
-        player.setX(282 * gamePanel.SCALE);
-        player.setY(43 * gamePanel.SCALE);
+        player.setX(285 * gamePanel.SCALE);
+        player.setY(55 * gamePanel.SCALE);
         for(int i = 0; i<player.inventory.getTotalSlots() ; i++) {
         	player.inventory.removeFromSlot(i, 4);
         }
