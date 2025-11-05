@@ -21,6 +21,7 @@ public class GameSaveManager {
     /**
      * Guarda el estado completo del juego
      */
+    
     public static boolean guardarPartida(GamePanel gamePanel, Player player) {
         try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(SAVE_FILE))) {
             
@@ -39,8 +40,8 @@ public class GameSaveManager {
             }
             
             // === 2. DATOS DEL JUGADOR ===
-            dos.writeDouble(player.getX());
-            dos.writeDouble(player.getY());
+            dos.writeDouble(player.getX() / gamePanel.SCALE);
+            dos.writeDouble(player.getY() / gamePanel.SCALE);
             dos.writeBoolean(gamePanel.enPlantaAlta);
             
             // === 3. INVENTARIO ===
@@ -50,9 +51,6 @@ public class GameSaveManager {
             dos.writeInt(LevelPanel.Max_vida);
             dos.writeDouble(LevelPanel.multiplicador_puntos);
             dos.writeInt(LevelPanel.plusSuma);
-            
-            // === 5. CONTROLES CONFIGURADOS ===
-            guardarControles(dos);
             
             // === 6. DATOS DEL NPCMANAGER ===
             guardarNPCManager(dos);
@@ -97,8 +95,8 @@ public class GameSaveManager {
             // === 2. DATOS DEL JUGADOR ===
             double playerX = dis.readDouble();
             double playerY = dis.readDouble();
-            player.setX(playerX);
-            player.setY(playerY);
+            player.setX(playerX * gamePanel.SCALE);
+            player.setY(playerY * gamePanel.SCALE);
             gamePanel.enPlantaAlta = dis.readBoolean();
             
             // === 3. INVENTARIO ===
@@ -108,9 +106,6 @@ public class GameSaveManager {
             LevelPanel.Max_vida = dis.readInt();
             LevelPanel.multiplicador_puntos = dis.readDouble();
             LevelPanel.plusSuma = dis.readInt();
-            
-            // === 5. CONTROLES CONFIGURADOS ===
-            cargarControles(dis);
             
             // === 6. DATOS DEL NPCMANAGER ===
             cargarNPCManager(dis, gamePanel);
@@ -124,6 +119,38 @@ public class GameSaveManager {
             return false;
         }
     }
+    
+    public static void reiniciarPartida(GamePanel gamePanel, Player player) {
+    	
+        // === Reiniciar datos del GamePanel ===
+        gamePanel.martinBien = false;
+        gamePanel.gennusoBien = true;
+        gamePanel.taller = false;
+        gamePanel.ascensorTaller = false;
+        gamePanel.monedas = 0;
+        gamePanel.enPlantaAlta = true;
+
+        // Reiniciar stock de tienda
+        gamePanel.setStockTienda(new int[] {3, 3, 1});
+
+        // === Reiniciar jugador ===
+        player.setX(285 * gamePanel.SCALE);
+        player.setY(55 * gamePanel.SCALE);
+        for(int i = 0; i<player.inventory.getTotalSlots() ; i++) {
+        	player.inventory.removeFromSlot(i, 4);
+        }
+        player.inventory.selectHotbar(0);
+        gamePanel.CargarZona(0);
+
+        // === Reiniciar LevelPanel ===
+        LevelPanel.Max_vida = 50;
+        LevelPanel.multiplicador_puntos = 1.0;
+        LevelPanel.plusSuma = 0;
+
+        // === Reiniciar NPCs ===
+        NPCManager.clearAllNPCs();
+    }
+
     
     /**
      * Verifica si existe un archivo de guardado
@@ -217,68 +244,6 @@ public class GameSaveManager {
     }
     
     /**
-     * Guarda los controles configurados
-     */
-    private static void guardarControles(DataOutputStream dos) throws IOException {
-        dos.writeUTF(GameSettings.teclaArriba);
-        dos.writeUTF(GameSettings.teclaAbajo);
-        dos.writeUTF(GameSettings.teclaIzquierda);
-        dos.writeUTF(GameSettings.teclaDerecha);
-        dos.writeUTF(GameSettings.teclaInteractuar);
-        dos.writeUTF(GameSettings.teclaInventario);
-        dos.writeUTF(GameSettings.teclaPausa);
-        dos.writeUTF(GameSettings.teclaAdelantarTexto);
-        dos.writeUTF(GameSettings.teclaNotaIzquierda);
-        dos.writeUTF(GameSettings.teclaNotaAbajo);
-        dos.writeUTF(GameSettings.teclaNotaArriba);
-        dos.writeUTF(GameSettings.teclaNotaDerecha);
-        
-        dos.writeInt(GameSettings.KEY_UP);
-        dos.writeInt(GameSettings.KEY_DOWN);
-        dos.writeInt(GameSettings.KEY_LEFT);
-        dos.writeInt(GameSettings.KEY_RIGHT);
-        dos.writeInt(GameSettings.KEY_INTERACT);
-        dos.writeInt(GameSettings.KEY_INVENTORY);
-        dos.writeInt(GameSettings.KEY_MENU);
-        dos.writeInt(GameSettings.KEY_CONFIRM);
-        dos.writeInt(GameSettings.KEY_NLEFT);
-        dos.writeInt(GameSettings.KEY_NDOWN);
-        dos.writeInt(GameSettings.KEY_NUP);
-        dos.writeInt(GameSettings.KEY_NRIGHT);
-    }
-    
-    /**
-     * Carga los controles configurados
-     */
-    private static void cargarControles(DataInputStream dis) throws IOException {
-        GameSettings.teclaArriba = dis.readUTF();
-        GameSettings.teclaAbajo = dis.readUTF();
-        GameSettings.teclaIzquierda = dis.readUTF();
-        GameSettings.teclaDerecha = dis.readUTF();
-        GameSettings.teclaInteractuar = dis.readUTF();
-        GameSettings.teclaInventario = dis.readUTF();
-        GameSettings.teclaPausa = dis.readUTF();
-        GameSettings.teclaAdelantarTexto = dis.readUTF();
-        GameSettings.teclaNotaIzquierda = dis.readUTF();
-        GameSettings.teclaNotaAbajo = dis.readUTF();
-        GameSettings.teclaNotaArriba = dis.readUTF();
-        GameSettings.teclaNotaDerecha = dis.readUTF();
-        
-        GameSettings.KEY_UP = dis.readInt();
-        GameSettings.KEY_DOWN = dis.readInt();
-        GameSettings.KEY_LEFT = dis.readInt();
-        GameSettings.KEY_RIGHT = dis.readInt();
-        GameSettings.KEY_INTERACT = dis.readInt();
-        GameSettings.KEY_INVENTORY = dis.readInt();
-        GameSettings.KEY_MENU = dis.readInt();
-        GameSettings.KEY_CONFIRM = dis.readInt();
-        GameSettings.KEY_NLEFT = dis.readInt();
-        GameSettings.KEY_NDOWN = dis.readInt();
-        GameSettings.KEY_NUP = dis.readInt();
-        GameSettings.KEY_NRIGHT = dis.readInt();
-    }
-    
-    /**
      * Guarda el estado de todos los NPCs
      */
     private static void guardarNPCManager(DataOutputStream dos) throws IOException {
@@ -291,7 +256,6 @@ public class GameSaveManager {
             dos.writeDouble(npc.y);
             dos.writeInt(npc.size);
             dos.writeInt(npc.line);
-            dos.writeInt(npc.FinalLine);
             dos.writeInt(npc.Trigger);
             dos.writeBoolean(npc.interactive);
         }
@@ -312,14 +276,12 @@ public class GameSaveManager {
             double y = dis.readDouble();
             int size = dis.readInt();
             int line = dis.readInt();
-            int finalLine = dis.readInt();
             int trigger = dis.readInt();
             boolean interactive = dis.readBoolean();
             
             // Recrear el NPC
             NPC npc = NPCManager.getOrCreateNPC(tipo, x, y, size, panel);
             npc.line = line;
-            npc.FinalLine = finalLine;
             npc.Trigger = trigger;
             npc.interactive = interactive;
         }

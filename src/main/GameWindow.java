@@ -26,7 +26,8 @@ public class GameWindow extends JFrame implements KeyListener {
     public GamePanel gamePanel;
     private GameThread gameThread;    
     private GameSettings gameSettings;
-    private LevelPanel levelPanel;
+    public LevelPanel levelPanel;
+    private Niveles niveles;
     public static GameWindow instance;
     public static float volumenGlobal = 1.0f; // 0.0 a 1.0
     public static boolean efectosActivados = true;
@@ -49,6 +50,7 @@ public class GameWindow extends JFrame implements KeyListener {
         mainMenu = new MainMenu(this);
         gamePanel = new GamePanel(this);
         gameSettings = new GameSettings(this);
+        niveles = new Niveles(this);
 
         // Configurar listeners
         addKeyListener(this);
@@ -57,6 +59,8 @@ public class GameWindow extends JFrame implements KeyListener {
         
         // Mostrar menú principal inicialmente
         showMainMenu();
+        ProfileManager.cargarPerfil();
+        ProfileManager.nivel9Pasado = true;
     }
     
     public static void reproducirSonido(String rutaArchivo) {
@@ -81,9 +85,6 @@ public class GameWindow extends JFrame implements KeyListener {
             System.out.println("Error al reproducir sonido: " + e.getMessage());
         }
     }
-
-
-
     
     public static void cargar_font() {
     	try {
@@ -146,12 +147,28 @@ public class GameWindow extends JFrame implements KeyListener {
         requestFocus();
     }
     
-    public void startGame() {
+    public void showNiveles() {
+    	
+    	ProfileManager.cargarPerfil();
+    	getContentPane().removeAll();
+        getContentPane().add(niveles);
+        revalidate();
+        repaint();
+        niveles.requestFocusInWindow();
+        niveles.ignorarProximoEnter = true;
+        niveles.selectedOption = 0;
+        niveles.scrollOffset = 0;
+        LevelPanel.EnHistoria = false;
+        
+    }
+    
+    public void showStory(int story) {
         // Mostrar la pantalla de historia antes de iniciar el juego
-        currentState = GameState.STORY; // agregá STORY al enum GameState si no existe
+        currentState = GameState.STORY;
         getContentPane().removeAll();
 
-        StoryScreen storyScreen = new StoryScreen(this);
+        StoryScreen storyScreen = new StoryScreen(this, story);
+        storyScreen.startTyping();
         getContentPane().add(storyScreen);
         revalidate();
         repaint();
@@ -165,6 +182,7 @@ public class GameWindow extends JFrame implements KeyListener {
         revalidate();
         repaint();
         requestFocus();
+        LevelPanel.EnHistoria = true;
 
         if (!gamePanel.musicaParada) {
             Musica.reproducirMusica("resources/Music/Fondo.wav");
@@ -185,7 +203,7 @@ public class GameWindow extends JFrame implements KeyListener {
         revalidate();
         repaint();
         requestFocus();
-        
+        LevelPanel.EnHistoria = true;
         // Cargar los datos guardados
         boolean cargaExitosa = GameSaveManager.cargarPartida(gamePanel, gamePanel.player);
         System.out.println("Se cargó: " + gamePanel.enPlantaAlta);
@@ -206,7 +224,6 @@ public class GameWindow extends JFrame implements KeyListener {
             System.out.println("Partida cargada exitosamente");
         } else {
         	System.out.println("Error al cargar la partida");
-            startGame();
         }
     }
     

@@ -38,8 +38,6 @@ public class GameSettings extends JPanel implements KeyListener {
     // Configuraciones editables
     // Teclas
     
- 
-    
     public static String teclaArriba = "W";
     public static String teclaAbajo = "S";
     public static String teclaIzquierda = "A";
@@ -310,9 +308,11 @@ public class GameSettings extends JPanel implements KeyListener {
             if (keyCode == KeyEvent.VK_ESCAPE) {
                 GameWindow.instance.returnFromSettings();
             } else if (keyCode == KeyEvent.VK_Q) {
+            	contentOffsetY = 0;
                 cambiarSeccion(-1);
                 GameWindow.reproducirSonido("resources/sounds/menu.wav");
             } else if (keyCode == KeyEvent.VK_E) {
+            	contentOffsetY = 0;
                 cambiarSeccion(1);
                 GameWindow.reproducirSonido("resources/sounds/menu.wav");
             } else if (keyCode == KeyEvent.VK_ENTER) {

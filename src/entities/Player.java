@@ -1,5 +1,8 @@
 package entities;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 
 import Mapa.CollisionMap;
 import main.GW;
@@ -24,6 +27,19 @@ public class Player {
     private long lastSound = 0;
     private int delaySound = 350;
     
+    // Sistema de animación
+    private BufferedImage[] downFrames;
+    private BufferedImage[] upFrames;
+    private BufferedImage[] sideFrames;
+    private BufferedImage idleDown;  // Sprite estático mirando abajo
+    private BufferedImage idleUp;    // Sprite estático mirando arriba
+    private BufferedImage idleSide;  // Sprite estático mirando al lado
+    private int currentFrame = 0;
+    private long lastFrameTime = 0;
+    private int frameDelay = 150; // ms entre frames
+    private String currentDirection = "down"; // down, up, left, right
+    private boolean isMoving = false;
+    
     public Player(double startX, double startY, GamePanel panel) {
         this.x = startX;
         this.y = startY;
@@ -34,6 +50,9 @@ public class Player {
         this.collisionMap = null; // Se establecerá después
         // Crear inventario: hotbar 9, grid 9x3 (como Minecraft simplificado)
         this.inventory = new Inventory(9, 3);
+        
+        // Cargar animaciones
+        loadAnimations();
     }
     
     /**
@@ -41,6 +60,44 @@ public class Player {
      */
     public void setCollisionMap(CollisionMap collisionMap) {
         this.collisionMap = collisionMap;
+    }
+    
+    /**
+     * Carga las animaciones del jugador desde los archivos
+     */
+    private void loadAnimations() {
+        try {
+            // Cargar frames de animación hacia abajo
+            downFrames = new BufferedImage[4];
+            downFrames[0] = ImageIO.read(new File("resources/Sprites/Jugador/down-frame1.png"));
+            downFrames[1] = ImageIO.read(new File("resources/Sprites/Jugador/down-frame2.png"));
+            downFrames[2] = ImageIO.read(new File("resources/Sprites/Jugador/down-frame3.png"));
+            downFrames[3] = ImageIO.read(new File("resources/Sprites/Jugador/down-frame4.png"));
+            
+            // Cargar frames de animación hacia arriba
+            upFrames = new BufferedImage[4];
+            upFrames[0] = ImageIO.read(new File("resources/Sprites/Jugador/up-frame1.png"));
+            upFrames[1] = ImageIO.read(new File("resources/Sprites/Jugador/up-frame2.png"));
+            upFrames[2] = ImageIO.read(new File("resources/Sprites/Jugador/up-frame3.png"));
+            upFrames[3] = ImageIO.read(new File("resources/Sprites/Jugador/up-frame4.png"));
+            
+            // Cargar frames de animación lateral
+            sideFrames = new BufferedImage[4];
+            sideFrames[0] = ImageIO.read(new File("resources/Sprites/Jugador/side-frame1.png"));
+            sideFrames[1] = ImageIO.read(new File("resources/Sprites/Jugador/side-frame2.png"));
+            sideFrames[2] = ImageIO.read(new File("resources/Sprites/Jugador/side-frame3.png"));
+            sideFrames[3] = ImageIO.read(new File("resources/Sprites/Jugador/side-frame4.png"));
+            
+            // Cargar sprites estáticos (idle)
+            idleDown = ImageIO.read(new File("resources/Sprites/Jugador/pj-down.png"));
+            idleUp = ImageIO.read(new File("resources/Sprites/Jugador/pj-up.png"));
+            idleSide = ImageIO.read(new File("resources/Sprites/Jugador/pj-side.png"));
+            
+            System.out.println("Animaciones del jugador cargadas correctamente");
+        } catch (Exception e) {
+            System.err.println("Error al cargar animaciones del jugador: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public boolean canTeleport() { return !teleportCooldown; }
@@ -55,6 +112,30 @@ public class Player {
 
     
     public void move(double deltaX, double deltaY, int screenWidth, int screenHeight) {
+        // Determinar si el jugador se está moviendo
+        isMoving = (deltaX != 0 || deltaY != 0);
+        
+        // Determinar dirección basada en el movimiento
+        if (isMoving) {
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Movimiento horizontal predominante
+                if (deltaX > 0) {
+                    currentDirection = "right";
+                    facingLeft = false;
+                } else {
+                    currentDirection = "left";
+                    facingLeft = true;
+                }
+            } else {
+                // Movimiento vertical predominante
+                if (deltaY > 0) {
+                    currentDirection = "down";
+                } else {
+                    currentDirection = "up";
+                }
+            }
+        }
+        
         // Calcular nueva posición
         double newX = x + (deltaX * speed);
         double newY = y + (deltaY * speed);
@@ -79,7 +160,8 @@ public class Player {
             }
         }
         
-        if(System.currentTimeMillis() >= lastSound + delaySound) {        	
+        // Reproducir sonido de pasos SOLO si está en movimiento
+        if(isMoving && System.currentTimeMillis() >= lastSound + delaySound) {        	
         	GameWindow.reproducirSonido("resources/sounds/footStep.wav");
         	lastSound = System.currentTimeMillis();
         }
@@ -88,28 +170,100 @@ public class Player {
     }
     
     public void update() {
-    	// Seeguimiento de la camara
+    	// Seguimiento de la camara
     	panel.CameraX = x - panel.getWidth() / 2 + size / 2;
         panel.CameraY = y - panel.getHeight() / 2 + size / 2;
+        
+        // Actualizar animación SOLO si se está moviendo
+        if (isMoving) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastFrameTime >= frameDelay) {
+                currentFrame = (currentFrame + 1) % 4; // Ciclar entre 0-3
+                lastFrameTime = currentTime;
+            }
+        } else {
+            // Si no se mueve, resetear a frame 0 y pausar animación
+            currentFrame = 0;
+            lastFrameTime = System.currentTimeMillis(); // Reset del timer
+        }
     }
     
     public void draw(Graphics2D g2d) {
-        // Dibujar el jugador como un cuadrado
-        g2d.setColor(color);
-        g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+        // Obtener el frame actual según la dirección
+        BufferedImage currentSprite = getCurrentSprite();
         
-        // Dibujar borde
-        g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+        if (currentSprite != null) {
+            // Calcular posición en pantalla (relativa a la cámara)
+            int screenX = (int)x - (int)panel.CameraX;
+            int screenY = (int)y - (int)panel.CameraY;
+            
+            // Si se mueve a la izquierda, voltear la imagen horizontalmente
+            if (currentDirection.equals("left")) {
+                // Dibujar volteado horizontalmente
+                g2d.drawImage(currentSprite, 
+                    screenX + size, screenY-size,  // Posición X invertida
+                    -size, size*2,               // Ancho negativo para voltear
+                    null);
+            } else {
+                // Dibujar normalmente
+                g2d.drawImage(currentSprite, screenX, screenY-size, size, size*2, null);
+            }
+            
+        } else {
+            // Fallback: dibujar el cuadrado original si las imágenes no cargan
+            g2d.setColor(color);
+            g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+            
+            // Dibujar borde
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(2));
+            g2d.drawRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+            
+            // Dibujar una pequeña cruz en el centro para indicar dirección
+            g2d.setColor(Color.WHITE);
+            int centerX = (int)x + size/2;
+            int centerY = (int)y + size/2;
+            int crossSize = 6;
+            g2d.drawLine(centerX - crossSize - (int)panel.CameraX, centerY - (int)panel.CameraY, centerX + crossSize - (int)panel.CameraX, centerY - (int)panel.CameraY);
+            g2d.drawLine(centerX - (int)panel.CameraX, centerY - crossSize - (int)panel.CameraY, centerX - (int)panel.CameraX, centerY + crossSize  - (int)panel.CameraY);
+        }
+    }
+    
+    /**
+     * Obtiene el sprite actual según la dirección y frame de animación
+     */
+    private BufferedImage getCurrentSprite() {
+        if (downFrames == null || upFrames == null || sideFrames == null) {
+            return null;
+        }
         
-        // Dibujar una pequeña cruz en el centro para indicar dirección
-        g2d.setColor(Color.WHITE);
-        int centerX = (int)x + size/2;
-        int centerY = (int)y + size/2;
-        int crossSize = 6;
-        g2d.drawLine(centerX - crossSize - (int)panel.CameraX, centerY - (int)panel.CameraY, centerX + crossSize - (int)panel.CameraX, centerY - (int)panel.CameraY);
-        g2d.drawLine(centerX - (int)panel.CameraX, centerY - crossSize - (int)panel.CameraY, centerX - (int)panel.CameraX, centerY + crossSize  - (int)panel.CameraY);
+        // Si no se está moviendo, usar sprites estáticos (idle)
+        if (!isMoving) {
+            switch (currentDirection) {
+                case "down":
+                    return idleDown;
+                case "up":
+                    return idleUp;
+                case "left":
+                case "right":
+                    return idleSide;
+                default:
+                    return idleDown;
+            }
+        }
+        
+        // Si se está moviendo, usar frames de animación
+        switch (currentDirection) {
+            case "down":
+                return downFrames[currentFrame];
+            case "up":
+                return upFrames[currentFrame];
+            case "left":
+            case "right":
+                return sideFrames[currentFrame];
+            default:
+                return downFrames[currentFrame];
+        }
     }
     
     // Getters
