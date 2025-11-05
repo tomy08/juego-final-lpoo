@@ -229,7 +229,7 @@ public class Niveles extends JPanel {
         switch(LeveltoName(selectedOption)) {
         
         case "Pacheco":
-        	gameWindow.startRitmo("Pacheco", 5, -1);
+        	gameWindow.startRitmo("Pacheco", 6, -1);
         	break;
         
         case "Melody":
@@ -237,11 +237,11 @@ public class Niveles extends JPanel {
         	break;
         	
         case "Gennuso":
-        	gameWindow.startRitmo("Gennuso", 5, -1);
+        	gameWindow.startRitmo("Gennuso", 7, 120);
         	break;
         	
         case "Vagos":
-        	gameWindow.startRitmo("Vagos", 5, 172);
+        	gameWindow.startRitmo("Vagos", 8, 172);
         	break;
         	
         case "Signorello":

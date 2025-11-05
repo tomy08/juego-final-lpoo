@@ -44,7 +44,7 @@ public class Player {
         this.x = startX;
         this.y = startY;
         this.speed = GW.SQ(14);
-        this.size = GW.SX(50); // Tamaño medio
+        this.size = GW.SX(40);
         this.panel = panel;
         this.color = Color.CYAN;
         this.collisionMap = null; // Se establecerá después
@@ -201,12 +201,12 @@ public class Player {
             if (currentDirection.equals("left")) {
                 // Dibujar volteado horizontalmente
                 g2d.drawImage(currentSprite, 
-                    screenX + size, screenY,  // Posición X invertida
-                    -size, size,               // Ancho negativo para voltear
+                    screenX + size, screenY-size,  // Posición X invertida
+                    -size, size*2,               // Ancho negativo para voltear
                     null);
             } else {
                 // Dibujar normalmente
-                g2d.drawImage(currentSprite, screenX, screenY, size, size, null);
+                g2d.drawImage(currentSprite, screenX, screenY-size, size, size*2, null);
             }
             
         } else {

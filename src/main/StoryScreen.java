@@ -1,6 +1,9 @@
 package main;
 
 import javax.swing.*;
+
+import Sonidos.Musica;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -26,6 +29,7 @@ public class StoryScreen extends JPanel implements KeyListener {
         setFocusable(true);
         addKeyListener(this);
         this.typeStory = story;
+        Musica.reproducirMusica("resources/Music/historia.wav");
         switch(story) {
         case 1: // Principio del juego
         	paragraphs = new String[] {
@@ -146,6 +150,7 @@ public class StoryScreen extends JPanel implements KeyListener {
                 
                 case 1: // Inicio del juego
                 	if(currentParagraph == 10) {
+                		Musica.detenerMusica();
                     	delay = 100;
                     	NoSkip = true;
                     }
@@ -153,6 +158,7 @@ public class StoryScreen extends JPanel implements KeyListener {
                 	
                 case 2: // Final neutral
                 	if(currentParagraph == 7) {
+                		Musica.detenerMusica();
                     	delay = 110;
                     	NoSkip = true;
                     } else {
@@ -163,6 +169,7 @@ public class StoryScreen extends JPanel implements KeyListener {
                 	
                 case 3: // Final bueno
                 	if(currentParagraph == 8) {
+                		Musica.detenerMusica();
                     	delay = 110;
                     	NoSkip = true;
                     }
@@ -170,6 +177,7 @@ public class StoryScreen extends JPanel implements KeyListener {
                 	
                 case 4: // Final secreto
                 	if(currentParagraph == 10) {
+                		Musica.detenerMusica();
                     	delay = 110;
                     	NoSkip = true;
                     }

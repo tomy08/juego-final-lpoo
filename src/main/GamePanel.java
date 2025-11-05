@@ -152,6 +152,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         //test
         givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
         givePlayerItem("llave_sum", "Llave de la reja", "llave_Reja.png", 1, 1);
+        givePlayerItem("pan_sin_tacc", "Pan sin TACC", "pan sin tacc.png", 1, 1);
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -242,38 +243,18 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     }
     
     private void drawUI(Graphics2D g2d) {
-        g2d.setColor(Color.WHITE);
-        Font font = new Font("Arial", Font.PLAIN, GW.SY(16));
-        g2d.setFont(font);
-        g2d.drawString("WASD o flechas para mover", GW.SX(10), GW.SY(25));
-        g2d.drawString("ESC para volver al menú", GW.SX(10), GW.SY(45));
-        
-        // Mostrar posición del jugador (para debug)
-        g2d.setColor(Color.BLACK);
-        g2d.drawString("Posición: (" + (int)player.getX() + ", " + (int)player.getY() + ")", GW.SX(10), getHeight() - GW.SY(20));
-        
-        // Mostrar mapa actual
-        g2d.setColor(Color.CYAN);
-        String mapaActual = enPlantaAlta ? "PLANTA ALTA" : "PLANTA BAJA";
-        g2d.drawString("Mapa: " + mapaActual, GW.SX(10), getHeight() - GW.SY(40));
-        
-        // Mostrar ID de teleport (debug)
-        if (estaEnZonaTeleport && currentTeleportId != -1) {
-            g2d.setColor(Color.MAGENTA);
-            g2d.drawString("Teleport ID: " + currentTeleportId, GW.SX(10), getHeight() - GW.SY(60));
-        }
-        
-        // Indicador de teleport disponible
+    	
+    	// Indicador de teleport disponible
         if (estaEnZonaTeleport && !interactuando) {
-            g2d.setColor(new Color(255, 50, 50, 200));
-            g2d.fillRect(getWidth() / 2 - GW.SX(150), GW.SY(100), GW.SX(300), GW.SY(60));
+            g2d.setColor(new Color(0, 0, 0, 150));
+            g2d.fillRect(getWidth() / 2 - GW.SX(165), GW.SY(740), GW.SX(300), GW.SY(80));
             
             g2d.setColor(Color.WHITE);
             g2d.setStroke(new BasicStroke(GW.SX(3)));
-            g2d.drawRect(getWidth() / 2 - GW.SX(150), GW.SY(100), GW.SX(300), GW.SY(60));
+            g2d.drawRect(getWidth() / 2 - GW.SX(165), GW.SY(740), GW.SX(300), GW.SY(80));
             
-            g2d.setFont(new Font("Arial", Font.BOLD, GW.SY(24)));
-            g2d.drawString("Presiona E para teleport", getWidth() / 2 - GW.SX(135), GW.SY(140));
+            g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(55f)));
+            g2d.drawString(GameSettings.teclaInteractuar + " - Entrar", getWidth() / 2 - GW.SX(135), GW.SY(800));
         }
         
         // Abrir la tienda/Cantina
@@ -696,13 +677,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         }
 
         // Tecla E para teleport
-        if (keyCode == KeyEvent.VK_E && estaEnZonaTeleport && !interactuando) {
+        if (keyCode == GameSettings.KEY_INTERACT && estaEnZonaTeleport && !interactuando) {
             realizarTeleport();
         }
 
         if (keyCode == GameSettings.KEY_INTERACT) {
             for (NPC npc : NPCs) {
-                if (npc.interactive) {
+                if (npc.interactive && !interactuando) {
                     interactNPC(npc);
                     break;
                 }
@@ -810,6 +791,10 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         // ------ Cambios en otros NPCs
         
+        if(nombreNPC.equals("Caja") && triggeredNPC("Caja") == 0) {
+        	Musica.detenerMusica();
+        }
+        
         // Si hablas con zambrana por primera vez active a Melody
         if(nombreNPC.equals("Zambrana") && triggeredNPC("Melody") == 0) {
         	triggerNPC("Melody", 1);
@@ -819,8 +804,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(nombreNPC.equals("Kreimer")) {
         	if(npc.Trigger == 1 && playerHasItem("pan_sin_tacc", 1)) {
         		// Si tiene pan sin tacc, pasar a la linea donde agradece
+        		System.out.println("pan");
         		removePlayerItem("pan_sin_tacc", 1);
-        		currentLine = 6; // Linea antes de "Fua wacho..."
+        		currentLine = 7; // Linea antes de "Fua wacho..."
         	}
         }
         
@@ -1279,11 +1265,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             	} else if(npc.Trigger == 2) { // Nada
             		if(playerHasItem("renaa_gm", 1)) {
             			currentLine = 9; // Tiene el IG de renaa
-            			npc.Trigger = 3;
+            			npc.Trigger = 4;
             		} else {
             			currentLine = 16; // No tiene nada
             		}
-            	} else if(npc.Trigger == 3) { // Ten�s el ig de rena
+            	} else if(npc.Trigger == 3) { // Tenés el ig de rena
             		currentLine = 9;
             	} else if(npc.Trigger == 4) { // Ya le diste todo
             		currentLine = 16;
@@ -1479,7 +1465,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Pacheco":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Pacheco", 5, -1);
+    			gameWindow.startRitmo("Pacheco", 6, -1);
     		}
     		if(opcion.equals("Agarrar boletin")) {
     			givePlayerItem("boletin", "Boletin Pacheco", "boletin_Pacheco.png", 1, 1);
@@ -1489,7 +1475,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Gennuso":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Gennuso", 5, -1);
+    			gameWindow.startRitmo("Gennuso", 7, 120);
     		}
     		if(opcion.equals("Nada")) {
     			currentLine = -1;
@@ -1504,7 +1490,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Vagos":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Vagos", 5, 172);
+    			gameWindow.startRitmo("Vagos", 8, 172);
     		}
     		break;
     		
@@ -1565,6 +1551,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     			npc.Trigger = 1;
     			givePlayerItem("tornillo", "tornillo especifico", "tornillo especifico.png", 1, 1);
     			ShowWinMessage("Conseguiste el tornillo convenientemente especifico... y también muchas dudas existenciales");
+    			Musica.reproducirMusica("resources/Music/fondo.wav");
     			return;
     		}
     		break;
@@ -1653,7 +1640,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             case "boletin": return "boletin_Pacheco.png";
             case "llave_sum": return "llave_SUM.png";
             case "llave_reja": return "llave_Reja.png";
-            case "instagram": return "@renaa_gm.png";
+            case "renaa_gm": return "@renaa_gm.png";
             case "tornillo": return "tornillo especifico.png";
             default: return null;
         }

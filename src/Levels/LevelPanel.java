@@ -916,6 +916,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Pacheco":
     		message = "Muy probablemente NO aprendiste a jugar a esto... gracias a Pacheco";
     		break;
+    		
+    	case "Vagos":
+    		message = "Hiciste que los vagos se calmen. Quedaron re pillos";
+    		break;
     	}
     	
     	return message;
