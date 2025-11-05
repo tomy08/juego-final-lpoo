@@ -221,26 +221,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         if(renderList.size() > 0) {
         	 for (Object o : renderList) {
                  if (o instanceof Player p) {
-                 	
-                 	// Dibujar jugador
+                 	// Dibujar jugador con su sistema de animación
                      player.draw(g2d);
-                     
-                     int drawX = (int)player.getX() - (int)CameraX;
-                     int drawY = (int)player.getY() - (int)CameraY - player.getSize();
-                     int drawW = player.getSize();
-                     int drawH = player.getSize() * 2;
-                     
-                     if (player.facingLeft) {
-                         g2d.drawImage(player.image, 
-                                       drawX + drawW, drawY, 
-                                       -drawW, drawH, 
-                                       this);
-                     } else {
-                         g2d.drawImage(player.image, 
-                                       drawX, drawY, 
-                                       drawW, drawH, 
-                                       this);
-                     }
                  }
                  else if (o instanceof NPC n) n.drawNPC(g2d);
              }
@@ -458,21 +440,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
 
                 	    return Integer.compare(yA, yB);
                 	});
-
                 	
-                    if (deltaY < 0) { // Prioridad Arriba
-                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-up.png").getImage();
-                        player.facingLeft = false; // Resetear reflejo si se movía horizontalmente
-                    } else if (deltaY > 0) { // Prioridad Abajo
-                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-down.png").getImage();
-                        player.facingLeft = false;
-                    } else if (deltaX < 0) { // Izquierda
-                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
-                        player.facingLeft = true;
-                    } else if (deltaX > 0) { // Derecha
-                        player.image = new ImageIcon("resources/Sprites/Jugador/pj-side.png").getImage();
-                        player.facingLeft = false;
-                    }
+                	// Las animaciones ahora se manejan en Player.java
                 }
         }
         
@@ -536,6 +505,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
 
         if (moving) {
             player.move(deltaX, deltaY, getWidth(), getHeight());
+        } else {
+            // Cuando no se mueve, indicar que está quieto
+            player.move(0, 0, getWidth(), getHeight());
         }
         player.update();
         
