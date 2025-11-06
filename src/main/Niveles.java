@@ -24,11 +24,6 @@ public class Niveles extends JPanel {
         requestFocusInWindow();
         setLayout(null);
 
-        // Ejemplo temporal (desbloquea algunos niveles)
-        nivelesDesbloqueados[0] = true; // Nivel 1 desbloqueado siempre
-        nivelesDesbloqueados[1] = true;
-        nivelesDesbloqueados[2] = true;
-
         // --- KEY BINDINGS robustos (funcionan aunque el foco no esté exactamente en el panel) ---
         InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = getActionMap();
@@ -65,6 +60,8 @@ public class Niveles extends JPanel {
                 gameWindow.showMainMenu();
             }
         });
+        
+        
     }
 
     @Override

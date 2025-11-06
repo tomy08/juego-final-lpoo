@@ -185,8 +185,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         // Dibujar mapa de colisiones de fondo
-        
-
         Image img = collisionMap.getImage();
         if (img != null) {
             int newW = img.getWidth(null) * SCALE;

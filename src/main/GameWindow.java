@@ -59,7 +59,9 @@ public class GameWindow extends JFrame implements KeyListener {
         
         // Mostrar menú principal inicialmente
         showMainMenu();
+        
         ProfileManager.cargarPerfil();
+        
     }
     
     public static void reproducirSonido(String rutaArchivo) {

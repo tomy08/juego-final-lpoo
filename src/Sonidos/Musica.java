@@ -25,7 +25,9 @@ public class Musica {
 
             
             setVolumen(GameWindow.volumenGlobal);
-            if(!GameWindow.musicaActivada) return;
+            if(!GameWindow.musicaActivada) {
+            	setVolumen(0);
+            }
 
             clip.start();
             if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);
