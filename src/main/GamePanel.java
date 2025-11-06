@@ -1090,17 +1090,17 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             renderList.add(player);
             
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 285 * SCALE, 52 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 285 * SCALE, 30 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 13 * SCALE, 11 * SCALE, GW.SX(50), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Moya", 277 * SCALE, 14 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gera", 99 * SCALE, 14 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("ASCENSOR", 174 * SCALE, 122 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ascensor", 172 * SCALE, 43 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Estufa", 261 * SCALE, 191 * SCALE, GW.SX(60), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Caja", 23 * SCALE, 133 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Tacho", 128 * SCALE, 208 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TAcho", 268 * SCALE, 164 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pacheco", 285 * SCALE, 52 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Linzalata", 285 * SCALE, 30 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ledesma", 13 * SCALE, 11 * SCALE, 50, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Moya", 277 * SCALE, 14 * SCALE, 45, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gera", 99 * SCALE, 14 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("ASCENSOR", 174 * SCALE, 122 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ascensor", 172 * SCALE, 43 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Estufa", 261 * SCALE, 191 * SCALE, 60, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Caja", 23 * SCALE, 133 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Tacho", 128 * SCALE, 208 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("TAcho", 268 * SCALE, 164 * SCALE, 40, this));
             
             for (NPC npc : NPCs) {
                 renderList.add(npc);
@@ -1121,29 +1121,29 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             renderList.add(player);
        
             // Generar NPCs
-            NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Lavega", 67 * SCALE, 167 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Melody", 143 * SCALE, 35 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 73 * SCALE, 284 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 279 * SCALE, 118 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 256 * SCALE, 117 * SCALE, GW.SX(110), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 285 * SCALE, 39 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Guerra", 283 * SCALE, 24 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 283 * SCALE, 105 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Rita", 230 * SCALE, 19 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 260 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 115 * SCALE, 207 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Martin", 126 * SCALE, 196 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Casas", 209 * SCALE, 238 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 183 * SCALE, 69 * SCALE, GW.SX(46), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ulises", 204 * SCALE, 173 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 205 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Interino", 218 * SCALE, 204 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACho", 58 * SCALE, 256 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACHo", 270 * SCALE, 112 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACHO", 193 * SCALE, 195 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ricky", 46 * SCALE, 36 * SCALE, GW.SX(200), this));
+			NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, 45, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Lavega", 67 * SCALE, 167 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Melody", 143 * SCALE, 35 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 73 * SCALE, 284 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 279 * SCALE, 118 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 256 * SCALE, 117 * SCALE, 110, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 285 * SCALE, 39 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Guerra", 283 * SCALE, 24 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 283 * SCALE, 105 * SCALE, 45, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Rita", 230 * SCALE, 19 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 260 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 115 * SCALE, 207 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Martin", 126 * SCALE, 196 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Casas", 209 * SCALE, 238 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 183 * SCALE, 69 * SCALE, 46, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ulises", 204 * SCALE, 173 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 205 * SCALE, 45, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Interino", 218 * SCALE, 204 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACho", 58 * SCALE, 256 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHo", 270 * SCALE, 112 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHO", 193 * SCALE, 195 * SCALE, 40, this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ricky", 46 * SCALE, 36 * SCALE, 200, this));
             
             for (NPC npc : NPCs) {
                 renderList.add(npc);

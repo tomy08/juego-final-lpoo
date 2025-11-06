@@ -256,12 +256,12 @@ public class NPC {
 		if (image != null) {
 	        g2d.drawImage(image, 
 	                      (int)x - (int)panel.CameraX - GW.SX(4), 
-	                      (int)y - (int)panel.CameraY - size, 
-	                      size + GW.SX(8), size*2, 
+	                      (int)y - (int)panel.CameraY - GW.SX(size), 
+	                      GW.SX(size) + GW.SX(8), GW.SX(size)*2, 
 	                      panel);
 	    } else {
 			g2d.setColor(color);
-	        g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, size, size);
+	        g2d.fillRect((int)x - (int)panel.CameraX, (int)y - (int)panel.CameraY, GW.SX(size), GW.SX(size));
 	    }
 		
 	}
@@ -269,24 +269,24 @@ public class NPC {
 	public void drawInteractive(Graphics2D g2d, String tecla) {
 	    if(interactive) {
 	        g2d.setColor(new Color(0,0,0,125));
-	        g2d.fillRect((int)x - (int)panel.CameraX + size/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
+	        g2d.fillRect((int)x - (int)panel.CameraX + GW.SX(size)/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
 	        
 	        // Dibujar borde
 	        g2d.setColor(Color.WHITE);
 	        g2d.setStroke(new BasicStroke(2));
-	        g2d.drawRect((int)x - (int)panel.CameraX + size/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
+	        g2d.drawRect((int)x - (int)panel.CameraX + GW.SX(size)/2 - 15, (int)y - (int)panel.CameraY - 60, 30, 30);
 	        
 	        g2d.setFont(GameWindow.Pixelart.deriveFont(20f));
-	        g2d.drawString(tecla, (int)x - (int)panel.CameraX + size/2 - 7, (int)y - (int)panel.CameraY - 40);
+	        g2d.drawString(tecla, (int)x - (int)panel.CameraX + GW.SX(size)/2 - 7, (int)y - (int)panel.CameraY - 40);
 	    }
 	}
 	
 	public Rectangle getBounds() {
-		return new Rectangle((int)x, (int)y, size, size);
+		return new Rectangle((int)x, (int)y, GW.SX(size), GW.SX(size));
 	}
 	
 	public Rectangle getArea() {
-		return new Rectangle((int)x - size, (int)y - size, size*3, size*3);
+		return new Rectangle((int)x - GW.SX(size), (int)y - GW.SX(size), GW.SX(size)*3, GW.SX(size)*3);
 	}
 	
 }

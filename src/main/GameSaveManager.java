@@ -252,8 +252,8 @@ public class GameSaveManager {
         
         for (NPC npc : npcs) {
             dos.writeUTF(npc.Tipo);
-            dos.writeDouble(npc.x);
-            dos.writeDouble(npc.y);
+            dos.writeDouble(npc.x / GamePanel.SCALE);
+            dos.writeDouble(npc.y / GamePanel.SCALE);
             dos.writeInt(npc.size);
             dos.writeInt(npc.line);
             dos.writeInt(npc.Trigger);
@@ -272,8 +272,8 @@ public class GameSaveManager {
         
         for (int i = 0; i < npcCount; i++) {
             String tipo = dis.readUTF();
-            double x = dis.readDouble();
-            double y = dis.readDouble();
+            double x = dis.readDouble() * GamePanel.SCALE;
+            double y = dis.readDouble() * GamePanel.SCALE;
             int size = dis.readInt();
             int line = dis.readInt();
             int trigger = dis.readInt();
