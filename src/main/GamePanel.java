@@ -69,8 +69,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     // Zonas para desbloquear:
     
-    public boolean taller = true;
-    public boolean ascensorTaller = true;
+    public boolean taller = false;
+    public boolean ascensorTaller = false;
 
     // Tienda
     
@@ -87,9 +87,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		new ImageIcon("resources/Sprites/items/cachafaz.png").getImage()
     };
     private int[] precioCantina = {
-    	18000,
-    	25000,
-    	300000,
+    	8000,
+    	10000,
+    	150000,
     };
     private int[] StockItem = {
     		3,
@@ -107,13 +107,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     
     
     // Seguimiento de Camara
-    
     public double CameraX = 0;
     public double CameraY = 0;
     
     
     //Menu de pausa
-    
     private boolean paused = false;
     private int opcionPausa = 0;
     private String[] opcionesPausa = {"CONTINUAR", "GUARDAR", "CONFIGURACION", "GUARDAR Y SALIR"};
@@ -143,16 +141,18 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         pressedKeys = new HashSet<>();
         
         // Inicializar jugador
-        player = new Player(285 * SCALE, 55 * SCALE, this);
+        player = new Player(284 * SCALE, 55 * SCALE, this);
         
         // Precargar ambos mapas
         CargarZona(1);
         CargarZona(0);
         
         //test
+        /*givePlayerItem("fusible", "Fusible", "Fusible.png", 3, 3);
         givePlayerItem("llave_reja", "Llave de la reja", "llave_Reja.png", 1, 1);
         givePlayerItem("llave_sum", "Llave de la reja", "llave_Reja.png", 1, 1);
-        givePlayerItem("pan_sin_tacc", "Pan sin TACC", "pan sin tacc.png", 1, 1);
+        givePlayerItem("llave_laboratorio", "Llave de la reja", "llave_Reja.png", 1, 1);
+        givePlayerItem("pan_sin_tacc", "Pan sin TACC", "pan sin tacc.png", 1, 1);*/
         
         // Cargar Dialogos de los NPC
         dialogos = new Properties();
@@ -213,8 +213,6 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             -(int)CameraX, -(int)CameraY,
             newW, newH,
             null);
-
-        
         
         
         // Dibujar NPCs
@@ -320,7 +318,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         
         if(interactuando) {
         		
-        		g2d.setColor(new Color(0,0,0,100));
+        		g2d.setColor(new Color(0,0,0,220));
                 g2d.fillRect(GW.SX(320), GW.SY(650), GW.SX(1280), GW.SY(300));
                 
                 // Dibujar borde
@@ -429,13 +427,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
         // Zonas a desbloquear plantaBaja
         if (!enPlantaAlta) {
         	// Taller
-            if (!taller && player.getX() > 168 * SCALE) {  
+            if (!taller && player.getX() > 168 * SCALE && player.getY() > 204 * SCALE) {  
                 player.setX(168 * SCALE);
-            }
-            
-            // Laboratorio
-            if (!playerHasItem("llave_laboratorio", 1) && player.getX() < 22 * SCALE && player.getY() > 240 * SCALE) {
-            	player.setX(22 * SCALE);
             }
             
             // Ascensor taller
@@ -665,7 +658,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
                         selected.remove(1);
                         
                         // Sonido opcional
-                        GameWindow.reproducirSonido("resources/sounds/use_item.wav");
+                        GameWindow.reproducirSonido("resources/sounds/confirm.wav");
                         
                         // Redibuja el inventario
                         repaint();
@@ -742,14 +735,13 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     				tiendaColor = new Color(255,255,255);
     				textoTienda = "Has comprado el item";
     				
-    				// GameWindow.reproducirSonido("Compra");
+    				GameWindow.reproducirSonido("resources/sounds/compra.wav");
     				
     			} else { // No puede comprar
     				
-    				// GameWindow.reproducirSonido("Rechazo");
+    				GameWindow.reproducirSonido("resources/sounds/rechazo.wav");
     				tiendaColor = new Color(200,0,0);
     				textoTienda = "No se puede comprar este Item.";
-    				System.out.println("No se pudo comprar el item");
     				
     			}
     			
@@ -999,6 +991,11 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             		return;
             	}
         		
+        		if(currentTeleportId == 220 && !playerHasItem("llave_laboratorio", 1)) { // Si no tiene llave de la reja
+            		ShowWinMessage("Necesitas llave del laboratorio para pasar.");
+            		return;
+            	}
+        		
         	}
         	
         	
@@ -1128,27 +1125,26 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
             // Generar NPCs
             NPCs.add(NPCManager.getOrCreateNPC("Findlay", 63 * SCALE, 167 * SCALE, GW.SX(45), this));
             NPCs.add(NPCManager.getOrCreateNPC("Lavega", 67 * SCALE, 167 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Melody", 49 * SCALE, 105 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 72 * SCALE, 237 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 75 * SCALE, 110 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 56 * SCALE, 109 * SCALE, GW.SX(110), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 17 * SCALE, 238 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Guerra", 15 * SCALE, 230 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 84 * SCALE, 97 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Rita", 14 * SCALE, 245 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 219 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Melody", 143 * SCALE, 35 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Gennuso", 73 * SCALE, 284 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Signorello", 279 * SCALE, 118 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Vagos", 256 * SCALE, 117 * SCALE, GW.SX(110), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Biblioteca", 285 * SCALE, 39 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Guerra", 283 * SCALE, 24 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Cantina", 283 * SCALE, 105 * SCALE, GW.SX(45), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Rita", 230 * SCALE, 19 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Pecile", 24 * SCALE, 260 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Kreimer", 115 * SCALE, 207 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Martin", 123 * SCALE, 196 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Martin", 126 * SCALE, 196 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Casas", 209 * SCALE, 238 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 179 * SCALE, 196 * SCALE, GW.SX(46), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Ulises", 195 * SCALE, 173 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ciccaroni", 183 * SCALE, 69 * SCALE, GW.SX(46), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Ulises", 204 * SCALE, 173 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Gramajo", 236 * SCALE, 175 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 206 * SCALE, GW.SX(45), this));
-            NPCs.add(NPCManager.getOrCreateNPC("Interino", 218 * SCALE, 203 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACho", 58 * SCALE, 215 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACHo", 70 * SCALE, 101 * SCALE, GW.SX(40), this));
-            NPCs.add(NPCManager.getOrCreateNPC("TACHO", 190 * SCALE, 195 * SCALE, GW.SX(40), this));
-            
+            NPCs.add(NPCManager.getOrCreateNPC("Zambrana", 166 * SCALE, 205 * SCALE, GW.SX(45), this));
+            NPCs.add(NPCManager.getOrCreateNPC("Interino", 218 * SCALE, 204 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACho", 58 * SCALE, 256 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHo", 270 * SCALE, 112 * SCALE, GW.SX(40), this));
+            NPCs.add(NPCManager.getOrCreateNPC("TACHO", 193 * SCALE, 195 * SCALE, GW.SX(40), this));
             NPCs.add(NPCManager.getOrCreateNPC("Ricky", 46 * SCALE, 36 * SCALE, GW.SX(200), this));
             
             for (NPC npc : NPCs) {
@@ -1371,7 +1367,9 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		if(opcion.equals("SI")) {
                 // Darle fusible al jugador
                 givePlayerItem("fusible", "Fusible", "Fusible.png", 1, 3);
+                
                 npc.Trigger = 1; // Ya le dio el fusible
+                
                 GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
     		break;
@@ -1382,7 +1380,8 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     			if(playerHasItem("fusible", 3)) {
     				ShowWinMessage("Escuchas un ascensor abriéndose en el piso de abajo");
     				npc.Trigger = 1;
-    				triggerNPC("pecile", 1);
+    				removePlayerItem("fusible", 3);
+    				triggerNPC("Pecile", 1);
     				return;
     			} else {
     				ShowWinMessage("no tenes los fusibles suficientes.");
@@ -1465,7 +1464,7 @@ public class GamePanel extends JPanel implements GameThread.Updatable {
     		
     	case "Pacheco":
     		if(opcion.equals("SI")) {
-    			gameWindow.startRitmo("Pacheco", 6, -1);
+    			gameWindow.startRitmo("Pacheco", 6, 120);
     		}
     		if(opcion.equals("Agarrar boletin")) {
     			givePlayerItem("boletin", "Boletin Pacheco", "boletin_Pacheco.png", 1, 1);

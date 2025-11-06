@@ -60,7 +60,6 @@ public class GameWindow extends JFrame implements KeyListener {
         // Mostrar menú principal inicialmente
         showMainMenu();
         ProfileManager.cargarPerfil();
-        ProfileManager.nivel9Pasado = true;
     }
     
     public static void reproducirSonido(String rutaArchivo) {
@@ -139,6 +138,8 @@ public class GameWindow extends JFrame implements KeyListener {
     
     public void showMainMenu() {
         currentState = GameState.MAIN_MENU;
+        Musica.reproducirMusica("resources/Music/menu.wav");
+        Musica.enableLoop();
         getContentPane().removeAll();
         mainMenu.actualizarOpciones();
         getContentPane().add(mainMenu);

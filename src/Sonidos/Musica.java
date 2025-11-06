@@ -12,7 +12,7 @@ public class Musica {
 
     public static void reproducirMusica(String rutaArchivo) {
         try {
-        	if(!GameWindow.musicaActivada) return;
+        	
             if (clip != null && clip.isRunning() && rutaArchivo.equals(rutaActual)) return;
             if (clip != null) {
                 clip.stop();
@@ -25,6 +25,7 @@ public class Musica {
 
             
             setVolumen(GameWindow.volumenGlobal);
+            if(!GameWindow.musicaActivada) return;
 
             clip.start();
             if (loop) clip.loop(Clip.LOOP_CONTINUOUSLY);

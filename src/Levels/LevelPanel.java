@@ -36,6 +36,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     private Image[] teclaImages = new Image[4];
     private Image[] teclaPressImages = new Image[4];
     private Image[] rankImages = new Image[6];
+    private Image fondo;
     
     // Fonts
     private final Font timeFont = GameWindow.Pixelart.deriveFont(GW.SF(65f));
@@ -111,6 +112,8 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         setFocusable(true);
         
         // Cargar Imagenes
+        fondo = new ImageIcon("resources/Sprites/fondos/fondoLevels.png").getImage();
+        
         for(int i = 0; i < 4; i++) {
             teclaImages[i] = new ImageIcon("resources/Sprites/Ritmo/tecla" + (i + 1) + ".png").getImage();
             teclaPressImages[i] = new ImageIcon("resources/Sprites/Ritmo/tecla" + (i + 1) + "Press.png").getImage();
@@ -223,12 +226,17 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        
         // Fondo
-        g2d.setColor(new Color(90,90,90));
+        g2d.drawImage(fondo,
+                0, 0,
+                getWidth(), getHeight(),
+                null);
+        g2d.setColor(new Color(0,0,0,125));
         g2d.fillRect(0, 0, getWidth(), getHeight());
         
         // Fondo transparente
-        g2d.setColor(new Color(0,0,0,125));
+        g2d.setColor(new Color(0,0,0,150));
         g2d.fillRect(GW.SX(650), 0, GW.SX(620), getHeight());
         // Teclas Jugador
     	int posX = GW.SX(685);
@@ -261,10 +269,9 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
         			 g2d.drawImage(a.image, (int)a.x, (int)a.y, a.size, a.size, this);
                      if(a.Long) {
                      	a.draw(g2d, bpm);
+                     }
         		}
-                     
         	}
-}
         }
         
         drawUI(g2d);
@@ -1147,8 +1154,10 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
                 break;
             case 1: // Salir
             	if(EnHistoria) {
-            		gameWindow.startRealGame();
+            		
             		Musica.detenerMusica();
+            		gameWindow.startRealGame();
+            		
             	} else {
             		gameWindow.showNiveles();
             	}

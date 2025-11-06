@@ -30,6 +30,7 @@ public class StoryScreen extends JPanel implements KeyListener {
         addKeyListener(this);
         this.typeStory = story;
         Musica.reproducirMusica("resources/Music/historia.wav");
+        Musica.enableLoop();
         switch(story) {
         case 1: // Principio del juego
         	paragraphs = new String[] {

@@ -221,15 +221,15 @@ public class Niveles extends JPanel {
 
     private void seleccionarNivel() {
         if (!nivelesDesbloqueados[selectedOption]) {
-            GameWindow.reproducirSonido("resources/sounds/error.wav");
+            GameWindow.reproducirSonido("resources/sounds/rechazo.wav");
             return;
         }
 
-        GameWindow.reproducirSonido("resources/sounds/menu.wav");
+        GameWindow.reproducirSonido("resources/sounds/confirm.wav");
         switch(LeveltoName(selectedOption)) {
         
         case "Pacheco":
-        	gameWindow.startRitmo("Pacheco", 6, -1);
+        	gameWindow.startRitmo("Pacheco", 6, 120);
         	break;
         
         case "Melody":
