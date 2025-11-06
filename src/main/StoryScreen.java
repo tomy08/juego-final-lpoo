@@ -122,6 +122,10 @@ public class StoryScreen extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        g.setColor(Color.DARK_GRAY);
+        g.setFont(gameWindow.Pixelart.deriveFont(GW.SF(30f)));
+        g.drawString("ENTER para continuar", getWidth() / 2 - GW.SX(170), GW.SY(800));
+        
         g.setColor(Color.WHITE);
         g.setFont(gameWindow.Pixelart.deriveFont(GW.SF(36f)));
         FontMetrics fm = g.getFontMetrics();

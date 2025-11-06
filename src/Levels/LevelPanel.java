@@ -808,7 +808,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Ledesma":
     		if(EnHistoria) {
     			// Conseguir Item: Pastafrola
-    			gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 5);
+    			gameWindow.gamePanel.givePlayerItem("pastafrola", "Pastafrola", "pastafrola.png", 1, 1);
     			gameWindow.gamePanel.triggerNPC("Ledesma", 3);
     			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
@@ -832,7 +832,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Signorello":
     		if(EnHistoria) {
     			// Conseguir Item: Marcador de findlay
-    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 8);
+    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador azul", "marcador_Azul.png", 1, 1);
     			gameWindow.gamePanel.triggerNPC("Signorello", 2);
     			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}
@@ -844,7 +844,7 @@ public class LevelPanel extends JPanel implements GameThread.Updatable {
     	case "Martin":
     		if(EnHistoria) {
     			// Conseguir Item: Marcador de findlay
-    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador verde", "marcador_Verde.png", 1, 8);
+    			gameWindow.gamePanel.givePlayerItem("marcador_findlay", "Marcador verde", "marcador_Verde.png", 1, 1);
     			gameWindow.gamePanel.triggerNPC("Martin", 3);
     			GameWindow.reproducirSonido("resources/sounds/confirm.wav");
     		}

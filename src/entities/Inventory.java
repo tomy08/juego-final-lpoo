@@ -191,6 +191,10 @@ public class Inventory {
         int gridH = rows * (slotSize + padding);
         int startX = (panelWidth - gridW) / 2;
         int startY = (panelHeight - gridH) / 2;
+        
+        g2d.setFont(GameWindow.Pixelart.deriveFont(GW.SF(60)));
+        g2d.setColor(Color.white);
+        g2d.drawString("INVENTARIO", startX, startY - GW.SY(60));
 
         g2d.setColor(new Color(0,0,0,180));
         g2d.fillRect(startX - 20, startY - 40, gridW + 40, gridH + 80);
